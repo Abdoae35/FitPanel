@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FitPanel")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+654d0ce460de407f364439aac392c34743d828a2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e230a7f1f8a54e0e01e6ac13306db6eb4e2d35b6")]
 [assembly: System.Reflection.AssemblyProductAttribute("FitPanel")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FitPanel")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

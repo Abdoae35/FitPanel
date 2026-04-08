@@ -23,6 +23,12 @@ namespace FitPanel.Data.Configurations
                .HasForeignKey(i => i.WorkOutDayId)
                .OnDelete(DeleteBehavior.Restrict);
 
+
+                builder.HasOne(d => d.Cardio)
+    .WithOne(c => c.WorkOutDay)
+    .HasForeignKey<Cardio>(c => c.WorkOutDayId)
+    .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

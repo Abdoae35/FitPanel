@@ -17,5 +17,8 @@ namespace FitPanel.Data.Models;
 
         //Apply one to many relationship with Excercise
         public ICollection<Excercise> ExcerciseItems { get; set; } = new List<Excercise>();
+
+            // Optional cardio — null means no cardio this day
+    public Cardio? Cardio { get; set; }
        
     }

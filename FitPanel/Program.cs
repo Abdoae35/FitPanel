@@ -1,9 +1,21 @@
 using FitPanel.Components;
 using FitPanel.Data;
+using FitPanel.Endpoints;
+using FitPanel.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+// After builder.Services.AddAuthorizationCore(...)
+
+// Register services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDietService, DietService>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+
+// Add this so minimal APIs can read JSON bodies
+builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -55,6 +67,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+// Map all endpoints
+app.MapAuthEndpoints();
+app.MapClientEndpoints();
+app.MapDietEndpoints();
+app.MapWorkoutEndpoints();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()

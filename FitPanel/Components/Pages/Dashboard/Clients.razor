@@ -1,0 +1,446 @@
+@page "/dashboard/clients"
+@namespace FitPanel.Components.Pages.Dashboard  
+@layout DashboardLayout 
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@using FitPanel.Services
+@using FitPanel.DTOs.Client
+@attribute [Authorize(Roles = "Coach")]
+@inject UserManager<PanelUser> UserManager
+@inject IClientService ClientService
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Clients — FitPanel</PageTitle>
+
+@* ── Header Row ── *@
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+    <div>
+        <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
+            My Clients
+        </h1>
+        <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
+            @clients.Count client@(clients.Count != 1 ? "s" : "") total
+        </p>
+    </div>
+    <button class="fp-btn-primary" @onclick="() => showModal = true">
+        <i class="fa fa-plus"></i> New Client
+    </button>
+</div>
+
+@* ── Clients Grid ── *@
+@if (isLoading)
+{
+    <div class="fp-loading">
+        <div class="fp-spinner-lg"></div>
+        <span>Loading clients...</span>
+    </div>
+}
+else if (!clients.Any())
+{
+    <div class="fp-empty">
+        <i class="fa fa-user-plus"></i>
+        <p>No clients yet.</p>
+        <button class="fp-btn-primary" @onclick="() => showModal = true">
+            <i class="fa fa-plus"></i> Add First Client
+        </button>
+    </div>
+}
+else
+{
+    <div class="fp-client-grid">
+        @foreach (var client in clients)
+        {
+            <div class="fp-client-card" @onclick="() => GoToClient(client.Id)">
+                <div class="fp-client-card-top">
+                    <div class="fp-client-avatar-lg">@client.Name[..1].ToUpper()</div>
+                    <div class="fp-client-card-actions">
+                        <button class="fp-icon-btn" title="Delete"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => ConfirmDelete(client.Id, client.Name)">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="fp-client-card-body">
+                    <h3>@client.Name</h3>
+                    <div class="fp-client-meta">
+                        <span><i class="fa fa-weight"></i> @client.Weight kg</span>
+                        <span><i class="fa fa-calendar"></i> @client.SubscriptionDurationPerMonth mo</span>
+                    </div>
+                    <p class="fp-client-date">
+                        Joined @client.CreatedAt.ToString("MMM dd, yyyy")
+                    </p>
+                </div>
+                <div class="fp-client-card-footer">
+                    <span>View Profile <i class="fa fa-arrow-right"></i></span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* ── Create Client Modal ── *@
+@if (showModal)
+{
+    <div class="fp-modal-overlay" @onclick="CloseModal">
+        <div class="fp-modal" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <div class="fp-modal-title">
+                    <i class="fa fa-user-plus" style="color:var(--fp-accent);"></i>
+                    NEW CLIENT
+                </div>
+                <button class="fp-modal-close" @onclick="CloseModal">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(formError))
+            {
+                <div class="fp-alert fp-alert-danger">
+                    <i class="fa fa-exclamation-circle"></i> @formError
+                </div>
+            }
+
+            <div class="fp-modal-body">
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Full Name *</label>
+                        <input @bind="newClient.Name" placeholder="John Doe" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Weight (kg) *</label>
+                        <input type="number" @bind="newClient.Weight" placeholder="80" />
+                    </div>
+                </div>
+
+                <div class="fp-input-group">
+                    <label>Subscription Duration (months) *</label>
+                    <input type="number" @bind="newClient.SubscriptionDurationPerMonth" placeholder="1" min="1" max="12" />
+                </div>
+
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Inbody Link (optional)</label>
+                        <input @bind="newClient.InbodyLink" placeholder="https://..." />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Before Photo Link (optional)</label>
+                        <input @bind="newClient.FromPicLink" placeholder="https://..." />
+                    </div>
+                </div>
+
+                <div class="fp-input-group">
+                    <label>After Photo Link (optional)</label>
+                    <input @bind="newClient.ToPicLink" placeholder="https://..." />
+                </div>
+            </div>
+
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="CloseModal">Cancel</button>
+                <button class="fp-btn-primary" @onclick="CreateClient" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="fp-spinner-sm"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-check"></i>
+                        <span>Create Client</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ── Delete Confirm ── *@
+@if (showDeleteConfirm)
+{
+    <div class="fp-modal-overlay" @onclick="() => showDeleteConfirm = false">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <div class="fp-modal-title" style="color:#ff6b6b;">
+                    <i class="fa fa-exclamation-triangle"></i> DELETE CLIENT
+                </div>
+            </div>
+            <div class="fp-modal-body">
+                <p style="color:var(--fp-text);font-size:15px;">
+                    Are you sure you want to delete <strong>@deleteClientName</strong>?
+                    This will remove all their diets and workouts permanently.
+                </p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showDeleteConfirm = false">Cancel</button>
+                <button class="fp-btn-primary" style="background:#c41920;border-color:#c41920;" @onclick="DeleteClient">
+                    <i class="fa fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .fp-client-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+    .fp-client-card {
+        background: var(--fp-surface);
+        border: 1px solid var(--fp-border);
+        cursor: pointer;
+        transition: all 0.25s;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .fp-client-card:hover {
+        border-color: var(--fp-accent);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(234,33,39,0.1);
+    }
+    .fp-client-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 0;
+    }
+    .fp-client-avatar-lg {
+        width: 52px; height: 52px;
+        background: rgba(234,33,39,0.15);
+        color: var(--fp-accent);
+        font-family: 'Teko', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(0 0, 88% 0, 100% 12%, 100% 100%, 12% 100%, 0 88%);
+    }
+    .fp-icon-btn {
+        width: 32px; height: 32px;
+        background: transparent;
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    .fp-icon-btn:hover { border-color: #ea2127; color: #ea2127; }
+    .fp-client-card-body { padding: 16px 20px; flex: 1; }
+    .fp-client-card-body h3 {
+        font-family: 'Teko', sans-serif;
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--fp-text);
+        text-transform: uppercase;
+        margin: 0 0 10px;
+        line-height: 1;
+    }
+    .fp-client-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+    .fp-client-meta span {
+        font-size: 13px;
+        color: var(--fp-text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .fp-client-meta i { color: var(--fp-accent); font-size: 11px; }
+    .fp-client-date { font-size: 12px; color: var(--fp-text-muted); margin: 0; }
+    .fp-client-card-footer {
+        padding: 12px 20px;
+        border-top: 1px solid var(--fp-border);
+        background: var(--fp-surface2);
+    }
+    .fp-client-card-footer span {
+        font-size: 13px;
+        color: var(--fp-accent);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Modal */
+    .fp-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .fp-modal {
+        background: var(--fp-surface);
+        border: 1px solid var(--fp-border);
+        border-top: 3px solid var(--fp-accent);
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .fp-modal-sm { max-width: 420px; }
+    .fp-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--fp-border);
+    }
+    .fp-modal-title {
+        font-family: 'Teko', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--fp-text);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .fp-modal-close {
+        width: 32px; height: 32px;
+        background: transparent;
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .fp-modal-close:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
+    .fp-modal-body { padding: 24px; }
+    .fp-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--fp-border);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .fp-alert {
+        margin: 0 24px;
+        padding: 12px 16px;
+        font-size: 14px;
+        border-left: 3px solid #ea2127;
+        margin-bottom: 0;
+    }
+    .fp-alert-danger { background: rgba(234,33,39,0.08); color: #ff6b6b; }
+
+    .fp-loading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 60px 0;
+        color: var(--fp-text-muted);
+    }
+    .fp-spinner-lg {
+        width: 28px; height: 28px;
+        border: 3px solid var(--fp-border);
+        border-top-color: var(--fp-accent);
+        border-radius: 50%;
+        animation: fp-spin 0.8s linear infinite;
+    }
+    .fp-spinner-sm {
+        width: 16px; height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: fp-spin 0.8s linear infinite;
+        display: inline-block;
+    }
+    @keyframes fp-spin { to { transform: rotate(360deg); } }
+    .fp-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 80px 0;
+        color: var(--fp-text-muted);
+    }
+    .fp-empty i { font-size: 48px; opacity: 0.2; }
+    .fp-empty p { font-size: 16px; }
+</style>
+
+@code {
+    private List<ClientResponseDto> clients = new();
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool isSaving = false;
+    private bool showDeleteConfirm = false;
+    private string formError = string.Empty;
+    private int deleteClientId = 0;
+    private string deleteClientName = string.Empty;
+    private string coachId = string.Empty;
+
+    private CreateClientDto newClient = new("", 0, 1, null, null, null);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(auth.User);
+        if (user == null) return;
+
+        coachId = user.Id;
+        clients = await ClientService.GetMyClientsAsync(coachId);
+        isLoading = false;
+    }
+
+    private void GoToClient(int id) => Nav.NavigateTo($"/dashboard/clients/{id}");
+
+    private void CloseModal()
+    {
+        showModal = false;
+        formError = string.Empty;
+        newClient = new("", 0, 1, null, null, null);
+    }
+
+    private async Task CreateClient()
+    {
+        formError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newClient.Name))
+        { formError = "Name is required."; return; }
+        if (newClient.Weight <= 0)
+        { formError = "Please enter a valid weight."; return; }
+        if (newClient.SubscriptionDurationPerMonth < 1)
+        { formError = "Subscription must be at least 1 month."; return; }
+
+        isSaving = true;
+        var created = await ClientService.CreateClientAsync(newClient, coachId);
+        clients.Add(created);
+        isSaving = false;
+        CloseModal();
+    }
+
+    private void ConfirmDelete(int id, string name)
+    {
+        deleteClientId = id;
+        deleteClientName = name;
+        showDeleteConfirm = true;
+    }
+
+    private async Task DeleteClient()
+    {
+        var (success, _) = await ClientService.DeleteClientAsync(deleteClientId, coachId);
+        if (success)
+            clients.RemoveAll(c => c.Id == deleteClientId);
+        showDeleteConfirm = false;
+    }
+}

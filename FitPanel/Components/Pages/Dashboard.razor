@@ -1,0 +1,172 @@
+@page "/dashboard"
+@namespace FitPanel.Components.Pages.Dashboard
+@layout DashboardLayout
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using FitPanel.Components.Layout
+@using FitPanel.Data
+@using FitPanel.Services
+@using FitPanel.DTOs.Client
+@attribute [Authorize]
+@inject UserManager<PanelUser> UserManager
+@inject IClientService ClientService
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+<PageTitle>Dashboard — FitPanel</PageTitle>
+@* ── Stats Row ── *@
+<div class="fp-grid-4" style="margin-bottom: 28px;">
+    <div class="fp-stat-card">
+        <span class="fp-stat-card-label">Total Clients</span>
+        <span class="fp-stat-card-value">@clients.Count</span>
+    </div>
+    <div class="fp-stat-card">
+        <span class="fp-stat-card-label">Active This Month</span>
+        <span class="fp-stat-card-value">@activeClients</span>
+    </div>
+    <div class="fp-stat-card">
+        <span class="fp-stat-card-label">Avg. Subscription</span>
+        <span class="fp-stat-card-value">@avgSub<span style="font-size:24px;color:var(--fp-text-muted)">mo</span></span>
+    </div>
+    <div class="fp-stat-card">
+        <span class="fp-stat-card-label">New This Month</span>
+        <span class="fp-stat-card-value">@newThisMonth</span>
+    </div>
+</div>
+@* ── Recent Clients ── *@
+<div class="fp-card">
+    <div class="fp-card-title">
+        <i class="fa fa-users" style="color:var(--fp-accent);font-size:22px;"></i>
+        Recent Clients
+    </div>
+    <p class="fp-card-sub">Your most recently added clients</p>
+    @if (isLoading)
+    {
+        <div class="fp-loading">
+            <div class="fp-spinner-lg"></div>
+            <span>Loading clients...</span>
+        </div>
+    }
+    else if (!clients.Any())
+    {
+        <div class="fp-empty">
+            <i class="fa fa-user-plus"></i>
+            <p>No clients yet. <a href="/dashboard/clients/new" class="fp-link">Add your first client →</a></p>
+        </div>
+    }
+    else
+    {
+        <table class="fp-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Weight</th>
+                    <th>Subscription</th>
+                    <th>Joined</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in clients.Take(5))
+                {
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
+                                <span style="font-weight:600;">@client.Name</span>
+                            </div>
+                        </td>
+                        <td>@client.Weight <span style="color:var(--fp-text-muted);font-size:12px;">kg</span></td>
+                        <td>
+                            <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
+                        </td>
+                        <td style="color:var(--fp-text-muted);font-size:13px;">
+                            @client.CreatedAt.ToString("MMM dd, yyyy")
+                        </td>
+                        <td>
+                            <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="padding:6px 14px;font-size:12px;">
+                                <i class="fa fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (clients.Count > 5)
+        {
+            <div style="margin-top:20px;text-align:center;">
+                <a href="/dashboard/clients" class="fp-btn-outline">
+                    View all @clients.Count clients <i class="fa fa-arrow-right"></i>
+                </a>
+            </div>
+        }
+    }
+</div>
+<style>
+    .fp-loading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 40px 0;
+        color: var(--fp-text-muted);
+        font-size: 15px;
+    }
+    .fp-spinner-lg {
+        width: 28px; height: 28px;
+        border: 3px solid var(--fp-border);
+        border-top-color: var(--fp-accent);
+        border-radius: 50%;
+        animation: fp-spin 0.8s linear infinite;
+        flex-shrink: 0;
+    }
+    @@keyframes fp-spin { to { transform: rotate(360deg); } }
+    .fp-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 60px 0;
+        color: var(--fp-text-muted);
+    }
+    .fp-empty i { font-size: 40px; opacity: 0.3; }
+    .fp-empty p { font-size: 15px; }
+    .fp-link { color: var(--fp-accent); text-decoration: none; }
+    .fp-link:hover { text-decoration: underline; }
+    .fp-client-avatar {
+        width: 34px; height: 34px;
+        background: rgba(234,33,39,0.15);
+        color: var(--fp-accent);
+        font-family: 'Teko', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+</style>
+@code {
+    private List<ClientResponseDto> clients = new();
+    private bool isLoading = true;
+    private int activeClients = 0;
+    private int avgSub = 0;
+    private int newThisMonth = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(auth.User);
+        if (user == null) return;
+
+        clients = await ClientService.GetMyClientsAsync(user.Id);
+        isLoading = false;
+
+        activeClients = clients.Count(c => c.SubscriptionDurationPerMonth > 0);
+        avgSub = clients.Any()
+            ? (int)clients.Average(c => c.SubscriptionDurationPerMonth)
+            : 0;
+        newThisMonth = clients.Count(c =>
+            c.CreatedAt.Month == DateTime.UtcNow.Month &&
+            c.CreatedAt.Year == DateTime.UtcNow.Year);
+    }
+}

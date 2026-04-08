@@ -1,0 +1,623 @@
+@* Components/Layout/DashboardLayout.razor *@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@inject SignInManager<PanelUser> SignInManager
+@inject NavigationManager Nav
+@inherits LayoutComponentBase
+
+<div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")">
+
+    @* ── Sidebar ── *@
+    <aside class="fp-sidebar @(sidebarOpen ? "open" : "")">
+
+        @* Logo *@
+        <div class="fp-sidebar-logo">
+            <span class="fp-logo-icon">FP</span>
+            <span class="fp-logo-text @(sidebarOpen ? "" : "hidden")">FIT<span>PANEL</span></span>
+        </div>
+
+        @* Nav *@
+        <nav class="fp-nav">
+            <div class="fp-nav-group">
+                <span class="fp-nav-label @(sidebarOpen ? "" : "hidden")">MAIN</span>
+
+                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item">
+                    <i class="fa fa-chart-line"></i>
+                    <span class="@(sidebarOpen ? "" : "hidden")">Dashboard</span>
+                </NavLink>
+
+                @* Admin only *@
+                <AuthorizeView Roles="Admin" Context="adminCtx">
+                    <Authorized>
+                        <NavLink href="/dashboard/coaches" class="fp-nav-item">
+                            <i class="fa fa-user-tie"></i>
+                            <span class="@(sidebarOpen ? "" : "hidden")">Coaches</span>
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                @* Coach only *@
+                <AuthorizeView Roles="Coach" Context="coachCtx">
+                    <Authorized>
+                        <NavLink href="/dashboard/clients" class="fp-nav-item">
+                            <i class="fa fa-users"></i>
+                            <span class="@(sidebarOpen ? "" : "hidden")">My Clients</span>
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </nav>
+
+        @* Bottom: user + logout *@
+        <div class="fp-sidebar-bottom">
+            <AuthorizeView Context="userCtx">
+                <Authorized>
+                    <div class="fp-user-card @(sidebarOpen ? "" : "mini")">
+                        <div class="fp-user-avatar">
+                            @GetInitials(userCtx.User.Identity?.Name)
+                        </div>
+                        <div class="fp-user-info @(sidebarOpen ? "" : "hidden")">
+                            <span class="fp-user-name">@userCtx.User.Identity?.Name</span>
+                            <span class="fp-user-role">
+                                @(userCtx.User.IsInRole("Admin") ? "Administrator" : "Coach")
+                            </span>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+
+            <form action="/logout" method="post" class="fp-logout-form">
+                <AntiforgeryToken />
+                <button type="submit" class="fp-logout-btn" title="Logout">
+                    <i class="fa fa-sign-out-alt"></i>
+                    <span class="@(sidebarOpen ? "" : "hidden")">Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    @* ── Main Area ── *@
+    <div class="fp-main">
+
+        @* Top Bar *@
+        <header class="fp-topbar">
+            <div class="fp-topbar-left">
+                <button class="fp-toggle-sidebar" @onclick="ToggleSidebar">
+                    <i class="fa @(sidebarOpen ? "fa-times" : "fa-bars")"></i>
+                </button>
+                <div class="fp-breadcrumb">
+                    <span>FitPanel</span>
+                    <i class="fa fa-chevron-right"></i>
+                    <span>@currentPage</span>
+                </div>
+            </div>
+
+            <div class="fp-topbar-right">
+                @* Dark/Light toggle *@
+                <button class="fp-theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                    <i class="fa @(isDark ? "fa-sun" : "fa-moon")"></i>
+                </button>
+            </div>
+        </header>
+
+        @* Page Content *@
+        <main class="fp-content">
+            @Body
+        </main>
+    </div>
+</div>
+
+@* ── Styles ── *@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
+    /* ── CSS Variables ── */
+    .fp-dashboard.fp-dark {
+        --fp-bg: #0a0a0a;
+        --fp-surface: #111111;
+        --fp-surface2: #1a1a1a;
+        --fp-border: #222222;
+        --fp-text: #ffffff;
+        --fp-text-muted: #666666;
+        --fp-text-secondary: #999999;
+        --fp-accent: #ea2127;
+        --fp-accent-hover: #c41920;
+        --fp-sidebar-w: 240px;
+        --fp-sidebar-w-closed: 70px;
+    }
+    .fp-dashboard.fp-light {
+        --fp-bg: #f7f6f2;
+        --fp-surface: #ffffff;
+        --fp-surface2: #f0ede8;
+        --fp-border: #e0ddd8;
+        --fp-text: #111111;
+        --fp-text-muted: #999999;
+        --fp-text-secondary: #666666;
+        --fp-accent: #ea2127;
+        --fp-accent-hover: #c41920;
+        --fp-sidebar-w: 240px;
+        --fp-sidebar-w-closed: 70px;
+    }
+
+    /* ── Layout ── */
+    .fp-dashboard {
+        display: flex;
+        min-height: 100vh;
+        background: var(--fp-bg);
+        font-family: 'DM Sans', sans-serif;
+        transition: background 0.3s;
+    }
+
+    /* ── Sidebar ── */
+    .fp-sidebar {
+        width: var(--fp-sidebar-w-closed);
+        background: var(--fp-surface);
+        border-right: 1px solid var(--fp-border);
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+        overflow: hidden;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        flex-shrink: 0;
+    }
+    .fp-sidebar.open { width: var(--fp-sidebar-w); }
+
+    /* Logo */
+    .fp-sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 14px;
+        border-bottom: 1px solid var(--fp-border);
+        min-height: 70px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .fp-logo-icon {
+        width: 42px; height: 42px;
+        background: var(--fp-accent);
+        color: #fff;
+        font-family: 'Teko', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        clip-path: polygon(0 0, 88% 0, 100% 12%, 100% 100%, 12% 100%, 0 88%);
+    }
+    .fp-logo-text {
+        font-family: 'Teko', sans-serif;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--fp-text);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: opacity 0.3s;
+    }
+    .fp-logo-text span { color: var(--fp-accent); }
+    .fp-logo-text.hidden { opacity: 0; width: 0; overflow: hidden; }
+
+    /* Nav */
+    .fp-nav {
+        flex: 1;
+        padding: 16px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .fp-nav-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .fp-nav-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--fp-text-muted);
+        padding: 0 10px;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.3s;
+    }
+    .fp-nav-label.hidden { opacity: 0; }
+
+    .fp-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 10px;
+        color: var(--fp-text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        border-radius: 2px;
+    }
+    .fp-nav-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .fp-nav-item span { overflow: hidden; transition: opacity 0.3s; }
+    .fp-nav-item span.hidden { opacity: 0; width: 0; }
+    .fp-nav-item:hover {
+        color: var(--fp-text);
+        background: var(--fp-surface2);
+        border-left-color: var(--fp-accent);
+    }
+    .fp-nav-item.active {
+        color: var(--fp-accent);
+        background: rgba(234,33,39,0.08);
+        border-left-color: var(--fp-accent);
+    }
+
+    /* Sidebar Bottom */
+    .fp-sidebar-bottom {
+        border-top: 1px solid var(--fp-border);
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .fp-user-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: var(--fp-surface2);
+        overflow: hidden;
+    }
+    .fp-user-card.mini { justify-content: center; }
+    .fp-user-avatar {
+        width: 36px; height: 36px;
+        background: var(--fp-accent);
+        color: #fff;
+        font-family: 'Teko', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%);
+    }
+    .fp-user-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: opacity 0.3s;
+        min-width: 0;
+    }
+    .fp-user-info.hidden { opacity: 0; width: 0; }
+    .fp-user-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--fp-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .fp-user-role {
+        font-size: 11px;
+        color: var(--fp-accent);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .fp-logout-form { width: 100%; }
+    .fp-logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        width: 100%;
+        background: none;
+        border: none;
+        color: var(--fp-text-muted);
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: color 0.2s;
+        white-space: nowrap;
+    }
+    .fp-logout-btn i { font-size: 16px; width: 20px; text-align: center; }
+    .fp-logout-btn:hover { color: var(--fp-accent); }
+    .fp-logout-btn span.hidden { opacity: 0; width: 0; overflow: hidden; }
+
+    /* ── Main ── */
+    .fp-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    /* Top Bar */
+    .fp-topbar {
+        height: 70px;
+        background: var(--fp-surface);
+        border-bottom: 1px solid var(--fp-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .fp-topbar-left { display: flex; align-items: center; gap: 20px; }
+    .fp-topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .fp-toggle-sidebar {
+        width: 38px; height: 38px;
+        background: var(--fp-surface2);
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+    }
+    .fp-toggle-sidebar:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
+
+    .fp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--fp-text-muted);
+    }
+    .fp-breadcrumb i { font-size: 10px; }
+    .fp-breadcrumb span:last-child {
+        color: var(--fp-text);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Teko', sans-serif;
+        font-size: 18px;
+    }
+
+    .fp-theme-toggle {
+        width: 38px; height: 38px;
+        background: var(--fp-surface2);
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+    }
+    .fp-theme-toggle:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
+
+    /* ── Content ── */
+    .fp-content {
+        flex: 1;
+        padding: 30px;
+        background: var(--fp-bg);
+        overflow-y: auto;
+    }
+
+    /* ── Global reusable card ── */
+    .fp-card {
+        background: var(--fp-surface);
+        border: 1px solid var(--fp-border);
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+    .fp-card-title {
+        font-family: 'Teko', sans-serif;
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--fp-text);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .fp-card-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--fp-border);
+    }
+    .fp-card-sub {
+        font-size: 14px;
+        color: var(--fp-text-muted);
+        margin-bottom: 24px;
+    }
+
+    /* ── Global table ── */
+    .fp-table { width: 100%; border-collapse: collapse; }
+    .fp-table th {
+        background: var(--fp-surface2);
+        color: var(--fp-text-muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 2px solid var(--fp-accent);
+    }
+    .fp-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--fp-border);
+        font-size: 14px;
+        color: var(--fp-text);
+        vertical-align: middle;
+    }
+    .fp-table tr:hover td { background: var(--fp-surface2); }
+
+    /* ── Global button ── */
+    .fp-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        background: var(--fp-accent);
+        color: #fff;
+        border: 2px solid var(--fp-accent);
+        font-family: 'Teko', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s;
+        text-decoration: none;
+        clip-path: polygon(0 0, 96% 0, 100% 20%, 100% 100%, 4% 100%, 0 80%);
+    }
+    .fp-btn-primary:hover { background: transparent; color: var(--fp-accent); }
+
+    .fp-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        background: transparent;
+        color: var(--fp-text);
+        border: 1px solid var(--fp-border);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .fp-btn-outline:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
+
+    /* ── Badge ── */
+    .fp-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .fp-badge-red { background: rgba(234,33,39,0.1); color: var(--fp-accent); }
+    .fp-badge-green { background: rgba(34,197,94,0.1); color: #22c55e; }
+    .fp-badge-gray { background: var(--fp-surface2); color: var(--fp-text-muted); }
+
+    /* ── Input global ── */
+    .fp-input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .fp-input-group label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--fp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    .fp-input-group input,
+    .fp-input-group select,
+    .fp-input-group textarea {
+        height: 48px;
+        background: var(--fp-surface2);
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text);
+        padding: 0 16px;
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+        width: 100%;
+        border-radius: 0;
+    }
+    .fp-input-group textarea { height: 100px; padding: 12px 16px; resize: vertical; }
+    .fp-input-group input:focus,
+    .fp-input-group select:focus,
+    .fp-input-group textarea:focus { border-color: var(--fp-accent); }
+
+    /* ── Stat Card ── */
+    .fp-stat-card {
+        background: var(--fp-surface);
+        border: 1px solid var(--fp-border);
+        border-left: 4px solid var(--fp-accent);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .fp-stat-card-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--fp-text-muted);
+    }
+    .fp-stat-card-value {
+        font-family: 'Teko', sans-serif;
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--fp-text);
+        line-height: 1;
+    }
+
+    /* ── Grid helpers ── */
+    .fp-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .fp-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .fp-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+    @media (max-width: 1024px) {
+        .fp-grid-4 { grid-template-columns: repeat(2, 1fr); }
+        .fp-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+        .fp-grid-4, .fp-grid-3, .fp-grid-2 { grid-template-columns: 1fr; }
+        .fp-content { padding: 16px; }
+    }
+</style>
+
+@code {
+    private bool isDark = true;
+    private bool sidebarOpen = true;
+    private string currentPage = "Dashboard";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState != null)
+        {
+            var auth = await AuthState;
+            if (!(auth.User.Identity?.IsAuthenticated ?? false))
+                Nav.NavigateTo("/login", forceLoad: true);
+        }
+
+        // Detect current page from URL
+        var uri = Nav.Uri;
+        if (uri.Contains("coaches")) currentPage = "Coaches";
+        else if (uri.Contains("clients")) currentPage = "Clients";
+        else currentPage = "Dashboard";
+    }
+
+    private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
+    private void ToggleTheme() => isDark = !isDark;
+
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+            : name[..1].ToUpper();
+    }
+}

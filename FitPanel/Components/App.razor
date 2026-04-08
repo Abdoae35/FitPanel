@@ -1,21 +1,53 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@* NavMenu.razor *@
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@* NavMenu.razor *@
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["FitPanel.styles.css"]" />
-    <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
-</head>
+@using Microsoft.AspNetCore.Components.Authorization
 
-<body>
-    <Routes />
-    <script src="_framework/blazor.web.js"></script>
-</body>
+@inject SignInManager<PanelUser> SignInManager
+@inject NavigationManager Nav
 
-</html>
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+
+        <div class="navbar-nav">
+            <a href="/" class="nav-link">Home</a>
+
+            @if (isLoggedIn)
+            {
+                <span class="nav-link">Hello, @userName</span>
+                <form action="/logout" method="post">
+                    <AntiforgeryToken />
+                    <button type="submit" class="btn btn-link nav-link">
+                        Logout
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link">Register</a>
+            }
+        </div>
+
+    </div>
+</nav>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool isLoggedIn = false;
+    private string userName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState != null)
+        {
+            var auth = await AuthState;
+            isLoggedIn = auth.User.Identity?.IsAuthenticated ?? false;
+            userName = auth.User.Identity?.Name ?? string.Empty;
+        }
+    }
+}

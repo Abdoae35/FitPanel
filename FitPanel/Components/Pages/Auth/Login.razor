@@ -1,0 +1,96 @@
+@* Components/Pages/Auth/Login.razor *@
+@page "/login"
+
+@inject SignInManager<PanelUser> SignInManager
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Login</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="card-title text-center mb-4">Sign In</h3>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                <EditForm Model="model" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText @bind-Value="model.Email"
+                                   class="form-control"
+                                   type="email"
+                                   placeholder="you@example.com" />
+                        <ValidationMessage For="() => model.Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText @bind-Value="model.Password"
+                                   class="form-control"
+                                   type="password"
+                                   placeholder="••••••••" />
+                        <ValidationMessage For="() => model.Password" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="model.RememberMe"
+                                       class="form-check-input" />
+                        <label class="form-check-label">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Login
+                    </button>
+                </EditForm>
+
+                <hr />
+                <p class="text-center mb-0">
+                    Don't have an account?
+                    <a href="/register">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel model = new();
+    private string errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+
+        var result = await SignInManager.PasswordSignInAsync(
+            model.Email,
+            model.Password,
+            model.RememberMe,
+            lockoutOnFailure: true);
+
+        if (result.Succeeded)
+            Nav.NavigateTo("/", forceLoad: true);
+        else if (result.IsLockedOut)
+            errorMessage = "Account locked. Try again in 15 minutes.";
+        else
+            errorMessage = "Invalid email or password.";
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; }
+    }
+}

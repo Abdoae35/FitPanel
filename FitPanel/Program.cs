@@ -1,28 +1,122 @@
 using FitPanel.Components;
+using FitPanel.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddDbContext<FitPanelDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
+
+builder.Services.AddIdentity<PanelUser, IdentityRole>(options =>
+{
+    options.Password.RequiredLength = 8;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+    options.SignIn.RequireConfirmedEmail = false;
+})
+.AddEntityFrameworkStores<FitPanelDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/access-denied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // ← changed from Always so dev works
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("CoachOnly", policy => policy.RequireRole("Coach"));  // ← updated
+    options.AddPolicy("AdminOrCoach", policy => policy.RequireRole("Admin", "Coach")); // ← updated
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
-
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// Logout endpoint
+app.MapPost("/logout", async (SignInManager<PanelUser> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.Redirect("/login");
+}).RequireAuthorization();
+
+// ← Seed MUST be before app.Run()
+await SeedDatabase(app);
+
 app.Run();
+
+async Task SeedDatabase(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<PanelUser>>();
+
+    // ← Only Admin and Coach roles
+    string[] roles = ["Admin", "Coach"];
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+
+    // Seed Admin
+    var adminEmail = "admin@fitpanel.com";
+    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    {
+        var admin = new PanelUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FullName = "System Admin",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+        var result = await userManager.CreateAsync(admin, "Admin@123456");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(admin, "Admin");
+    }
+
+    // Seed a default Coach for testing
+    var coachEmail = "coach@fitpanel.com";
+    if (await userManager.FindByEmailAsync(coachEmail) == null)
+    {
+        var coach = new PanelUser
+        {
+            UserName = coachEmail,
+            Email = coachEmail,
+            FullName = "Default Coach",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+        var result = await userManager.CreateAsync(coach, "Coach@123456");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(coach, "Coach");
+    }
+}

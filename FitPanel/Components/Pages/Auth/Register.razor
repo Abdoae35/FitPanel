@@ -1,0 +1,130 @@
+@* Components/Pages/Auth/Register.razor *@
+@page "/register"
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<PanelUser> UserManager
+@inject SignInManager<PanelUser> SignInManager
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Register</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="card-title text-center mb-4">Create Account</h3>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                @if (success)
+                {
+                    <div class="alert alert-success">
+                        Account created! Redirecting...
+                    </div>
+                }
+
+                <EditForm Model="model" OnValidSubmit="HandleRegister">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <InputText @bind-Value="model.FullName"
+                                   class="form-control"
+                                   placeholder="John Doe" />
+                        <ValidationMessage For="() => model.FullName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText @bind-Value="model.Email"
+                                   class="form-control"
+                                   type="email"
+                                   placeholder="you@example.com" />
+                        <ValidationMessage For="() => model.Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText @bind-Value="model.Password"
+                                   class="form-control"
+                                   type="password"
+                                   placeholder="Min 8 chars, uppercase, symbol" />
+                        <ValidationMessage For="() => model.Password" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <InputText @bind-Value="model.ConfirmPassword"
+                                   class="form-control"
+                                   type="password" />
+                        <ValidationMessage For="() => model.ConfirmPassword" />
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Create Account
+                    </button>
+                </EditForm>
+
+                <hr />
+                <p class="text-center mb-0">
+                    Already have an account?
+                    <a href="/login">Sign in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel model = new();
+    private string errorMessage = string.Empty;
+    private bool success = false;
+
+    private async Task HandleRegister()
+    {
+        errorMessage = string.Empty;
+
+        var user = new PanelUser
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            FullName = model.FullName,
+            IsActive = true
+        };
+
+        var result = await UserManager.CreateAsync(user, model.Password);
+
+        if (result.Succeeded)
+        {
+            await UserManager.AddToRoleAsync(user, "User");
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            success = true;
+            await Task.Delay(1500);
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            errorMessage = string.Join(" | ",
+                result.Errors.Select(e => e.Description));
+        }
+    }
+
+    public class RegisterModel
+    {
+        [Required] public string FullName { get; set; } = string.Empty;
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required, MinLength(8)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required, Compare(nameof(Password),
+            ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

@@ -48,7 +48,10 @@ public static class DietEndpoints
             UserManager<PanelUser> userManager,
             IDietService dietService) =>
         {
+            
             var coachId = userManager.GetUserId(http.User)!;
+    
+
             var result = await dietService.AddMealItemAsync(clientId, dietId, dto, coachId);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
@@ -63,6 +66,21 @@ public static class DietEndpoints
         {
             var coachId = userManager.GetUserId(http.User)!;
             var (success, message) = await dietService.DeleteDietAsync(clientId, dietId, coachId);
+            return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
+        });
+
+
+        // DELETE /api/clients/{clientId}/diets/{dietId}/meals/{mealId}
+        group.MapDelete("/{dietId:int}/meals/{mealId:int}", async (
+            int clientId,
+            int dietId,
+            int mealId,
+            HttpContext http,
+            UserManager<PanelUser> userManager,
+            IDietService dietService) =>
+        {
+            var coachId = userManager.GetUserId(http.User)!;
+            var (success, message) = await dietService.DeleteMealItemAsync(mealId);
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
     }

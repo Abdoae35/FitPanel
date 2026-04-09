@@ -1,14 +1,18 @@
 
 namespace FitPanel.DTOs.Diet;
 
-//   public record CreateMealItemDto(
-//     string MealName,
-//     string Description,
-//     int Protein,
-//     int Carbs,
-//     int Fats,
-//     int Calories,
-//     string? Link
-// );
+
+public class CreateMealItemDto
+{
+    public string MealName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int Protein { get; set; }
+    public int Carbs { get; set; }
+    public int Fats { get; set; }
+    public int Calories { get; set; }
+    public string? Link { get; set; }
+}
+
+
 
 

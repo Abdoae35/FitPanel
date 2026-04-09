@@ -1,11 +1,7 @@
 @page "/dashboard/clients"
 @namespace FitPanel.Components.Pages.Dashboard  
 @layout DashboardLayout 
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
-@using FitPanel.Data
-@using FitPanel.Services
-@using FitPanel.DTOs.Client
+
 @attribute [Authorize(Roles = "Coach")]
 @inject UserManager<PanelUser> UserManager
 @inject IClientService ClientService

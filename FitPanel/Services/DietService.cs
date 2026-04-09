@@ -109,4 +109,14 @@ public class DietService : IDietService
                 m.Id, m.MealName, m.Description,
                 m.Protein, m.Carbs, m.Fats, m.Calories, m.Link
             )).ToList());
+
+    public Task<(bool Success, string Message)> DeleteMealItemAsync(int mealItemId)
+    {
+        var meal = _db.MealItems.FirstOrDefault(m => m.Id == mealItemId);
+        if (meal == null) return Task.FromResult((false, "Meal item not found."));
+
+        _db.MealItems.Remove(meal);
+        _db.SaveChanges();
+        return Task.FromResult((true, "Meal item deleted."));
+    }
 }

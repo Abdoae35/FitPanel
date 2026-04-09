@@ -1,10 +1,9 @@
 @* Components/Layout/DashboardLayout.razor *@
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
-@using FitPanel.Data
+
 @namespace FitPanel.Components.Layout
 @inject SignInManager<PanelUser> SignInManager
 @inject NavigationManager Nav
+
 @inherits LayoutComponentBase
 
 <div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")">

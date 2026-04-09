@@ -4,9 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace FitPanel.DTOs.Diet;
-//   public record DietResponseDto(
-//     int Id,
-//     int NumberOfMeals,
-//     DateTime CreatedAt,
-//     List<MealItemResponseDto> MealItems
-// );
+public class DietResponseDto
+{
+    public int Id { get; set; }
+    public int NumberOfMeals { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public List<MealItemResponseDto> MealItems { get; set; } = new();
+
+    public DietResponseDto() { }
+    public DietResponseDto(int id, int numberOfMeals, DateTime createdAt, List<MealItemResponseDto> mealItems)
+    {
+        Id = id;
+        NumberOfMeals = numberOfMeals;
+        CreatedAt = createdAt;
+        MealItems = mealItems;
+    }
+}

@@ -1,10 +1,6 @@
 @page "/dashboard/coaches"
 @layout DashboardLayout
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
-@using FitPanel.Data
-@using FitPanel.Services
-@using FitPanel.DTOs.Auth
+
 @attribute [Authorize(Roles = "Admin")]
 @inject UserManager<PanelUser> UserManager
 @inject IAuthService AuthService

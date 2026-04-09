@@ -81,41 +81,61 @@ public static class WorkoutEndpoints
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
 
-        // POST /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio
-group.MapPost("/{workoutId:int}/days/{dayId:int}/cardio", async (
-    int clientId,
-    int workoutId,
-    int dayId,
-    CreateCardioDto dto,
-    HttpContext http,
-    UserManager<PanelUser> userManager,
-    IWorkoutService workoutService) =>
-{
-    var coachId = userManager.GetUserId(http.User)!;
-    var cardio = await workoutService.AddCardioAsync(
-        clientId, workoutId, dayId, dto, coachId);
-    return cardio is null
-        ? Results.NotFound()
-        : Results.Created(
-            $"/api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio",
-            cardio);
-});
+                    // POST /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio
+            group.MapPost("/{workoutId:int}/days/{dayId:int}/cardio", async (
+                int clientId,
+                int workoutId,
+                int dayId,
+                CreateCardioDto dto,
+                HttpContext http,
+                UserManager<PanelUser> userManager,
+                IWorkoutService workoutService) =>
+            {
+                var coachId = userManager.GetUserId(http.User)!;
+                var cardio = await workoutService.AddCardioAsync(
+                    clientId, workoutId, dayId, dto, coachId);
+                return cardio is null
+                    ? Results.NotFound()
+                    : Results.Created(
+                        $"/api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio",
+                        cardio);
+            });
 
-// DELETE /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio
-group.MapDelete("/{workoutId:int}/days/{dayId:int}/cardio", async (
-    int clientId,
-    int workoutId,
-    int dayId,
-    HttpContext http,
-    UserManager<PanelUser> userManager,
-    IWorkoutService workoutService) =>
-{
-    var coachId = userManager.GetUserId(http.User)!;
-    var (success, message) = await workoutService.DeleteCardioAsync(
-        clientId, workoutId, dayId, coachId);
-    return success
-        ? Results.Ok(new { message })
-        : Results.NotFound(new { message });
-});
+            // DELETE /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/cardio
+            group.MapDelete("/{workoutId:int}/days/{dayId:int}/cardio", async (
+                int clientId,
+                int workoutId,
+                int dayId,
+                HttpContext http,
+                UserManager<PanelUser> userManager,
+                IWorkoutService workoutService) =>
+            {
+                var coachId = userManager.GetUserId(http.User)!;
+                var (success, message) = await workoutService.DeleteCardioAsync(
+                    clientId, workoutId, dayId, coachId);
+                return success
+                    ? Results.Ok(new { message })
+                    : Results.NotFound(new { message });
+            });
+
+            // DELETE /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/exercises/{exerciseId}
+           group.MapDelete("/exercises/{exerciseId:int}", async (
+            int exerciseId,
+            HttpContext http,
+            UserManager<PanelUser> userManager,
+            IWorkoutService workoutService) =>
+        {
+            var coachId = userManager.GetUserId(http.User)!;
+
+            var (success, message) =
+                await workoutService.DeleteExerciseAsync(exerciseId, coachId);
+
+            return success
+                ? Results.Ok(new { message })
+                : Results.NotFound(new { message });
+        });
+
+
+
     }
 }

@@ -251,4 +251,23 @@ public class WorkoutService : IWorkoutService
                     d.Cardio.Notes)
             )).ToList()
         );
+
+    public async Task<(bool Success, string Message)> DeleteExerciseAsync(int exerciseId, string coachId)
+{
+    var exercise = await _db.Excercises
+        .Include(e => e.WorkOutDay)
+            .ThenInclude(d => d.WorkOut)
+                .ThenInclude(w => w.Client)
+        .FirstOrDefaultAsync(e =>
+            e.Id == exerciseId &&
+            e.WorkOutDay.WorkOut.Client.CoachId == coachId);
+
+    if (exercise == null)
+        return (false, "Exercise not found or unauthorized.");
+
+    _db.Excercises.Remove(exercise);
+    await _db.SaveChangesAsync();
+
+    return (true, "Exercise deleted.");
+}
 }

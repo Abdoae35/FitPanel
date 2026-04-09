@@ -54,6 +54,49 @@ else
         </div>
     </div>
 
+    @* ── Subscription Status ── *@
+    <div class="fp-sub-status">
+        <div class="fp-sub-info">
+            <div class="fp-sub-block">
+                <span class="fp-sub-label">START DATE</span>
+                <span class="fp-sub-value">@client.StartDate.ToString("MMM dd, yyyy")</span>
+            </div>
+            <div class="fp-sub-divider"></div>
+            <div class="fp-sub-block">
+                <span class="fp-sub-label">END DATE</span>
+                <span class="fp-sub-value @(IsExpired ? "fp-expired" : IsExpiringSoon ? "fp-expiring" : "")">
+                    @client.EndDate.ToString("MMM dd, yyyy")
+                </span>
+            </div>
+            <div class="fp-sub-divider"></div>
+            <div class="fp-sub-block">
+                <span class="fp-sub-label">STATUS</span>
+                @if (IsExpired)
+                {
+                    <span class="fp-badge fp-badge-danger">EXPIRED</span>
+                }
+                else if (IsExpiringSoon)
+                {
+                    <span class="fp-badge fp-badge-warning">EXPIRING SOON</span>
+                }
+                else
+                {
+                    <span class="fp-badge fp-badge-green">ACTIVE</span>
+                }
+            </div>
+            <div class="fp-sub-divider"></div>
+            <div class="fp-sub-block">
+                <span class="fp-sub-label">DAYS LEFT</span>
+                <span class="fp-sub-value @(IsExpired ? "fp-expired" : "")">
+                    @(IsExpired ? "0" : DaysLeft.ToString())
+                </span>
+            </div>
+        </div>
+        <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
+            <i class="fa fa-refresh"></i> Renew Subscription
+        </button>
+    </div>
+
     @* ── Tabs ── *@
     <div class="fp-tabs">
         <button class="fp-tab @(activeTab == "diet" ? "active" : "")" @onclick='() => activeTab = "diet"'>
@@ -521,6 +564,63 @@ else
     </div>
 }
 
+@* Renew Subscription Modal *@
+@if (showRenewModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showRenewModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title">
+                    <i class="fa fa-refresh"></i> RENEW SUBSCRIPTION
+                </span>
+                <button class="fp-modal-close" @onclick='() => showRenewModal = false'>
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="fp-modal-body">
+                <p style="color:var(--fp-text-muted);font-size:14px;margin-bottom:20px;">
+                    Current subscription ends on
+                    <strong style="color:var(--fp-text);">
+                        @client!.EndDate.ToString("MMM dd, yyyy")
+                    </strong>.
+                    New subscription will start from today.
+                </p>
+                <div class="fp-input-group">
+                    <label>Number of Months *</label>
+                    <select @bind="renewMonths">
+                        <option value="1">1 Month</option>
+                        <option value="2">2 Months</option>
+                        <option value="3">3 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="12">12 Months</option>
+                    </select>
+                </div>
+                @if (!string.IsNullOrEmpty(renewMessage))
+                {
+                    <div class="fp-alert @(renewSuccess ? "fp-alert-success" : "fp-alert-danger")">
+                        @renewMessage
+                    </div>
+                }
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showRenewModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="RenewSubscription" disabled="@isRenewing">
+                    @if (isRenewing)
+                    {
+                        <span class="fp-spinner-sm"></span>
+                        <span>Renewing...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-check"></i>
+                        <span>Confirm Renewal</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <style>
     .fp-loading { display:flex; align-items:center; gap:16px; padding:60px 0; color:var(--fp-text-muted); }
     .fp-spinner-lg { width:28px; height:28px; border:3px solid var(--fp-border); border-top-color:var(--fp-accent); border-radius:50%; animation:fp-spin 0.8s linear infinite; }
@@ -538,6 +638,22 @@ else
     .fp-client-meta-row { display:flex; gap:20px; margin-top:6px; }
     .fp-client-meta-row span { font-size:13px; color:var(--fp-text-muted); display:flex; align-items:center; gap:6px; }
     .fp-client-meta-row i { color:var(--fp-accent); font-size:11px; }
+
+    /* Subscription Status Bar */
+    .fp-sub-status { display:flex; align-items:center; justify-content:space-between; background:var(--fp-surface); border:1px solid var(--fp-border); border-left:4px solid var(--fp-accent); padding:16px 20px; margin-bottom:24px; }
+    .fp-sub-info { display:flex; align-items:center; gap:0; }
+    .fp-sub-block { display:flex; flex-direction:column; gap:4px; padding:0 24px; }
+    .fp-sub-block:first-child { padding-left:0; }
+    .fp-sub-divider { width:1px; height:36px; background:var(--fp-border); }
+    .fp-sub-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--fp-text-muted); }
+    .fp-sub-value { font-family:'Teko',sans-serif; font-size:20px; font-weight:600; color:var(--fp-text); line-height:1; }
+    .fp-expired { color:#ef4444 !important; }
+    .fp-expiring { color:#f59e0b !important; }
+    .fp-badge-danger { background:rgba(239,68,68,0.1); color:#ef4444; }
+    .fp-badge-warning { background:rgba(245,158,11,0.1); color:#f59e0b; }
+    .fp-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:fp-spin 0.8s linear infinite; display:inline-block; }
+    .fp-alert-success { background:rgba(34,197,94,0.08); color:#22c55e; border-left:3px solid #22c55e; padding:12px 16px; font-size:14px; }
+    .fp-alert-danger { background:rgba(234,33,39,0.08); color:#ff6b6b; border-left:3px solid #ea2127; padding:12px 16px; font-size:14px; }
 
     /* Tabs */
     .fp-tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid var(--fp-border); }
@@ -611,6 +727,7 @@ else
     /* Modal */
     .fp-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
     .fp-modal { background:var(--fp-surface); border:1px solid var(--fp-border); border-top:3px solid var(--fp-accent); width:100%; max-width:560px; max-height:90vh; overflow-y:auto; }
+    .fp-modal-sm { max-width:420px; }
     .fp-modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--fp-border); }
     .fp-modal-title { font-family:'Teko',sans-serif; font-size:22px; font-weight:700; color:var(--fp-text); text-transform:uppercase; letter-spacing:2px; display:flex; align-items:center; gap:10px; }
     .fp-modal-close { width:32px; height:32px; background:transparent; border:1px solid var(--fp-border); color:var(--fp-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
@@ -637,6 +754,13 @@ else
     private bool showExerciseModal = false;
     private bool showCardioModal = false;
 
+    // Renew subscription state
+    private bool showRenewModal = false;
+    private int renewMonths = 1;
+    private bool isRenewing = false;
+    private string renewMessage = string.Empty;
+    private bool renewSuccess = false;
+
     // Context for nested modals
     private int activeDietId = 0;
     private int activeWorkoutId = 0;
@@ -651,6 +775,15 @@ else
     private CreateCardioDto newCardio = new();
     private int newDayEnum = 0;
     private int newCardioIntensity = 1;
+
+    // Computed subscription properties
+    private bool IsExpired => client != null && client.EndDate < DateTime.UtcNow;
+    private bool IsExpiringSoon => client != null
+        && !IsExpired
+        && client.EndDate <= DateTime.UtcNow.AddDays(7);
+    private int DaysLeft => client != null
+        ? Math.Max(0, (client.EndDate - DateTime.UtcNow).Days)
+        : 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -780,5 +913,25 @@ else
     {
         var (success, _) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId);
         if (success) workouts.RemoveAll(w => w.Id == workoutId);
+    }
+
+    // ── Subscription ──
+    private async Task RenewSubscription()
+    {
+        if (client == null) return;
+        isRenewing = true;
+        renewMessage = string.Empty;
+        var (success, message) = await ClientService.RenewSubscriptionAsync(
+            ClientId, renewMonths, coachId);
+        isRenewing = false;
+        renewSuccess = success;
+        renewMessage = message;
+        if (success)
+        {
+            client = await ClientService.GetClientByIdAsync(ClientId, coachId);
+            await Task.Delay(1500);
+            showRenewModal = false;
+            renewMessage = string.Empty;
+        }
     }
 }

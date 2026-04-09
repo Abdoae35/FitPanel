@@ -1,7 +1,7 @@
-
+// DTOs/Client/ClientResponseDto.cs
 namespace FitPanel.DTOs.Client;
 
-   public record ClientResponseDto(
+public record ClientResponseDto(
     int Id,
     string Name,
     double Weight,
@@ -10,5 +10,7 @@ namespace FitPanel.DTOs.Client;
     string? FromPicLink,
     string? ToPicLink,
     DateTime CreatedAt,
-    string CoachName
+    string CoachName,
+    DateTime StartDate,
+    DateTime EndDate
 );

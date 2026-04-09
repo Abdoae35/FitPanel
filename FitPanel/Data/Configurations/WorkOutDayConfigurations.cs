@@ -21,7 +21,7 @@ namespace FitPanel.Data.Configurations
         builder.HasMany(d => d.ExcerciseItems)
                .WithOne(i => i.WorkOutDay)
                .HasForeignKey(i => i.WorkOutDayId)
-               .OnDelete(DeleteBehavior.Restrict);
+               .OnDelete(DeleteBehavior.Cascade);
 
 
                 builder.HasOne(d => d.Cardio)

@@ -1,9 +1,4 @@
-using FitPanel.Components;
-using FitPanel.Data;
-using FitPanel.Endpoints;
-using FitPanel.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // After builder.Services.AddAuthorizationCore(...)
@@ -50,9 +45,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddAuthorizationCore(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("CoachOnly", policy => policy.RequireRole("Coach"));  // ← updated
-    options.AddPolicy("AdminOrCoach", policy => policy.RequireRole("Admin", "Coach")); // ← updated
+    options.AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Policies.AdminRole));
+    options.AddPolicy(Policies.CoachOnly, policy => policy.RequireRole(Policies.CoachRole));  // ← updated
+    options.AddPolicy(Policies.AdminOrCoach, policy => policy.RequireRole(Policies.AdminRole, Policies.CoachRole)); // ← updated
 });
 
 var app = builder.Build();
@@ -96,7 +91,7 @@ app.MapPost("/account/login", async (
         return Results.Redirect("/login?error=locked");
     else
         return Results.Redirect("/login?error=invalid");
-}); 
+});
 
 // Logout endpoint
 app.MapPost("/logout", async (SignInManager<PanelUser> signInManager) =>
@@ -117,7 +112,7 @@ async Task SeedDatabase(WebApplication app)
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<PanelUser>>();
 
     // ← Only Admin and Coach roles
-    string[] roles = ["Admin", "Coach"];
+    string[] roles = [Policies.AdminRole, Policies.CoachRole];
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -138,7 +133,7 @@ async Task SeedDatabase(WebApplication app)
         };
         var result = await userManager.CreateAsync(admin, "Admin@123456");
         if (result.Succeeded)
-            await userManager.AddToRoleAsync(admin, "Admin");
+            await userManager.AddToRoleAsync(admin, Policies.AdminRole);
     }
 
     // Seed a default Coach for testing
@@ -155,6 +150,6 @@ async Task SeedDatabase(WebApplication app)
         };
         var result = await userManager.CreateAsync(coach, "Coach@123456");
         if (result.Succeeded)
-            await userManager.AddToRoleAsync(coach, "Coach");
+            await userManager.AddToRoleAsync(coach, Policies.CoachRole);
     }
 }

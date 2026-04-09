@@ -15,6 +15,24 @@ public class ClientService : IClientService
         _db = db;
     }
 
+public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
+    int clientId, int months, string coachId)
+{
+    var client = await _db.Clients
+        .FirstOrDefaultAsync(c => c.Id == clientId && c.CoachId == coachId);
+
+    if (client == null)
+        return (false, "Client not found.");
+
+    // Update subscription
+    client.StartDate = DateTime.UtcNow;
+    client.SubscriptionDurationPerMonth = months;
+    client.EndDate = client.StartDate.AddMonths(months);
+
+    await _db.SaveChangesAsync();
+
+    return (true, "Subscription renewed successfully.");
+}
     public async Task<ClientResponseDto> CreateClientAsync(CreateClientDto dto, string coachId)
     {
         var client = new Client
@@ -26,7 +44,9 @@ public class ClientService : IClientService
             FromPicLink = dto.FromPicLink,
             ToPicLink = dto.ToPicLink,
             CoachId = coachId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddMonths(dto.SubscriptionDurationPerMonth)
         };
 
         _db.Clients.Add(client);
@@ -50,7 +70,9 @@ public class ClientService : IClientService
                 c.FromPicLink,
                 c.ToPicLink,
                 c.CreatedAt,
-                c.Coach.FullName
+                c.Coach.FullName,
+                c.StartDate,
+                c.EndDate
             ))
             .ToListAsync();
     }
@@ -70,6 +92,8 @@ public class ClientService : IClientService
                 c.ToPicLink,
                 c.CreatedAt,
                 c.Coach.FullName
+                , c.StartDate,
+                c.EndDate
             ))
             .FirstOrDefaultAsync();
     }

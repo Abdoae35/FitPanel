@@ -23,12 +23,12 @@ namespace FitPanel.Data.Configurations;
         builder.HasMany(c => c.Diets)
                .WithOne(d => d.Client)
                .HasForeignKey(d => d.ClientId)
-               .OnDelete(DeleteBehavior.Restrict); // or Restrict if you want
+               .OnDelete(DeleteBehavior.Cascade); // or Restrict if you want
 
 //one to many relationship between Client and WorkOuts
                builder.HasMany(c => c.WorkOuts)
                      .WithOne(w => w.Client)
                      .HasForeignKey(w => w.ClientId)
-                     .OnDelete(DeleteBehavior.Restrict);
+                     .OnDelete(DeleteBehavior.Cascade);
         }
     }

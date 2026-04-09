@@ -61,7 +61,7 @@
                         <div class="fp-user-info @(sidebarOpen ? "" : "hidden")">
                             <span class="fp-user-name">@userCtx.User.Identity?.Name</span>
                             <span class="fp-user-role">
-                                @(userCtx.User.IsInRole("Admin") ? "Administrator" : "Coach")
+                                @(userCtx.User.IsInRole(Policies.AdminRole) ? "Administrator" : Policies.CoachRole)
                             </span>
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                 <div class="fp-breadcrumb">
                     <span>FitPanel</span>
                     <i class="fa fa-chevron-right"></i>
-                    <span>@currentPage</span>
+                    <span >@currentPage</span>
                 </div>
             </div>
 

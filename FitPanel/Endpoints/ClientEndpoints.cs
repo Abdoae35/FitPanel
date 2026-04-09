@@ -36,6 +36,23 @@ public static class ClientEndpoints
             var client = await clientService.GetClientByIdAsync(id, coachId);
             return client is null ? Results.NotFound() : Results.Ok(client);
         });
+        // POST /api/clients/{id}/renew
+group.MapPost("/{id:int}/renew", async (
+    int id,
+    RenewSubscriptionDto dto,
+    HttpContext http,
+    UserManager<PanelUser> userManager,
+    IClientService clientService) =>
+{
+    var coachId = userManager.GetUserId(http.User)!;
+
+    var (success, message) = await clientService
+        .RenewSubscriptionAsync(id, dto.Months, coachId);
+
+    return success
+        ? Results.Ok(new { message })
+        : Results.NotFound(new { message });
+});
 
         // POST /api/clients
         group.MapPost("/", async (

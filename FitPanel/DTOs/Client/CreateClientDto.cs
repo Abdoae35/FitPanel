@@ -7,5 +7,6 @@ public class CreateClientDto
     public int SubscriptionDurationPerMonth { get; set; }
     public string? InbodyLink { get; set; }
     public string? FromPicLink { get; set; }
+
     public string? ToPicLink { get; set; }
 }

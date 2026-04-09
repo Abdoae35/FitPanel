@@ -1,12 +1,13 @@
 @page "/login"
-@using Microsoft.AspNetCore.Identity
+@layout EmptyLayout
 @using Microsoft.AspNetCore.Components.Authorization
 @using FitPanel.Data
-@inject SignInManager<PanelUser> SignInManager
 @inject NavigationManager Nav
-@rendermode InteractiveServer
+
 <PageTitle>FitPanel — Sign In</PageTitle>
+
 <div class="fp-login-page">
+
     @* ── Left: Branding Panel ── *@
     <div class="fp-brand-panel">
         <div class="fp-brand-inner">
@@ -34,76 +35,82 @@
                 </div>
             </div>
         </div>
-        <div class="fp-brand-overlay"></div>
     </div>
+
     @* ── Right: Login Form ── *@
     <div class="fp-form-panel">
         <div class="fp-form-inner">
+
             <div class="fp-form-header">
                 <span class="fp-form-tag">WELCOME BACK</span>
                 <h2>SIGN IN</h2>
                 <div class="fp-form-line"></div>
             </div>
-            @if (!string.IsNullOrEmpty(errorMessage))
+
+            @if (errorMessage == "invalid")
             {
                 <div class="fp-alert fp-alert-danger">
-                    <i class="fa fa-exclamation-circle"></i> @errorMessage
+                    <i class="fa fa-exclamation-circle"></i> Invalid email or password.
                 </div>
             }
-            <EditForm Model="model" OnValidSubmit="HandleLogin" class="fp-form">
-                <DataAnnotationsValidator />
+            else if (errorMessage == "locked")
+            {
+                <div class="fp-alert fp-alert-danger">
+                    <i class="fa fa-lock"></i> Account locked. Try again in 15 minutes.
+                </div>
+            }
+
+            <form method="post" action="/account/login" class="fp-form">
+                <AntiforgeryToken />
+
                 <div class="fp-field">
                     <label>EMAIL ADDRESS</label>
-                    <InputText @bind-Value="model.Email"
-                               type="email"
-                               class="fp-input"
-                               placeholder="coach@fitpanel.com" />
-                    <ValidationMessage For="() => model.Email" class="fp-validation" />
+                    <input name="email"
+                           type="email"
+                           class="fp-input"
+                           placeholder="coach@fitpanel.com"
+                           required />
                 </div>
+
                 <div class="fp-field">
                     <label>PASSWORD</label>
-                    <InputText @bind-Value="model.Password"
-                               type="password"
-                               class="fp-input"
-                               placeholder="••••••••••" />
-                    <ValidationMessage For="() => model.Password" class="fp-validation" />
+                    <input name="password"
+                           type="password"
+                           class="fp-input"
+                           placeholder="••••••••••"
+                           required />
                 </div>
+
                 <div class="fp-remember">
                     <label class="fp-check-label">
-                        <InputCheckbox @bind-Value="model.RememberMe" class="fp-checkbox" />
+                        <input name="rememberMe" type="checkbox" value="true" class="fp-checkbox" />
                         <span>Remember me</span>
                     </label>
                 </div>
-                <button type="submit" class="fp-btn" disabled="@isLoading">
-                    @if (isLoading)
-                    {
-                        <span class="fp-spinner"></span>
-                        <span>SIGNING IN...</span>
-                    }
-                    else
-                    {
-                        <span>SIGN IN</span>
-                        <i class="fa fa-arrow-right"></i>
-                    }
+
+                <button type="submit" class="fp-btn">
+                    <span>SIGN IN</span>
+                    <i class="fa fa-arrow-right"></i>
                 </button>
-            </EditForm>
+            </form>
+
             <div class="fp-form-footer">
                 <p>© @DateTime.Now.Year FitPanel. All rights reserved.</p>
             </div>
         </div>
     </div>
 </div>
-@* ── Styles ── *@
+
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');
     @@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
     .fp-login-page {
         display: flex;
         min-height: 100vh;
         font-family: 'DM Sans', sans-serif;
         background: #0a0a0a;
     }
-    /* ── Brand Panel ── */
     .fp-brand-panel {
         flex: 1.1;
         background: linear-gradient(135deg, #0a0a0a 0%, #0d1a2e 60%, #001233 100%);
@@ -142,79 +149,48 @@
         50% { transform: translate(-50%,-50%) scale(1.3); opacity: 0.9; }
     }
     .fp-brand-inner { position: relative; z-index: 2; }
-    .fp-logo {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 50px;
-    }
+    .fp-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 50px; }
     .fp-logo-icon {
         width: 52px; height: 52px;
         background: #ea2127;
         color: #fff;
         font-family: 'Teko', sans-serif;
-        font-size: 22px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        font-size: 22px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
         clip-path: polygon(0 0, 90% 0, 100% 10%, 100% 100%, 10% 100%, 0 90%);
     }
     .fp-logo-text {
         font-family: 'Teko', sans-serif;
-        font-size: 28px;
-        font-weight: 600;
-        color: #fff;
-        letter-spacing: 3px;
-        text-transform: uppercase;
+        font-size: 28px; font-weight: 600;
+        color: #fff; letter-spacing: 3px; text-transform: uppercase;
     }
     .fp-logo-text span { color: #ea2127; }
     .fp-brand-headline {
         font-family: 'Teko', sans-serif;
-        font-size: 80px;
-        font-weight: 700;
-        line-height: 80px;
-        color: #fff;
-        text-transform: uppercase;
-        margin-bottom: 30px;
-        letter-spacing: 2px;
+        font-size: 80px; font-weight: 700;
+        line-height: 80px; color: #fff;
+        text-transform: uppercase; margin-bottom: 30px; letter-spacing: 2px;
     }
     .fp-brand-sub {
-        font-size: 16px;
-        line-height: 28px;
-        color: #888;
-        max-width: 420px;
-        margin-bottom: 50px;
-        font-family: 'DM Sans', sans-serif;
+        font-size: 16px; line-height: 28px; color: #888;
+        max-width: 420px; margin-bottom: 50px; font-family: 'DM Sans', sans-serif;
     }
     .fp-brand-stats {
-        display: flex;
-        gap: 40px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding-top: 30px;
+        display: flex; gap: 40px;
+        border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;
     }
     .fp-stat { display: flex; flex-direction: column; gap: 4px; }
     .fp-stat-num {
         font-family: 'Teko', sans-serif;
-        font-size: 42px;
-        font-weight: 700;
-        color: #ea2127;
-        line-height: 1;
+        font-size: 42px; font-weight: 700; color: #ea2127; line-height: 1;
     }
     .fp-stat-label {
-        font-size: 13px;
-        color: #666;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: 'DM Sans', sans-serif;
+        font-size: 13px; color: #666;
+        text-transform: uppercase; letter-spacing: 1px; font-family: 'DM Sans', sans-serif;
     }
-    /* ── Form Panel ── */
     .fp-form-panel {
-        flex: 0.9;
-        background: #111;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        flex: 0.9; background: #111;
+        display: flex; align-items: center; justify-content: center;
         padding: 60px 50px;
         border-left: 1px solid rgba(234,33,39,0.2);
     }
@@ -222,174 +198,76 @@
     .fp-form-header { margin-bottom: 40px; }
     .fp-form-tag {
         font-family: 'DM Sans', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: #ea2127;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        display: block;
-        margin-bottom: 10px;
+        font-size: 13px; font-weight: 600; color: #ea2127;
+        letter-spacing: 3px; text-transform: uppercase;
+        display: block; margin-bottom: 10px;
     }
     .fp-form-header h2 {
         font-family: 'Teko', sans-serif;
-        font-size: 60px;
-        font-weight: 700;
-        color: #fff;
-        line-height: 1;
-        text-transform: uppercase;
-        margin: 0 0 16px;
+        font-size: 60px; font-weight: 700; color: #fff;
+        line-height: 1; text-transform: uppercase; margin: 0 0 16px;
     }
     .fp-form-line {
-        width: 60px; height: 4px;
-        background: #ea2127;
+        width: 60px; height: 4px; background: #ea2127;
         clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%);
     }
-    /* ── Alert ── */
     .fp-alert {
-        padding: 14px 18px;
-        margin-bottom: 24px;
-        font-size: 15px;
-        font-family: 'DM Sans', sans-serif;
+        padding: 14px 18px; margin-bottom: 24px;
+        font-size: 15px; font-family: 'DM Sans', sans-serif;
         border-left: 4px solid #ea2127;
     }
     .fp-alert-danger { background: rgba(234,33,39,0.1); color: #ff6b6b; }
     .fp-alert i { margin-right: 8px; }
-    /* ── Form Fields ── */
     .fp-form { display: flex; flex-direction: column; gap: 20px; }
     .fp-field { display: flex; flex-direction: column; gap: 8px; }
     .fp-field label {
         font-family: 'DM Sans', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        color: #555;
-        text-transform: uppercase;
-        letter-spacing: 2px;
+        font-size: 12px; font-weight: 600; color: #555;
+        text-transform: uppercase; letter-spacing: 2px;
     }
     .fp-input {
-        height: 56px;
-        background: #1a1a1a !important;
-        border: 1px solid #2a2a2a;
-        color: #fff !important;
-        padding: 0 20px;
-        font-size: 15px;
-        font-family: 'DM Sans', sans-serif;
-        transition: border-color 0.3s;
-        width: 100%;
-        outline: none;
-        border-radius: 0;
+        height: 56px; background: #1a1a1a !important;
+        border: 1px solid #2a2a2a; color: #fff !important;
+        padding: 0 20px; font-size: 15px; font-family: 'DM Sans', sans-serif;
+        transition: border-color 0.3s; width: 100%; outline: none; border-radius: 0;
     }
-    .fp-input:focus { border-color: #ea2127; background: #1e1e1e !important; }
+    .fp-input:focus { border-color: #ea2127; }
     .fp-input::placeholder { color: #444; }
-    .fp-validation { color: #ff6b6b; font-size: 13px; margin-top: 4px; }
-    /* ── Remember ── */
-    .fp-remember {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: -4px;
-    }
+    .fp-remember { display: flex; align-items: center; margin-top: -4px; }
     .fp-check-label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        font-size: 14px;
-        color: #666;
-        font-family: 'DM Sans', sans-serif;
+        display: flex; align-items: center; gap: 10px;
+        cursor: pointer; font-size: 14px; color: #666; font-family: 'DM Sans', sans-serif;
     }
-    .fp-checkbox {
-        width: 18px; height: 18px;
-        accent-color: #ea2127;
-        cursor: pointer;
-    }
-    /* ── Button ── */
+    .fp-checkbox { width: 18px; height: 18px; accent-color: #ea2127; cursor: pointer; }
     .fp-btn {
-        height: 58px;
-        background: #ea2127;
-        color: #fff;
-        border: 2px solid #ea2127;
-        font-family: 'Teko', sans-serif;
-        font-size: 22px;
-        font-weight: 600;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+        height: 58px; background: #ea2127; color: #fff;
+        border: 2px solid #ea2127; font-family: 'Teko', sans-serif;
+        font-size: 22px; font-weight: 600; letter-spacing: 3px;
+        text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+        display: flex; align-items: center; justify-content: center; gap: 12px;
         margin-top: 8px;
-        position: relative;
         clip-path: polygon(0 0, 97% 0, 100% 15%, 100% 100%, 3% 100%, 0 85%);
+        width: 100%;
     }
-    .fp-btn:hover {
-        background: transparent;
-        color: #ea2127;
-    }
-    .fp-btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-    .fp-spinner {
-        width: 18px; height: 18px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: fp-spin 0.8s linear infinite;
-        display: inline-block;
-    }
-    @@keyframes fp-spin { to { transform: rotate(360deg); } }
-    /* ── Footer ── */
+    .fp-btn:hover { background: transparent; color: #ea2127; }
     .fp-form-footer {
-        margin-top: 40px;
-        padding-top: 24px;
-        border-top: 1px solid #1e1e1e;
-        text-align: center;
+        margin-top: 40px; padding-top: 24px;
+        border-top: 1px solid #1e1e1e; text-align: center;
     }
-    .fp-form-footer p {
-        font-size: 13px;
-        color: #444;
-        font-family: 'DM Sans', sans-serif;
-    }
-    /* ── Responsive ── */
+    .fp-form-footer p { font-size: 13px; color: #444; font-family: 'DM Sans', sans-serif; }
     @@media (max-width: 900px) {
         .fp-brand-panel { display: none; }
         .fp-form-panel { padding: 40px 24px; }
     }
 </style>
+
 @code {
-    private LoginModel model = new();
     private string errorMessage = string.Empty;
-    private bool isLoading = false;
 
-    private async Task HandleLogin()
+    protected override void OnInitialized()
     {
-        errorMessage = string.Empty;
-        isLoading = true;
-        var result = await SignInManager.PasswordSignInAsync(
-            model.Email,
-            model.Password,
-            model.RememberMe,
-            lockoutOnFailure: true);
-        isLoading = false;
-        if (result.Succeeded)
-            Nav.NavigateTo("/dashboard", forceLoad: true);
-        else if (result.IsLockedOut)
-            errorMessage = "Account locked. Try again in 15 minutes.";
-        else
-            errorMessage = "Invalid email or password.";
-    }
-
-    public class LoginModel
-    {
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid email")]
-        public string Email { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Password is required")]
-        public string Password { get; set; } = string.Empty;
-
-        public bool RememberMe { get; set; }
+        var uri = new Uri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        errorMessage = query["error"] ?? string.Empty;
     }
 }

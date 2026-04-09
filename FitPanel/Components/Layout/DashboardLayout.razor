@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using FitPanel.Data
+@namespace FitPanel.Components.Layout
 @inject SignInManager<PanelUser> SignInManager
 @inject NavigationManager Nav
 @inherits LayoutComponentBase
@@ -110,10 +111,9 @@
 
 @* ── Styles ── *@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
-
+    @@import url('https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap');
+@@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+@@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
     /* ── CSS Variables ── */
     .fp-dashboard.fp-dark {
         --fp-bg: #0a0a0a;
@@ -575,11 +575,11 @@
     .fp-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .fp-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 
-    @media (max-width: 1024px) {
+    @@media (max-width: 1024px) {
         .fp-grid-4 { grid-template-columns: repeat(2, 1fr); }
         .fp-grid-3 { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 640px) {
+    @@media (max-width: 640px) {
         .fp-grid-4, .fp-grid-3, .fp-grid-2 { grid-template-columns: 1fr; }
         .fp-content { padding: 16px; }
     }
@@ -592,23 +592,28 @@
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-
-    protected override async Task OnInitializedAsync()
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
     {
         if (AuthState != null)
         {
             var auth = await AuthState;
             if (!(auth.User.Identity?.IsAuthenticated ?? false))
+            {
                 Nav.NavigateTo("/login", forceLoad: true);
+                return;
+            }
         }
 
-        // Detect current page from URL
         var uri = Nav.Uri;
         if (uri.Contains("coaches")) currentPage = "Coaches";
         else if (uri.Contains("clients")) currentPage = "Clients";
         else currentPage = "Dashboard";
-    }
 
+        StateHasChanged();
+    }
+}
     private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
     private void ToggleTheme() => isDark = !isDark;
 

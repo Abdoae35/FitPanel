@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace FitPanel.DTOs.Workout;
 
-   public record ExerciseResponseDto(
-    int Id,
-    string ExerciseName,
-    string Sets,
-    string Reps,
-    string RestTime,
-    string? ExerciseLink
-);
+//    public record ExerciseResponseDto(
+//     int Id,
+//     string ExerciseName,
+//     string Sets,
+//     string Reps,
+//     string RestTime,
+//     string? ExerciseLink
+// );

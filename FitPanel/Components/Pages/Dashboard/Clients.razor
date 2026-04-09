@@ -365,7 +365,7 @@ else
         animation: fp-spin 0.8s linear infinite;
         display: inline-block;
     }
-    @keyframes fp-spin { to { transform: rotate(360deg); } }
+    @@keyframes fp-spin { to { transform: rotate(360deg); } }
     .fp-empty {
         display: flex;
         flex-direction: column;
@@ -389,7 +389,7 @@ else
     private string deleteClientName = string.Empty;
     private string coachId = string.Empty;
 
-    private CreateClientDto newClient = new("", 0, 1, null, null, null);
+ private CreateClientDto newClient = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -408,7 +408,7 @@ else
     {
         showModal = false;
         formError = string.Empty;
-        newClient = new("", 0, 1, null, null, null);
+        newClient = new();
     }
 
     private async Task CreateClient()

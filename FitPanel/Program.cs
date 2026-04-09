@@ -76,6 +76,27 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+    // Login endpoint
+app.MapPost("/account/login", async (
+    HttpContext context,
+    SignInManager<PanelUser> signInManager,
+    string? returnUrl) =>
+{
+    var form = await context.Request.ReadFormAsync();
+    var email = form["email"].ToString();
+    var password = form["password"].ToString();
+    var rememberMe = form["rememberMe"].ToString() == "true";
+
+    var result = await signInManager.PasswordSignInAsync(
+        email, password, rememberMe, lockoutOnFailure: true);
+
+    if (result.Succeeded)
+        return Results.Redirect(returnUrl ?? "/dashboard");
+    else if (result.IsLockedOut)
+        return Results.Redirect("/login?error=locked");
+    else
+        return Results.Redirect("/login?error=invalid");
+}); 
 
 // Logout endpoint
 app.MapPost("/logout", async (SignInManager<PanelUser> signInManager) =>

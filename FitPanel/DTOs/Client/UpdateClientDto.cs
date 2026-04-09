@@ -1,11 +1,12 @@
 
 namespace FitPanel.DTOs.Client;
 
-   public record UpdateClientDto(
-    string? Name,
-    double? Weight,
-    int? SubscriptionDurationPerMonth,
-    string? InbodyLink,
-    string? FromPicLink,
-    string? ToPicLink
-);
+public class UpdateClientDto
+{
+    public string? Name { get; set; }
+    public double? Weight { get; set; }
+    public int? SubscriptionDurationPerMonth { get; set; }
+    public string? InbodyLink { get; set; }
+    public string? FromPicLink { get; set; }
+    public string? ToPicLink { get; set; }
+}

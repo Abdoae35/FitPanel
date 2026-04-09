@@ -1,53 +1,38 @@
-﻿@* NavMenu.razor *@
-@using Microsoft.AspNetCore.Identity
-@using FitPanel.Data
-@* NavMenu.razor *@
+﻿<!DOCTYPE html>
+<html lang="en">
 
-@using Microsoft.AspNetCore.Components.Authorization
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300..700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["FitPanel.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
 
-@inject SignInManager<PanelUser> SignInManager
-@inject NavigationManager Nav
+<body>
+    <CascadingAuthenticationState>
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData"
+                                    DefaultLayout="@typeof(MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p>Page not found.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
 
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
+    <script src="_framework/blazor.web.js"></script>
+</body>
 
-        <div class="navbar-nav">
-            <a href="/" class="nav-link">Home</a>
-
-            @if (isLoggedIn)
-            {
-                <span class="nav-link">Hello, @userName</span>
-                <form action="/logout" method="post">
-                    <AntiforgeryToken />
-                    <button type="submit" class="btn btn-link nav-link">
-                        Logout
-                    </button>
-                </form>
-            }
-            else
-            {
-                <a href="/login" class="nav-link">Login</a>
-                <a href="/register" class="nav-link">Register</a>
-            }
-        </div>
-
-    </div>
-</nav>
-
-@code {
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-
-    private bool isLoggedIn = false;
-    private string userName = string.Empty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (AuthState != null)
-        {
-            var auth = await AuthState;
-            isLoggedIn = auth.User.Identity?.IsAuthenticated ?? false;
-            userName = auth.User.Identity?.Name ?? string.Empty;
-        }
-    }
-}
+</html>

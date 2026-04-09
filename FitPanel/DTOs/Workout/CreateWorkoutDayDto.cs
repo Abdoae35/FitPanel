@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace FitPanel.DTOs.Workout;
-
-    public record CreateWorkoutDayDto(
-    string DayName,
-    Days Day
-);
+public class CreateWorkoutDayDto
+{
+    public string DayName { get; set; } = string.Empty;
+    public Days Day { get; set; } = Days.Day1;
+}

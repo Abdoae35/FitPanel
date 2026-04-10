@@ -163,10 +163,10 @@ else
                                         </div>
                                         <div class="fp-meal-desc">@meal.Description</div>
                                         <div class="fp-macro-row">
-                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Protein<small>g</small></span><span class="fp-macro-label">Protein</span></div>
-                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Carbs<small>g</small></span><span class="fp-macro-label">Carbs</span></div>
-                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Fats<small>g</small></span><span class="fp-macro-label">Fats</span></div>
-                                            <div class="fp-macro fp-macro-cal"><span class="fp-macro-val">@meal.Calories<small>kcal</small></span><span class="fp-macro-label">Calories</span></div>
+                                          <div class="fp-macro"><span class="fp-macro-val">@Math.Max(0, meal.Protein)<small>g</small></span><span class="fp-macro-label">Protein</span></div>
+<div class="fp-macro"><span class="fp-macro-val">@Math.Max(0, meal.Carbs)<small>g</small></span><span class="fp-macro-label">Carbs</span></div>
+<div class="fp-macro"><span class="fp-macro-val">@Math.Max(0, meal.Fats)<small>g</small></span><span class="fp-macro-label">Fats</span></div>
+<div class="fp-macro fp-macro-cal"><span class="fp-macro-val">@Math.Max(0, meal.Calories)<small>kcal</small></span><span class="fp-macro-label">Calories</span></div>
                                         </div>
                                     </div>
                                 }
@@ -371,13 +371,13 @@ else
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Meal Name *</label><input @bind="newMeal.MealName" placeholder="Grilled Chicken" /></div>
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" placeholder="220" /></div>
+                   <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" min="0" placeholder="220" /></div>
                 </div>
                 <div class="fp-input-group"><label>Description</label><input @bind="newMeal.Description" placeholder="Lean protein source..." /></div>
                 <div class="fp-grid-3">
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" placeholder="40" /></div>
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" placeholder="0" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" placeholder="5" /></div>
+                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" min="0" placeholder="40" /></div>
+<div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" min="0" placeholder="0" /></div>
+<div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" min="0" placeholder="5" /></div>
                 </div>
                 <div class="fp-input-group"><label>Video Link (optional)</label><input @bind="newMeal.Link" placeholder="https://youtube.com/..." /></div>
             </div>

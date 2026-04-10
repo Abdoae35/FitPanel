@@ -5,6 +5,7 @@
 @inject NavigationManager Nav
 
 @inherits LayoutComponentBase
+@implements IDisposable
 
 <div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")">
 
@@ -89,7 +90,7 @@
                 <div class="fp-breadcrumb">
                     <span>FitPanel</span>
                     <i class="fa fa-chevron-right"></i>
-                    <span >@currentPage</span>
+                    <span>@currentPage</span>
                 </div>
             </div>
 
@@ -591,10 +592,10 @@
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender)
+
+    protected override async Task OnInitializedAsync()
     {
+        // Check auth on first load
         if (AuthState != null)
         {
             var auth = await AuthState;
@@ -605,14 +606,29 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
             }
         }
 
-        var uri = Nav.Uri;
-        if (uri.Contains("coaches")) currentPage = "Coaches";
-        else if (uri.Contains("clients")) currentPage = "Clients";
-        else currentPage = "Dashboard";
-
-        StateHasChanged();
+        // Set initial page name and subscribe to future changes
+        UpdateCurrentPage(Nav.Uri);
+        Nav.LocationChanged += OnLocationChanged;
     }
-}
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateCurrentPage(e.Location);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateCurrentPage(string uri)
+    {
+        if (uri.Contains("coaches"))       currentPage = "Coaches";
+        else if (uri.Contains("clients"))  currentPage = "Clients";
+        else                               currentPage = "Dashboard";
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+
     private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
     private void ToggleTheme() => isDark = !isDark;
 

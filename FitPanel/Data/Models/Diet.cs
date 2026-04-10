@@ -11,6 +11,7 @@ namespace FitPanel.Data.Models;
         public int Id { get; set; }
        public DateTime CreatedAt { get; set; }
         public int NumberOfMeals { get; set; }
+        public string? Instructions { get; set; }
 
 
         // Foreign Key to Client

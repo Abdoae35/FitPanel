@@ -9,6 +9,7 @@ namespace FitPanel.Data.Models;
     {
         public int Id { get; set; }
         public string SplitName { get; set; }
+        public string? Instructions { get; set; }
         public int NumberOfWorkOutDays { get; set; }
        public DateTime CreatedAt { get; set; }
 

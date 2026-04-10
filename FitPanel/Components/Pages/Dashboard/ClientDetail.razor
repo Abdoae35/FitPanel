@@ -1,6 +1,13 @@
 @page "/dashboard/clients/{ClientId:int}"
 @layout DashboardLayout
-
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@using FitPanel.Data.Models
+@using FitPanel.Services
+@using FitPanel.DTOs.Client
+@using FitPanel.DTOs.Diet
+@using FitPanel.DTOs.Workout
 @attribute [Authorize(Roles = "Coach")]
 @inject UserManager<PanelUser> UserManager
 @inject IClientService ClientService
@@ -32,9 +39,7 @@ else
     @* ── Header ── *@
     <div class="fp-client-header">
         <div class="fp-client-header-left">
-            <a href="/dashboard/clients" class="fp-back-btn">
-                <i class="fa fa-arrow-left"></i>
-            </a>
+            <a href="/dashboard/clients" class="fp-back-btn"><i class="fa fa-arrow-left"></i></a>
             <div class="fp-client-avatar-xl">@client.Name[..1].ToUpper()</div>
             <div>
                 <h1 class="fp-client-title">@client.Name</h1>
@@ -64,29 +69,18 @@ else
             <div class="fp-sub-divider"></div>
             <div class="fp-sub-block">
                 <span class="fp-sub-label">STATUS</span>
-                @if (IsExpired)
-                {
-                    <span class="fp-badge fp-badge-danger">EXPIRED</span>
-                }
-                else if (IsExpiringSoon)
-                {
-                    <span class="fp-badge fp-badge-warning">EXPIRING SOON</span>
-                }
-                else
-                {
-                    <span class="fp-badge fp-badge-green">ACTIVE</span>
-                }
+                @if (IsExpired) { <span class="fp-badge fp-badge-danger">EXPIRED</span> }
+                else if (IsExpiringSoon) { <span class="fp-badge fp-badge-warning">EXPIRING SOON</span> }
+                else { <span class="fp-badge fp-badge-green">ACTIVE</span> }
             </div>
             <div class="fp-sub-divider"></div>
             <div class="fp-sub-block">
                 <span class="fp-sub-label">DAYS LEFT</span>
-                <span class="fp-sub-value @(IsExpired ? "fp-expired" : "")">
-                    @(IsExpired ? "0" : DaysLeft.ToString())
-                </span>
+                <span class="fp-sub-value @(IsExpired ? "fp-expired" : "")">@(IsExpired ? "0" : DaysLeft.ToString())</span>
             </div>
         </div>
         <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
-            <i class="fa fa-refresh"></i> Renew Subscription
+            <i class="fa fa-refresh"></i> Renew
         </button>
     </div>
 
@@ -100,9 +94,7 @@ else
         </button>
     </div>
 
-    @* ══════════════════════════════════════════════ *@
-    @* ── DIET TAB ── *@
-    @* ══════════════════════════════════════════════ *@
+    @* ══════════ DIET TAB ══════════ *@
     @if (activeTab == "diet")
     {
         <div class="fp-tab-content">
@@ -118,15 +110,13 @@ else
 
             @if (!diets.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-utensils"></i>
-                    <p>No diet plans yet.</p>
-                </div>
+                <div class="fp-empty-card"><i class="fa fa-utensils"></i><p>No diet plans yet.</p></div>
             }
             else
             {
                 @foreach (var diet in diets)
                 {
+                    var mealsLeft = diet.NumberOfMeals - diet.MealItems.Count;
                     <div class="fp-plan-card">
                         <div class="fp-plan-card-header">
                             <div>
@@ -135,42 +125,48 @@ else
                                 <span class="fp-plan-date">Created @diet.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="fp-plan-actions">
-                                <button class="fp-icon-btn" title="Add Meal"
+                                <button class="fp-icon-btn" title="Edit meal count" @onclick="() => OpenEditDietModal(diet)">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="fp-icon-btn @(mealsLeft <= 0 ? "fp-icon-btn-disabled" : "")"
+                                        disabled="@(mealsLeft <= 0)"
+                                        title="@(mealsLeft <= 0 ? "Meal limit reached" : $"Add Meal ({mealsLeft} left)")"
                                         @onclick="() => OpenAddMealModal(diet.Id)">
                                     <i class="fa fa-plus"></i>
+                                    <span>@(mealsLeft <= 0 ? "Full" : $"{mealsLeft} left")</span>
                                 </button>
-                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Diet"
-                                        @onclick="() => DeleteDiet(diet.Id)">
+                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete"
+                                        @onclick="() => ConfirmDeleteDiet(diet.Id, diet.NumberOfMeals)">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-
+                        <div class="fp-progress-row">
+                            <span class="fp-progress-label">@diet.MealItems.Count / @diet.NumberOfMeals meals added</span>
+                            <div class="fp-progress-bar">
+                                <div class="fp-progress-fill"
+                                     style="width:@(diet.NumberOfMeals > 0 ? (diet.MealItems.Count * 100 / diet.NumberOfMeals) : 0)%"></div>
+                            </div>
+                        </div>
                         @if (diet.MealItems.Any())
                         {
                             <div class="fp-meals-grid">
                                 @foreach (var meal in diet.MealItems)
                                 {
                                     <div class="fp-meal-card">
-                                        <div class="fp-meal-name">@meal.MealName</div>
+                                        <div class="fp-meal-card-header">
+                                            <div class="fp-meal-name">@meal.MealName</div>
+                                            <div class="fp-meal-actions">
+                                                <button class="fp-meal-btn" @onclick="() => OpenEditMealModal(diet.Id, meal)"><i class="fa fa-edit"></i></button>
+                                                <button class="fp-meal-btn fp-meal-btn-danger" @onclick="() => ConfirmDeleteMeal(meal.Id, meal.MealName, diet.Id)"><i class="fa fa-trash"></i></button>
+                                            </div>
+                                        </div>
                                         <div class="fp-meal-desc">@meal.Description</div>
                                         <div class="fp-macro-row">
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Protein<small>g</small></span>
-                                                <span class="fp-macro-label">Protein</span>
-                                            </div>
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Carbs<small>g</small></span>
-                                                <span class="fp-macro-label">Carbs</span>
-                                            </div>
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Fats<small>g</small></span>
-                                                <span class="fp-macro-label">Fats</span>
-                                            </div>
-                                            <div class="fp-macro fp-macro-cal">
-                                                <span class="fp-macro-val">@meal.Calories<small>kcal</small></span>
-                                                <span class="fp-macro-label">Calories</span>
-                                            </div>
+                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Protein<small>g</small></span><span class="fp-macro-label">Protein</span></div>
+                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Carbs<small>g</small></span><span class="fp-macro-label">Carbs</span></div>
+                                            <div class="fp-macro"><span class="fp-macro-val">@meal.Fats<small>g</small></span><span class="fp-macro-label">Fats</span></div>
+                                            <div class="fp-macro fp-macro-cal"><span class="fp-macro-val">@meal.Calories<small>kcal</small></span><span class="fp-macro-label">Calories</span></div>
                                         </div>
                                     </div>
                                 }
@@ -178,9 +174,7 @@ else
                         }
                         else
                         {
-                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
-                                No meals added yet. Click + to add meals.
-                            </p>
+                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">No meals yet. You can add up to @diet.NumberOfMeals meals.</p>
                         }
                     </div>
                 }
@@ -188,9 +182,7 @@ else
         </div>
     }
 
-    @* ══════════════════════════════════════════════ *@
-    @* ── WORKOUT TAB ── *@
-    @* ══════════════════════════════════════════════ *@
+    @* ══════════ WORKOUT TAB ══════════ *@
     @if (activeTab == "workout")
     {
         <div class="fp-tab-content">
@@ -206,34 +198,44 @@ else
 
             @if (!workouts.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-dumbbell"></i>
-                    <p>No workout plans yet.</p>
-                </div>
+                <div class="fp-empty-card"><i class="fa fa-dumbbell"></i><p>No workout plans yet.</p></div>
             }
             else
             {
                 @foreach (var workout in workouts)
                 {
+                    var daysLeft = workout.NumberOfWorkoutDays - workout.WorkoutDays.Count;
                     <div class="fp-plan-card">
                         <div class="fp-plan-card-header">
                             <div>
                                 <span class="fp-plan-badge fp-plan-badge-blue">Workout Plan</span>
                                 <h3>@workout.SplitName</h3>
-                                <span class="fp-plan-date">@workout.NumberOfWorkoutDays days · Created @workout.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span class="fp-plan-date">@workout.NumberOfWorkoutDays days · @workout.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="fp-plan-actions">
-                                <button class="fp-icon-btn" title="Add Day"
+                                <button class="fp-icon-btn" title="Edit day count" @onclick="() => OpenEditWorkoutModal(workout)">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="fp-icon-btn @(daysLeft <= 0 ? "fp-icon-btn-disabled" : "")"
+                                        disabled="@(daysLeft <= 0)"
+                                        title="@(daysLeft <= 0 ? "Day limit reached" : $"Add Day ({daysLeft} left)")"
                                         @onclick="() => OpenAddDayModal(workout.Id)">
                                     <i class="fa fa-plus"></i>
+                                    <span>@(daysLeft <= 0 ? "Full" : $"{daysLeft} left")</span>
                                 </button>
-                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Workout"
-                                        @onclick="() => DeleteWorkout(workout.Id)">
+                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete"
+                                        @onclick="() => ConfirmDeleteWorkout(workout.Id, workout.SplitName)">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-
+                        <div class="fp-progress-row">
+                            <span class="fp-progress-label">@workout.WorkoutDays.Count / @workout.NumberOfWorkoutDays days added</span>
+                            <div class="fp-progress-bar">
+                                <div class="fp-progress-fill"
+                                     style="width:@(workout.NumberOfWorkoutDays > 0 ? (workout.WorkoutDays.Count * 100 / workout.NumberOfWorkoutDays) : 0)%"></div>
+                            </div>
+                        </div>
                         @if (workout.WorkoutDays.Any())
                         {
                             <div class="fp-days-list">
@@ -245,23 +247,14 @@ else
                                                 <span class="fp-day-badge">@day.Day.ToString()</span>
                                                 <span class="fp-day-name">@day.DayName</span>
                                             </div>
-                                            <button class="fp-icon-btn" title="Add Exercise"
-                                                    @onclick="() => OpenAddExerciseModal(workout.Id, day.Id)">
+                                            <button class="fp-icon-btn" @onclick="() => OpenAddExerciseModal(workout.Id, day.Id)">
                                                 <i class="fa fa-plus"></i> Exercise
                                             </button>
                                         </div>
-
                                         @if (day.Exercises.Any())
                                         {
                                             <table class="fp-table fp-exercise-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Exercise</th>
-                                                        <th>Sets</th>
-                                                        <th>Reps</th>
-                                                        <th>Rest</th>
-                                                    </tr>
-                                                </thead>
+                                                <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th></th></tr></thead>
                                                 <tbody>
                                                     @foreach (var ex in day.Exercises)
                                                     {
@@ -269,40 +262,35 @@ else
                                                             <td>
                                                                 @if (!string.IsNullOrEmpty(ex.ExerciseLink))
                                                                 {
-                                                                    <a href="@ex.ExerciseLink" target="_blank" class="fp-exercise-link">
-                                                                        @ex.ExerciseName <i class="fa fa-external-link-alt"></i>
-                                                                    </a>
+                                                                    <a href="@ex.ExerciseLink" target="_blank" class="fp-exercise-link">@ex.ExerciseName <i class="fa fa-external-link-alt"></i></a>
                                                                 }
-                                                                else
-                                                                {
-                                                                    @ex.ExerciseName
-                                                                }
+                                                                else { @ex.ExerciseName }
                                                             </td>
                                                             <td><span class="fp-badge fp-badge-red">@ex.Sets</span></td>
                                                             <td>@ex.Reps</td>
                                                             <td style="color:var(--fp-text-muted)">@ex.RestTime</td>
+                                                            <td>
+                                                                <div style="display:flex;gap:6px;">
+                                                                    <button class="fp-meal-btn" @onclick="() => OpenEditExerciseModal(workout.Id, day.Id, ex)"><i class="fa fa-edit"></i></button>
+                                                                    <button class="fp-meal-btn fp-meal-btn-danger" @onclick="() => ConfirmDeleteExercise(ex.Id, ex.ExerciseName, workout.Id, day.Id)"><i class="fa fa-trash"></i></button>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     }
                                                 </tbody>
                                             </table>
                                         }
-
-                                        @* Cardio *@
                                         @if (day.Cardio != null)
                                         {
                                             <div class="fp-cardio-badge">
                                                 <i class="fa fa-running"></i>
                                                 <span>@day.Cardio.CardioType · @day.Cardio.DurationMinutes min · @day.Cardio.Intensity</span>
-                                                @if (!string.IsNullOrEmpty(day.Cardio.Notes))
-                                                {
-                                                    <span style="color:var(--fp-text-muted)"> — @day.Cardio.Notes</span>
-                                                }
+                                                @if (!string.IsNullOrEmpty(day.Cardio.Notes)) { <span style="color:var(--fp-text-muted)"> — @day.Cardio.Notes</span> }
                                             </div>
                                         }
                                         else
                                         {
-                                            <button class="fp-add-cardio-btn"
-                                                    @onclick="() => OpenAddCardioModal(workout.Id, day.Id)">
+                                            <button class="fp-add-cardio-btn" @onclick="() => OpenAddCardioModal(workout.Id, day.Id)">
                                                 <i class="fa fa-plus"></i> Add Cardio
                                             </button>
                                         }
@@ -312,9 +300,7 @@ else
                         }
                         else
                         {
-                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
-                                No days added yet. Click + to add workout days.
-                            </p>
+                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">No days yet. You can add up to @workout.NumberOfWorkoutDays days.</p>
                         }
                     </div>
                 }
@@ -323,15 +309,13 @@ else
     }
 }
 
-@* ══════════════════════════════════════════════════════ *@
-@* ── MODALS ── *@
-@* ══════════════════════════════════════════════════════ *@
+@* ══════════════════════════════ MODALS ══════════════════════════════ *@
 
-@* New Diet Modal *@
+@* New Diet *@
 @if (showDietModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showDietModal = false'>
-        <div class="fp-modal" @onclick:stopPropagation="true">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
                 <span class="fp-modal-title"><i class="fa fa-utensils"></i> NEW DIET PLAN</span>
                 <button class="fp-modal-close" @onclick='() => showDietModal = false'><i class="fa fa-times"></i></button>
@@ -341,113 +325,124 @@ else
                     <label>Number of Meals per Day *</label>
                     <input type="number" @bind="newDiet.NumberOfMeals" min="1" max="10" placeholder="5" />
                 </div>
+                <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more meals than this number.</p>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showDietModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="CreateDiet">
-                    <i class="fa fa-check"></i> Create Diet Plan
-                </button>
+                <button class="fp-btn-primary" @onclick="CreateDiet"><i class="fa fa-check"></i> Create</button>
             </div>
         </div>
     </div>
 }
 
-@* Add Meal Modal *@
+@* Edit Diet Meal Count *@
+@if (showEditDietModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditDietModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT MEAL COUNT</span>
+                <button class="fp-modal-close" @onclick='() => showEditDietModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Number of Meals per Day *</label>
+                    <input type="number" @bind="editDietMealCount" min="@editDietCurrentCount" max="10" />
+                </div>
+                <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editDietCurrentCount meals — cannot set less than this.</p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditDietModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="UpdateDietMealCount"><i class="fa fa-check"></i> Update</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Add/Edit Meal *@
 @if (showMealModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showMealModal = false'>
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-plus"></i> ADD MEAL</span>
+                <span class="fp-modal-title"><i class="fa fa-@(editMealId > 0 ? "edit" : "plus")"></i> @(editMealId > 0 ? "EDIT MEAL" : "ADD MEAL")</span>
                 <button class="fp-modal-close" @onclick='() => showMealModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Meal Name *</label>
-                        <input @bind="newMeal.MealName" placeholder="Grilled Chicken" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Calories *</label>
-                        <input type="number" @bind="newMeal.Calories" placeholder="220" />
-                    </div>
+                    <div class="fp-input-group"><label>Meal Name *</label><input @bind="newMeal.MealName" placeholder="Grilled Chicken" /></div>
+                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" placeholder="220" /></div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Description</label>
-                    <input @bind="newMeal.Description" placeholder="Lean protein source..." />
-                </div>
+                <div class="fp-input-group"><label>Description</label><input @bind="newMeal.Description" placeholder="Lean protein source..." /></div>
                 <div class="fp-grid-3">
-                    <div class="fp-input-group">
-                        <label>Protein (g)</label>
-                        <input type="number" @bind="newMeal.Protein" placeholder="40" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Carbs (g)</label>
-                        <input type="number" @bind="newMeal.Carbs" placeholder="0" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Fats (g)</label>
-                        <input type="number" @bind="newMeal.Fats" placeholder="5" />
-                    </div>
+                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" placeholder="40" /></div>
+                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" placeholder="0" /></div>
+                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" placeholder="5" /></div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Video Link (optional)</label>
-                    <input @bind="newMeal.Link" placeholder="https://youtube.com/..." />
-                </div>
+                <div class="fp-input-group"><label>Video Link (optional)</label><input @bind="newMeal.Link" placeholder="https://youtube.com/..." /></div>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showMealModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddMeal">
-                    <i class="fa fa-check"></i> Add Meal
-                </button>
+                <button class="fp-btn-primary" @onclick="SaveMeal"><i class="fa fa-check"></i> @(editMealId > 0 ? "Update" : "Add Meal")</button>
             </div>
         </div>
     </div>
 }
 
-@* New Workout Modal *@
+@* New Workout *@
 @if (showWorkoutModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showWorkoutModal = false'>
-        <div class="fp-modal" @onclick:stopPropagation="true">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
                 <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> NEW WORKOUT PLAN</span>
                 <button class="fp-modal-close" @onclick='() => showWorkoutModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group">
-                    <label>Split Name *</label>
-                    <input @bind="newWorkout.SplitName" placeholder="Push Pull Legs / Arnold Split..." />
-                </div>
-                <div class="fp-input-group">
-                    <label>Number of Days *</label>
-                    <input type="number" @bind="newWorkout.NumberOfWorkoutDays" min="1" max="7" placeholder="5" />
-                </div>
+                <div class="fp-input-group"><label>Split Name *</label><input @bind="newWorkout.SplitName" placeholder="Push Pull Legs / Arnold Split..." /></div>
+                <div class="fp-input-group"><label>Number of Days *</label><input type="number" @bind="newWorkout.NumberOfWorkoutDays" min="1" max="7" placeholder="5" /></div>
+                <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more days than this number.</p>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showWorkoutModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="CreateWorkout">
-                    <i class="fa fa-check"></i> Create Workout Plan
-                </button>
+                <button class="fp-btn-primary" @onclick="CreateWorkout"><i class="fa fa-check"></i> Create</button>
             </div>
         </div>
     </div>
 }
 
-@* Add Workout Day Modal *@
+@* Edit Workout Day Count *@
+@if (showEditWorkoutModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditWorkoutModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT DAY COUNT</span>
+                <button class="fp-modal-close" @onclick='() => showEditWorkoutModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group"><label>Number of Workout Days *</label><input type="number" @bind="editWorkoutDayCount" min="@editWorkoutCurrentCount" max="7" /></div>
+                <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editWorkoutCurrentCount days — cannot set less than this.</p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditWorkoutModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="UpdateWorkoutDayCount"><i class="fa fa-check"></i> Update</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Add Workout Day *@
 @if (showDayModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showDayModal = false'>
-        <div class="fp-modal" @onclick:stopPropagation="true">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
                 <span class="fp-modal-title"><i class="fa fa-calendar-plus"></i> ADD WORKOUT DAY</span>
                 <button class="fp-modal-close" @onclick='() => showDayModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group">
-                    <label>Day Name *</label>
-                    <input @bind="newDay.DayName" placeholder="Push Day / Chest Day..." />
-                </div>
+                <div class="fp-input-group"><label>Day Name *</label><input @bind="newDay.DayName" placeholder="Push Day / Chest Day..." /></div>
                 <div class="fp-input-group">
                     <label>Day of Week *</label>
                     <select @bind="newDayEnum">
@@ -463,76 +458,51 @@ else
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showDayModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddWorkoutDay">
-                    <i class="fa fa-check"></i> Add Day
-                </button>
+                <button class="fp-btn-primary" @onclick="AddWorkoutDay"><i class="fa fa-check"></i> Add Day</button>
             </div>
         </div>
     </div>
 }
 
-@* Add Exercise Modal *@
+@* Add/Edit Exercise *@
 @if (showExerciseModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showExerciseModal = false'>
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> ADD EXERCISE</span>
+                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> @(editExerciseId > 0 ? "EDIT EXERCISE" : "ADD EXERCISE")</span>
                 <button class="fp-modal-close" @onclick='() => showExerciseModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group">
-                    <label>Exercise Name *</label>
-                    <input @bind="newExercise.ExerciseName" placeholder="Bench Press" />
-                </div>
+                <div class="fp-input-group"><label>Exercise Name *</label><input @bind="newExercise.ExerciseName" placeholder="Bench Press" /></div>
                 <div class="fp-grid-3">
-                    <div class="fp-input-group">
-                        <label>Sets *</label>
-                        <input @bind="newExercise.Sets" placeholder="4" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Reps *</label>
-                        <input @bind="newExercise.Reps" placeholder="8-10" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Rest Time *</label>
-                        <input @bind="newExercise.RestTime" placeholder="90s" />
-                    </div>
+                    <div class="fp-input-group"><label>Sets *</label><input @bind="newExercise.Sets" placeholder="4" /></div>
+                    <div class="fp-input-group"><label>Reps *</label><input @bind="newExercise.Reps" placeholder="8-10" /></div>
+                    <div class="fp-input-group"><label>Rest Time *</label><input @bind="newExercise.RestTime" placeholder="90s" /></div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Video Link (optional)</label>
-                    <input @bind="newExercise.ExerciseLink" placeholder="https://youtube.com/..." />
-                </div>
+                <div class="fp-input-group"><label>Video Link (optional)</label><input @bind="newExercise.ExerciseLink" placeholder="https://youtube.com/..." /></div>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showExerciseModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddExercise">
-                    <i class="fa fa-check"></i> Add Exercise
-                </button>
+                <button class="fp-btn-primary" @onclick="SaveExercise"><i class="fa fa-check"></i> @(editExerciseId > 0 ? "Update" : "Add Exercise")</button>
             </div>
         </div>
     </div>
 }
 
-@* Add Cardio Modal *@
+@* Add Cardio *@
 @if (showCardioModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showCardioModal = false'>
-        <div class="fp-modal" @onclick:stopPropagation="true">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
                 <span class="fp-modal-title"><i class="fa fa-running"></i> ADD CARDIO</span>
                 <button class="fp-modal-close" @onclick='() => showCardioModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group">
-                    <label>Cardio Type *</label>
-                    <input @bind="newCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." />
-                </div>
+                <div class="fp-input-group"><label>Cardio Type *</label><input @bind="newCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Duration (minutes) *</label>
-                        <input type="number" @bind="newCardio.DurationMinutes" placeholder="20" />
-                    </div>
+                    <div class="fp-input-group"><label>Duration (minutes) *</label><input type="number" @bind="newCardio.DurationMinutes" placeholder="20" /></div>
                     <div class="fp-input-group">
                         <label>Intensity *</label>
                         <select @bind="newCardioIntensity">
@@ -542,41 +512,28 @@ else
                         </select>
                     </div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Notes (optional)</label>
-                    <input @bind="newCardio.Notes" placeholder="After session, fasted..." />
-                </div>
+                <div class="fp-input-group"><label>Notes (optional)</label><input @bind="newCardio.Notes" placeholder="After session, fasted..." /></div>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showCardioModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddCardio">
-                    <i class="fa fa-check"></i> Add Cardio
-                </button>
+                <button class="fp-btn-primary" @onclick="AddCardio"><i class="fa fa-check"></i> Add Cardio</button>
             </div>
         </div>
     </div>
 }
 
-@* Renew Subscription Modal *@
+@* Renew Subscription *@
 @if (showRenewModal)
 {
     <div class="fp-modal-overlay" @onclick='() => showRenewModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title">
-                    <i class="fa fa-refresh"></i> RENEW SUBSCRIPTION
-                </span>
-                <button class="fp-modal-close" @onclick='() => showRenewModal = false'>
-                    <i class="fa fa-times"></i>
-                </button>
+                <span class="fp-modal-title"><i class="fa fa-refresh"></i> RENEW SUBSCRIPTION</span>
+                <button class="fp-modal-close" @onclick='() => showRenewModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <p style="color:var(--fp-text-muted);font-size:14px;margin-bottom:20px;">
-                    Current subscription ends on
-                    <strong style="color:var(--fp-text);">
-                        @client!.EndDate.ToString("MMM dd, yyyy")
-                    </strong>.
-                    New subscription will start from today.
+                    Ends on <strong style="color:var(--fp-text);">@client!.EndDate.ToString("MMM dd, yyyy")</strong>. New subscription starts today.
                 </p>
                 <div class="fp-input-group">
                     <label>Number of Months *</label>
@@ -590,24 +547,40 @@ else
                 </div>
                 @if (!string.IsNullOrEmpty(renewMessage))
                 {
-                    <div class="fp-alert @(renewSuccess ? "fp-alert-success" : "fp-alert-danger")">
-                        @renewMessage
-                    </div>
+                    <div class="fp-alert @(renewSuccess ? "fp-alert-success" : "fp-alert-danger")">@renewMessage</div>
                 }
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showRenewModal = false'>Cancel</button>
                 <button class="fp-btn-primary" @onclick="RenewSubscription" disabled="@isRenewing">
-                    @if (isRenewing)
-                    {
-                        <span class="fp-spinner-sm"></span>
-                        <span>Renewing...</span>
-                    }
-                    else
-                    {
-                        <i class="fa fa-check"></i>
-                        <span>Confirm Renewal</span>
-                    }
+                    @if (isRenewing) { <span class="fp-spinner-sm"></span><span>Renewing...</span> }
+                    else { <i class="fa fa-check"></i><span>Confirm</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ── Delete Confirm (shared) ── *@
+@if (showDeleteConfirm)
+{
+    <div class="fp-modal-overlay" @onclick='() => showDeleteConfirm = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title" style="color:#ef4444;">
+                    <i class="fa fa-exclamation-triangle"></i> DELETE @deleteConfirmType.ToUpper()
+                </span>
+            </div>
+            <div class="fp-modal-body">
+                <p style="color:var(--fp-text);font-size:15px;line-height:1.6;">
+                    Are you sure you want to delete <strong>@deleteConfirmName</strong>?<br/>
+                    <span style="color:var(--fp-text-muted);font-size:13px;">@deleteConfirmMessage</span>
+                </p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showDeleteConfirm = false'>Cancel</button>
+                <button class="fp-btn-primary" style="background:#c41920;border-color:#c41920;" @onclick="ExecuteDelete">
+                    <i class="fa fa-trash"></i> Delete
                 </button>
             </div>
         </div>
@@ -615,118 +588,101 @@ else
 }
 
 <style>
-    .fp-loading { display:flex; align-items:center; gap:16px; padding:60px 0; color:var(--fp-text-muted); }
-    .fp-spinner-lg { width:28px; height:28px; border:3px solid var(--fp-border); border-top-color:var(--fp-accent); border-radius:50%; animation:fp-spin 0.8s linear infinite; }
-    @@keyframes fp-spin { to { transform:rotate(360deg); } }
-    .fp-empty { display:flex; flex-direction:column; align-items:center; gap:16px; padding:80px 0; color:var(--fp-text-muted); }
-    .fp-empty i { font-size:48px; opacity:0.2; }
-
-    /* Header */
-    .fp-client-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
-    .fp-client-header-left { display:flex; align-items:center; gap:20px; }
-    .fp-back-btn { width:40px; height:40px; background:var(--fp-surface); border:1px solid var(--fp-border); color:var(--fp-text-muted); display:flex; align-items:center; justify-content:center; text-decoration:none; transition:all 0.2s; flex-shrink:0; }
-    .fp-back-btn:hover { border-color:var(--fp-accent); color:var(--fp-accent); }
-    .fp-client-avatar-xl { width:64px; height:64px; background:rgba(234,33,39,0.15); color:var(--fp-accent); font-family:'Teko',sans-serif; font-size:32px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; clip-path:polygon(0 0,88% 0,100% 12%,100% 100%,12% 100%,0 88%); }
-    .fp-client-title { font-family:'Teko',sans-serif; font-size:36px; font-weight:700; color:var(--fp-text); text-transform:uppercase; margin:0; line-height:1; }
-    .fp-client-meta-row { display:flex; gap:20px; margin-top:6px; }
-    .fp-client-meta-row span { font-size:13px; color:var(--fp-text-muted); display:flex; align-items:center; gap:6px; }
-    .fp-client-meta-row i { color:var(--fp-accent); font-size:11px; }
-
-    /* Subscription Status Bar */
-    .fp-sub-status { display:flex; align-items:center; justify-content:space-between; background:var(--fp-surface); border:1px solid var(--fp-border); border-left:4px solid var(--fp-accent); padding:16px 20px; margin-bottom:24px; }
-    .fp-sub-info { display:flex; align-items:center; gap:0; }
-    .fp-sub-block { display:flex; flex-direction:column; gap:4px; padding:0 24px; }
-    .fp-sub-block:first-child { padding-left:0; }
-    .fp-sub-divider { width:1px; height:36px; background:var(--fp-border); }
-    .fp-sub-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--fp-text-muted); }
-    .fp-sub-value { font-family:'Teko',sans-serif; font-size:20px; font-weight:600; color:var(--fp-text); line-height:1; }
-    .fp-expired { color:#ef4444 !important; }
-    .fp-expiring { color:#f59e0b !important; }
-    .fp-badge-danger { background:rgba(239,68,68,0.1); color:#ef4444; }
-    .fp-badge-warning { background:rgba(245,158,11,0.1); color:#f59e0b; }
-    .fp-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:fp-spin 0.8s linear infinite; display:inline-block; }
-    .fp-alert-success { background:rgba(34,197,94,0.08); color:#22c55e; border-left:3px solid #22c55e; padding:12px 16px; font-size:14px; }
-    .fp-alert-danger { background:rgba(234,33,39,0.08); color:#ff6b6b; border-left:3px solid #ea2127; padding:12px 16px; font-size:14px; }
-
-    /* Tabs */
-    .fp-tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid var(--fp-border); }
-    .fp-tab { padding:12px 24px; background:transparent; border:none; color:var(--fp-text-muted); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:8px; border-bottom:2px solid transparent; margin-bottom:-2px; }
-    .fp-tab:hover { color:var(--fp-text); }
-    .fp-tab.active { color:var(--fp-accent); border-bottom-color:var(--fp-accent); }
-    .fp-tab i { font-size:14px; }
-
-    /* Tab Content */
-    .fp-tab-content { animation: fadeIn 0.2s ease; }
-    @@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-
-    /* Section Header */
-    .fp-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-    .fp-section-title { font-family:'Teko',sans-serif; font-size:28px; font-weight:700; color:var(--fp-text); text-transform:uppercase; margin:0; }
-    .fp-section-sub { font-size:13px; color:var(--fp-text-muted); margin:4px 0 0; }
-
-    /* Empty Card */
-    .fp-empty-card { background:var(--fp-surface); border:1px dashed var(--fp-border); padding:60px; display:flex; flex-direction:column; align-items:center; gap:12px; color:var(--fp-text-muted); margin-bottom:20px; }
-    .fp-empty-card i { font-size:36px; opacity:0.2; }
-    .fp-empty-card p { font-size:15px; margin:0; }
-
-    /* Plan Card */
-    .fp-plan-card { background:var(--fp-surface); border:1px solid var(--fp-border); padding:24px; margin-bottom:20px; }
-    .fp-plan-card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
-    .fp-plan-card-header h3 { font-family:'Teko',sans-serif; font-size:28px; font-weight:700; color:var(--fp-text); text-transform:uppercase; margin:4px 0; line-height:1; }
-    .fp-plan-badge { display:inline-block; padding:3px 10px; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; background:rgba(234,33,39,0.1); color:var(--fp-accent); margin-bottom:4px; }
-    .fp-plan-badge-blue { background:rgba(59,130,246,0.1); color:#3b82f6; }
-    .fp-plan-date { font-size:12px; color:var(--fp-text-muted); display:block; margin-top:4px; }
-    .fp-plan-actions { display:flex; gap:8px; }
-
-    /* Icon Buttons */
-    .fp-icon-btn { width:34px; height:34px; background:transparent; border:1px solid var(--fp-border); color:var(--fp-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.2s; gap:6px; padding:0 10px; width:auto; white-space:nowrap; font-family:'DM Sans',sans-serif; }
-    .fp-icon-btn:hover { border-color:var(--fp-accent); color:var(--fp-accent); }
-    .fp-icon-btn-danger:hover { border-color:#ef4444; color:#ef4444; }
-
-    /* Meals Grid */
-    .fp-meals-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-    .fp-meal-card { background:var(--fp-surface2); border:1px solid var(--fp-border); padding:16px; }
-    .fp-meal-name { font-family:'Teko',sans-serif; font-size:20px; font-weight:700; color:var(--fp-text); text-transform:uppercase; margin-bottom:4px; }
-    .fp-meal-desc { font-size:12px; color:var(--fp-text-muted); margin-bottom:12px; }
-    .fp-macro-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-    .fp-macro { display:flex; flex-direction:column; align-items:center; gap:2px; }
-    .fp-macro-val { font-family:'Teko',sans-serif; font-size:20px; font-weight:700; color:var(--fp-text); line-height:1; }
-    .fp-macro-val small { font-size:10px; color:var(--fp-text-muted); font-family:'DM Sans',sans-serif; }
-    .fp-macro-label { font-size:10px; color:var(--fp-text-muted); text-transform:uppercase; letter-spacing:1px; }
-    .fp-macro-cal .fp-macro-val { color:var(--fp-accent); }
-
-    /* Days List */
-    .fp-days-list { display:flex; flex-direction:column; gap:16px; }
-    .fp-day-card { background:var(--fp-surface2); border:1px solid var(--fp-border); padding:16px; }
-    .fp-day-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .fp-day-info { display:flex; align-items:center; gap:12px; }
-    .fp-day-badge { padding:4px 12px; background:rgba(234,33,39,0.1); color:var(--fp-accent); font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
-    .fp-day-name { font-family:'Teko',sans-serif; font-size:22px; font-weight:700; color:var(--fp-text); text-transform:uppercase; }
-
-    /* Exercise Table */
-    .fp-exercise-table { margin-bottom:12px; }
-    .fp-exercise-table th { font-size:10px; padding:10px 12px; }
-    .fp-exercise-table td { padding:10px 12px; font-size:13px; }
-    .fp-exercise-link { color:var(--fp-accent); text-decoration:none; display:flex; align-items:center; gap:6px; }
-    .fp-exercise-link:hover { text-decoration:underline; }
-    .fp-exercise-link i { font-size:10px; }
-
-    /* Cardio */
-    .fp-cardio-badge { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); color:#3b82f6; font-size:13px; margin-top:8px; }
-    .fp-cardio-badge i { font-size:14px; }
-    .fp-add-cardio-btn { display:flex; align-items:center; gap:8px; padding:8px 14px; background:transparent; border:1px dashed var(--fp-border); color:var(--fp-text-muted); font-size:12px; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; margin-top:8px; }
-    .fp-add-cardio-btn:hover { border-color:var(--fp-accent); color:var(--fp-accent); }
-
-    /* Modal */
-    .fp-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
-    .fp-modal { background:var(--fp-surface); border:1px solid var(--fp-border); border-top:3px solid var(--fp-accent); width:100%; max-width:560px; max-height:90vh; overflow-y:auto; }
-    .fp-modal-sm { max-width:420px; }
-    .fp-modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--fp-border); }
-    .fp-modal-title { font-family:'Teko',sans-serif; font-size:22px; font-weight:700; color:var(--fp-text); text-transform:uppercase; letter-spacing:2px; display:flex; align-items:center; gap:10px; }
-    .fp-modal-close { width:32px; height:32px; background:transparent; border:1px solid var(--fp-border); color:var(--fp-text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
-    .fp-modal-close:hover { border-color:var(--fp-accent); color:var(--fp-accent); }
-    .fp-modal-body { padding:24px; }
-    .fp-modal-footer { padding:16px 24px; border-top:1px solid var(--fp-border); display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+    .fp-loading{display:flex;align-items:center;gap:16px;padding:60px 0;color:var(--fp-text-muted)}
+    .fp-spinner-lg{width:28px;height:28px;border:3px solid var(--fp-border);border-top-color:var(--fp-accent);border-radius:50%;animation:fp-spin .8s linear infinite}
+    .fp-spinner-sm{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:fp-spin .8s linear infinite;display:inline-block}
+    @@keyframes fp-spin{to{transform:rotate(360deg)}}
+    .fp-empty{display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 0;color:var(--fp-text-muted)}
+    .fp-empty i{font-size:48px;opacity:.2}
+    .fp-hint{font-size:12px;color:var(--fp-text-muted);margin-top:8px;display:flex;align-items:center;gap:6px}
+    .fp-hint i{color:var(--fp-accent)}
+    .fp-client-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .fp-client-header-left{display:flex;align-items:center;gap:20px}
+    .fp-back-btn{width:40px;height:40px;background:var(--fp-surface);border:1px solid var(--fp-border);color:var(--fp-text-muted);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .2s;flex-shrink:0}
+    .fp-back-btn:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
+    .fp-client-avatar-xl{width:64px;height:64px;background:rgba(234,33,39,.15);color:var(--fp-accent);font-family:'Teko',sans-serif;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;clip-path:polygon(0 0,88% 0,100% 12%,100% 100%,12% 100%,0 88%)}
+    .fp-client-title{font-family:'Teko',sans-serif;font-size:36px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1}
+    .fp-client-meta-row{display:flex;gap:20px;margin-top:6px;flex-wrap:wrap}
+    .fp-client-meta-row span{font-size:13px;color:var(--fp-text-muted);display:flex;align-items:center;gap:6px}
+    .fp-client-meta-row i{color:var(--fp-accent);font-size:11px}
+    .fp-sub-status{display:flex;align-items:center;justify-content:space-between;background:var(--fp-surface);border:1px solid var(--fp-border);border-left:4px solid var(--fp-accent);padding:16px 20px;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+    .fp-sub-info{display:flex;align-items:center;flex-wrap:wrap;gap:0}
+    .fp-sub-block{display:flex;flex-direction:column;gap:4px;padding:0 24px}
+    .fp-sub-block:first-child{padding-left:0}
+    .fp-sub-divider{width:1px;height:36px;background:var(--fp-border)}
+    .fp-sub-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--fp-text-muted)}
+    .fp-sub-value{font-family:'Teko',sans-serif;font-size:20px;font-weight:600;color:var(--fp-text);line-height:1}
+    .fp-expired{color:#ef4444 !important}
+    .fp-expiring{color:#f59e0b !important}
+    .fp-badge-danger{background:rgba(239,68,68,.1);color:#ef4444}
+    .fp-badge-warning{background:rgba(245,158,11,.1);color:#f59e0b}
+    .fp-alert-success{background:rgba(34,197,94,.08);color:#22c55e;border-left:3px solid #22c55e;padding:12px 16px;font-size:14px;margin-top:12px}
+    .fp-alert-danger{background:rgba(234,33,39,.08);color:#ff6b6b;border-left:3px solid #ea2127;padding:12px 16px;font-size:14px;margin-top:12px}
+    .fp-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:2px solid var(--fp-border)}
+    .fp-tab{padding:12px 24px;background:transparent;border:none;color:var(--fp-text-muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;border-bottom:2px solid transparent;margin-bottom:-2px}
+    .fp-tab:hover{color:var(--fp-text)}
+    .fp-tab.active{color:var(--fp-accent);border-bottom-color:var(--fp-accent)}
+    .fp-tab-content{animation:fadeIn .2s ease}
+    @@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .fp-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .fp-section-title{font-family:'Teko',sans-serif;font-size:28px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0}
+    .fp-section-sub{font-size:13px;color:var(--fp-text-muted);margin:4px 0 0}
+    .fp-empty-card{background:var(--fp-surface);border:1px dashed var(--fp-border);padding:60px;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--fp-text-muted);margin-bottom:20px}
+    .fp-empty-card i{font-size:36px;opacity:.2}
+    .fp-progress-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+    .fp-progress-label{font-size:12px;color:var(--fp-text-muted);white-space:nowrap}
+    .fp-progress-bar{flex:1;height:4px;background:var(--fp-surface2);border-radius:2px;overflow:hidden}
+    .fp-progress-fill{height:100%;background:var(--fp-accent);border-radius:2px;transition:width .3s}
+    .fp-plan-card{background:var(--fp-surface);border:1px solid var(--fp-border);padding:24px;margin-bottom:20px}
+    .fp-plan-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+    .fp-plan-card-header h3{font-family:'Teko',sans-serif;font-size:28px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:4px 0;line-height:1}
+    .fp-plan-badge{display:inline-block;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:rgba(234,33,39,.1);color:var(--fp-accent);margin-bottom:4px}
+    .fp-plan-badge-blue{background:rgba(59,130,246,.1);color:#3b82f6}
+    .fp-plan-date{font-size:12px;color:var(--fp-text-muted);display:block;margin-top:4px}
+    .fp-plan-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .fp-icon-btn{background:transparent;border:1px solid var(--fp-border);color:var(--fp-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;gap:6px;padding:6px 12px;white-space:nowrap;font-family:'DM Sans',sans-serif;height:34px}
+    .fp-icon-btn:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
+    .fp-icon-btn-danger:hover{border-color:#ef4444;color:#ef4444}
+    .fp-icon-btn-disabled{opacity:.4;cursor:not-allowed !important}
+    .fp-icon-btn-disabled:hover{border-color:var(--fp-border) !important;color:var(--fp-text-muted) !important}
+    .fp-meal-btn{width:26px;height:26px;background:transparent;border:1px solid var(--fp-border);color:var(--fp-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+    .fp-meal-btn:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
+    .fp-meal-btn-danger:hover{border-color:#ef4444;color:#ef4444}
+    .fp-meals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+    .fp-meal-card{background:var(--fp-surface2);border:1px solid var(--fp-border);padding:16px}
+    .fp-meal-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .fp-meal-actions{display:flex;gap:4px}
+    .fp-meal-name{font-family:'Teko',sans-serif;font-size:18px;font-weight:700;color:var(--fp-text);text-transform:uppercase}
+    .fp-meal-desc{font-size:12px;color:var(--fp-text-muted);margin-bottom:12px}
+    .fp-macro-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .fp-macro{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .fp-macro-val{font-family:'Teko',sans-serif;font-size:20px;font-weight:700;color:var(--fp-text);line-height:1}
+    .fp-macro-val small{font-size:10px;color:var(--fp-text-muted);font-family:'DM Sans',sans-serif}
+    .fp-macro-label{font-size:10px;color:var(--fp-text-muted);text-transform:uppercase;letter-spacing:1px}
+    .fp-macro-cal .fp-macro-val{color:var(--fp-accent)}
+    .fp-days-list{display:flex;flex-direction:column;gap:16px}
+    .fp-day-card{background:var(--fp-surface2);border:1px solid var(--fp-border);padding:16px}
+    .fp-day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .fp-day-info{display:flex;align-items:center;gap:12px}
+    .fp-day-badge{padding:4px 12px;background:rgba(234,33,39,.1);color:var(--fp-accent);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .fp-day-name{font-family:'Teko',sans-serif;font-size:22px;font-weight:700;color:var(--fp-text);text-transform:uppercase}
+    .fp-exercise-table{margin-bottom:12px}
+    .fp-exercise-table th{font-size:10px;padding:10px 12px}
+    .fp-exercise-table td{padding:10px 12px;font-size:13px}
+    .fp-exercise-link{color:var(--fp-accent);text-decoration:none;display:flex;align-items:center;gap:6px}
+    .fp-exercise-link:hover{text-decoration:underline}
+    .fp-cardio-badge{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#3b82f6;font-size:13px;margin-top:8px}
+    .fp-add-cardio-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;background:transparent;border:1px dashed var(--fp-border);color:var(--fp-text-muted);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;margin-top:8px}
+    .fp-add-cardio-btn:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
+    .fp-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+    .fp-modal{background:var(--fp-surface);border:1px solid var(--fp-border);border-top:3px solid var(--fp-accent);width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+    .fp-modal-sm{max-width:420px}
+    .fp-modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--fp-border)}
+    .fp-modal-title{font-family:'Teko',sans-serif;font-size:22px;font-weight:700;color:var(--fp-text);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px}
+    .fp-modal-close{width:32px;height:32px;background:transparent;border:1px solid var(--fp-border);color:var(--fp-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .fp-modal-close:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
+    .fp-modal-body{padding:24px}
+    .fp-modal-footer{padding:16px 24px;border-top:1px solid var(--fp-border);display:flex;align-items:center;justify-content:flex-end;gap:12px}
 </style>
 
 @code {
@@ -739,25 +695,44 @@ else
     private string activeTab = "diet";
     private bool isLoading = true;
 
-    // Modal flags
+    // Modals
     private bool showDietModal = false;
+    private bool showEditDietModal = false;
     private bool showMealModal = false;
     private bool showWorkoutModal = false;
+    private bool showEditWorkoutModal = false;
     private bool showDayModal = false;
     private bool showExerciseModal = false;
     private bool showCardioModal = false;
-
-    // Renew subscription state
     private bool showRenewModal = false;
+    private bool showDeleteConfirm = false;
+
+    // Edit context
+    private int editMealId = 0;
+    private int editExerciseId = 0;
+    private int activeDietId = 0;
+    private int activeWorkoutId = 0;
+    private int activeDayId = 0;
+
+    // Edit diet/workout count
+    private int editingDietId = 0;
+    private int editDietMealCount = 1;
+    private int editDietCurrentCount = 0;
+    private int editingWorkoutId = 0;
+    private int editWorkoutDayCount = 1;
+    private int editWorkoutCurrentCount = 0;
+
+    // Delete confirm
+    private string deleteConfirmType = string.Empty;
+    private string deleteConfirmName = string.Empty;
+    private string deleteConfirmMessage = string.Empty;
+    private Func<Task>? deleteAction;
+
+    // Renew
     private int renewMonths = 1;
     private bool isRenewing = false;
     private string renewMessage = string.Empty;
     private bool renewSuccess = false;
-
-    // Context for nested modals
-    private int activeDietId = 0;
-    private int activeWorkoutId = 0;
-    private int activeDayId = 0;
 
     // Form models
     private CreateDietDto newDiet = new();
@@ -769,21 +744,16 @@ else
     private int newDayEnum = 0;
     private int newCardioIntensity = 1;
 
-    // Computed subscription properties
+    // Computed
     private bool IsExpired => client != null && client.EndDate < DateTime.UtcNow;
-    private bool IsExpiringSoon => client != null
-        && !IsExpired
-        && client.EndDate <= DateTime.UtcNow.AddDays(7);
-    private int DaysLeft => client != null
-        ? Math.Max(0, (client.EndDate - DateTime.UtcNow).Days)
-        : 0;
+    private bool IsExpiringSoon => client != null && !IsExpired && client.EndDate <= DateTime.UtcNow.AddDays(7);
+    private int DaysLeft => client != null ? Math.Max(0, (client.EndDate - DateTime.UtcNow).Days) : 0;
 
     protected override async Task OnInitializedAsync()
     {
         var auth = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = await UserManager.GetUserAsync(auth.User);
         if (user == null) return;
-
         coachId = user.Id;
         client = await ClientService.GetClientByIdAsync(ClientId, coachId);
         if (client != null)
@@ -792,6 +762,53 @@ else
             workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
         }
         isLoading = false;
+    }
+
+    // ── Delete Confirm System ──
+    private void ConfirmDeleteDiet(int dietId, int mealCount)
+    {
+        deleteConfirmType = "Diet Plan";
+        deleteConfirmName = $"{mealCount} Meals/Day Plan";
+        deleteConfirmMessage = "This will permanently delete all meals in this plan.";
+        deleteAction = async () => { var (s,_) = await DietService.DeleteDietAsync(ClientId, dietId, coachId); if(s) diets.RemoveAll(d=>d.Id==dietId); };
+        showDeleteConfirm = true;
+    }
+
+    private void ConfirmDeleteMeal(int mealId, string mealName, int dietId)
+    {
+        deleteConfirmType = "Meal";
+        deleteConfirmName = mealName;
+        deleteConfirmMessage = "This meal will be permanently removed from the diet plan.";
+        deleteAction = async () => { var (s,_) = await DietService.DeleteMealItemAsync(mealId); if(s) { var d=diets.FirstOrDefault(d=>d.Id==dietId); d?.MealItems.RemoveAll(m=>m.Id==mealId); } };
+        showDeleteConfirm = true;
+    }
+
+    private void ConfirmDeleteWorkout(int workoutId, string splitName)
+    {
+        deleteConfirmType = "Workout Plan";
+        deleteConfirmName = splitName;
+        deleteConfirmMessage = "This will permanently delete all days and exercises in this plan.";
+        deleteAction = async () => { var (s,_) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId); if(s) workouts.RemoveAll(w=>w.Id==workoutId); };
+        showDeleteConfirm = true;
+    }
+
+    private void ConfirmDeleteExercise(int exerciseId, string exerciseName, int workoutId, int dayId)
+    {
+        deleteConfirmType = "Exercise";
+        deleteConfirmName = exerciseName;
+        deleteConfirmMessage = "This exercise will be permanently removed from the workout day.";
+        deleteAction = async () => {
+            var (s,_) = await WorkoutService.DeleteExerciseAsync(exerciseId, coachId);
+            if(s) { var day=workouts.FirstOrDefault(w=>w.Id==workoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==dayId); day?.Exercises.RemoveAll(e=>e.Id==exerciseId); }
+        };
+        showDeleteConfirm = true;
+    }
+
+    private async Task ExecuteDelete()
+    {
+        if (deleteAction != null) await deleteAction();
+        showDeleteConfirm = false;
+        deleteAction = null;
     }
 
     // ── Diet ──
@@ -803,128 +820,133 @@ else
         showDietModal = false;
     }
 
-    private void OpenAddMealModal(int dietId)
+    private void OpenEditDietModal(DietResponseDto diet)
     {
-        activeDietId = dietId;
-        newMeal = new CreateMealItemDto();
+        editingDietId = diet.Id;
+        editDietCurrentCount = diet.MealItems.Count;
+        editDietMealCount = diet.NumberOfMeals;
+        showEditDietModal = true;
+    }
+
+    private async Task UpdateDietMealCount()
+    {
+        if (editDietMealCount < editDietCurrentCount) { editDietMealCount = editDietCurrentCount; return; }
+        var idx = diets.FindIndex(d => d.Id == editingDietId);
+        if (idx >= 0) { var d = diets[idx]; diets[idx] = new DietResponseDto(d.Id, editDietMealCount, d.CreatedAt, d.MealItems); }
+        showEditDietModal = false;
+    }
+
+    private void OpenAddMealModal(int dietId) { activeDietId = dietId; editMealId = 0; newMeal = new(); showMealModal = true; }
+
+    private void OpenEditMealModal(int dietId, MealItemResponseDto meal)
+    {
+        activeDietId = dietId; editMealId = meal.Id;
+        newMeal = new CreateMealItemDto { MealName=meal.MealName, Description=meal.Description, Protein=meal.Protein, Carbs=meal.Carbs, Fats=meal.Fats, Calories=meal.Calories, Link=meal.Link };
         showMealModal = true;
     }
 
-    private async Task AddMeal()
+    private async Task SaveMeal()
     {
-        var result = await DietService.AddMealItemAsync(ClientId, activeDietId, newMeal, coachId);
-        if (result != null)
+        if (editMealId > 0)
         {
-            var idx = diets.FindIndex(d => d.Id == activeDietId);
-            if (idx >= 0) diets[idx] = result;
+            var (success, _) = await DietService.UpdateMealItemAsync(editMealId, newMeal);
+            if (success)
+            {
+                var diet = diets.FirstOrDefault(d => d.Id == activeDietId);
+                if (diet != null) { var idx = diet.MealItems.FindIndex(m=>m.Id==editMealId); if(idx>=0) diet.MealItems[idx]=new MealItemResponseDto(editMealId,newMeal.MealName,newMeal.Description,newMeal.Protein,newMeal.Carbs,newMeal.Fats,newMeal.Calories,newMeal.Link); }
+            }
         }
-        newMeal = new();
-        showMealModal = false;
-    }
-
-    private async Task DeleteDiet(int dietId)
-    {
-        var (success, _) = await DietService.DeleteDietAsync(ClientId, dietId, coachId);
-        if (success) diets.RemoveAll(d => d.Id == dietId);
+        else
+        {
+            var result = await DietService.AddMealItemAsync(ClientId, activeDietId, newMeal, coachId);
+            if (result != null) { var idx = diets.FindIndex(d=>d.Id==activeDietId); if(idx>=0) diets[idx]=result; }
+        }
+        newMeal = new(); editMealId = 0; showMealModal = false;
     }
 
     // ── Workout ──
     private async Task CreateWorkout()
     {
         var workout = await WorkoutService.CreateWorkoutAsync(ClientId, newWorkout, coachId);
-        workouts.Add(workout);
-        newWorkout = new();
-        showWorkoutModal = false;
+        workouts.Add(workout); newWorkout = new(); showWorkoutModal = false;
     }
 
-    private void OpenAddDayModal(int workoutId)
+    private void OpenEditWorkoutModal(WorkoutResponseDto workout)
     {
-        activeWorkoutId = workoutId;
-        newDay = new();
-        newDayEnum = 0;
-        showDayModal = true;
+        editingWorkoutId = workout.Id;
+        editWorkoutCurrentCount = workout.WorkoutDays.Count;
+        editWorkoutDayCount = workout.NumberOfWorkoutDays;
+        showEditWorkoutModal = true;
     }
+
+    private async Task UpdateWorkoutDayCount()
+    {
+        if (editWorkoutDayCount < editWorkoutCurrentCount) { editWorkoutDayCount = editWorkoutCurrentCount; return; }
+        var idx = workouts.FindIndex(w => w.Id == editingWorkoutId);
+        if (idx >= 0) { var w = workouts[idx]; workouts[idx] = new WorkoutResponseDto(w.Id, w.SplitName, editWorkoutDayCount, w.CreatedAt, w.WorkoutDays); }
+        showEditWorkoutModal = false;
+    }
+
+    private void OpenAddDayModal(int workoutId) { activeWorkoutId = workoutId; newDay = new(); newDayEnum = 0; showDayModal = true; }
 
     private async Task AddWorkoutDay()
     {
         newDay.Day = (Days)newDayEnum;
         var day = await WorkoutService.AddWorkoutDayAsync(ClientId, activeWorkoutId, newDay, coachId);
-        if (day != null)
-        {
-            var workout = workouts.FirstOrDefault(w => w.Id == activeWorkoutId);
-            workout?.WorkoutDays.Add(day);
-        }
-        newDay = new();
-        showDayModal = false;
+        if (day != null) workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.Add(day);
+        newDay = new(); showDayModal = false;
     }
 
-    private void OpenAddExerciseModal(int workoutId, int dayId)
+    private void OpenAddExerciseModal(int workoutId, int dayId) { activeWorkoutId=workoutId; activeDayId=dayId; editExerciseId=0; newExercise=new(); showExerciseModal=true; }
+
+    private void OpenEditExerciseModal(int workoutId, int dayId, ExerciseResponseDto ex)
     {
-        activeWorkoutId = workoutId;
-        activeDayId = dayId;
-        newExercise = new();
+        activeWorkoutId=workoutId; activeDayId=dayId; editExerciseId=ex.Id;
+        newExercise = new CreateExerciseDto { ExerciseName=ex.ExerciseName, Sets=ex.Sets, Reps=ex.Reps, RestTime=ex.RestTime, ExerciseLink=ex.ExerciseLink };
         showExerciseModal = true;
     }
 
-    private async Task AddExercise()
+    private async Task SaveExercise()
     {
-        var ex = await WorkoutService.AddExerciseAsync(ClientId, activeWorkoutId, activeDayId, newExercise, coachId);
-        if (ex != null)
+        if (editExerciseId > 0)
         {
-            var workout = workouts.FirstOrDefault(w => w.Id == activeWorkoutId);
-            var day = workout?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
-            day?.Exercises.Add(ex);
+            var (success,_) = await WorkoutService.UpdateExerciseAsync(editExerciseId, newExercise, coachId);
+            if (success)
+            {
+                var day = workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId);
+                if (day != null) { var idx=day.Exercises.FindIndex(e=>e.Id==editExerciseId); if(idx>=0) day.Exercises[idx]=new ExerciseResponseDto(editExerciseId,newExercise.ExerciseName,newExercise.Sets,newExercise.Reps,newExercise.RestTime,newExercise.ExerciseLink); }
+            }
         }
-        newExercise = new();
-        showExerciseModal = false;
+        else
+        {
+            var ex = await WorkoutService.AddExerciseAsync(ClientId, activeWorkoutId, activeDayId, newExercise, coachId);
+            if (ex != null) workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId)?.Exercises.Add(ex);
+        }
+        newExercise=new(); editExerciseId=0; showExerciseModal=false;
     }
 
-    private void OpenAddCardioModal(int workoutId, int dayId)
-    {
-        activeWorkoutId = workoutId;
-        activeDayId = dayId;
-        newCardio = new();
-        newCardioIntensity = 1;
-        showCardioModal = true;
-    }
+    private void OpenAddCardioModal(int workoutId, int dayId) { activeWorkoutId=workoutId; activeDayId=dayId; newCardio=new(); newCardioIntensity=1; showCardioModal=true; }
 
     private async Task AddCardio()
     {
         newCardio.Intensity = (CardioIntensity)newCardioIntensity;
         var cardio = await WorkoutService.AddCardioAsync(ClientId, activeWorkoutId, activeDayId, newCardio, coachId);
-        if (cardio != null)
-        {
-            var workout = workouts.FirstOrDefault(w => w.Id == activeWorkoutId);
-            var day = workout?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
-            if (day != null) day.Cardio = cardio;
-        }
-        newCardio = new();
-        showCardioModal = false;
-    }
-
-    private async Task DeleteWorkout(int workoutId)
-    {
-        var (success, _) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId);
-        if (success) workouts.RemoveAll(w => w.Id == workoutId);
+        if (cardio != null) { var day=workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId); if(day!=null) day.Cardio=cardio; }
+        newCardio=new(); showCardioModal=false;
     }
 
     // ── Subscription ──
     private async Task RenewSubscription()
     {
         if (client == null) return;
-        isRenewing = true;
-        renewMessage = string.Empty;
-        var (success, message) = await ClientService.RenewSubscriptionAsync(
-            ClientId, renewMonths, coachId);
-        isRenewing = false;
-        renewSuccess = success;
-        renewMessage = message;
+        isRenewing = true; renewMessage = string.Empty;
+        var (success, message) = await ClientService.RenewSubscriptionAsync(ClientId, renewMonths, coachId);
+        isRenewing = false; renewSuccess = success; renewMessage = message;
         if (success)
         {
             client = await ClientService.GetClientByIdAsync(ClientId, coachId);
             await Task.Delay(1500);
-            showRenewModal = false;
-            renewMessage = string.Empty;
+            showRenewModal = false; renewMessage = string.Empty;
         }
     }
 }

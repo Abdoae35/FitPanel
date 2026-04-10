@@ -110,13 +110,31 @@ public class DietService : IDietService
                 m.Protein, m.Carbs, m.Fats, m.Calories, m.Link
             )).ToList());
 
-    public Task<(bool Success, string Message)> DeleteMealItemAsync(int mealItemId)
-    {
-        var meal = _db.MealItems.FirstOrDefault(m => m.Id == mealItemId);
-        if (meal == null) return Task.FromResult((false, "Meal item not found."));
+    public async Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId)
+{
+    var meal = await _db.MealItems.FindAsync(mealId);
+    if (meal == null) return (false, "Meal not found.");
 
-        _db.MealItems.Remove(meal);
-        _db.SaveChanges();
-        return Task.FromResult((true, "Meal item deleted."));
-    }
+    _db.MealItems.Remove(meal);
+    await _db.SaveChangesAsync();
+    return (true, "Meal deleted.");
+}
+
+public async Task<(bool Success, string Message)> UpdateMealItemAsync(
+    int mealId, CreateMealItemDto dto)
+{
+    var meal = await _db.MealItems.FindAsync(mealId);
+    if (meal == null) return (false, "Meal not found.");
+
+    meal.MealName = dto.MealName;
+    meal.Description = dto.Description;
+    meal.Protein = dto.Protein;
+    meal.Carbs = dto.Carbs;
+    meal.Fats = dto.Fats;
+    meal.Calories = dto.Calories;
+    if (dto.Link != null) meal.Link = dto.Link;
+
+    await _db.SaveChangesAsync();
+    return (true, "Meal updated.");
+}
 }

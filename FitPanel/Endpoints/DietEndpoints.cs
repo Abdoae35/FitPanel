@@ -83,5 +83,21 @@ public static class DietEndpoints
             var (success, message) = await dietService.DeleteMealItemAsync(mealId);
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
+
+
+                // PUT /api/clients/{clientId}/diets/{dietId}/meals/{mealId}
+        group.MapPut("/{dietId:int}/meals/{mealId:int}", async (
+            int clientId,
+            int dietId,
+            int mealId,
+            CreateMealItemDto dto,
+            HttpContext http,
+            UserManager<PanelUser> userManager,
+            IDietService dietService) =>
+        {
+            var coachId = userManager.GetUserId(http.User)!;
+            var (success, message) = await dietService.UpdateMealItemAsync(mealId, dto);
+            return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
+        });
     }
 }

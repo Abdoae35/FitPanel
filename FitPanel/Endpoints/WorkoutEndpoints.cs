@@ -118,22 +118,36 @@ public static class WorkoutEndpoints
                     : Results.NotFound(new { message });
             });
 
-            // DELETE /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/exercises/{exerciseId}
-           group.MapDelete("/exercises/{exerciseId:int}", async (
-            int exerciseId,
-            HttpContext http,
-            UserManager<PanelUser> userManager,
-            IWorkoutService workoutService) =>
-        {
-            var coachId = userManager.GetUserId(http.User)!;
+           // DELETE /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/exercises/{exerciseId}
+group.MapDelete("/{workoutId:int}/days/{dayId:int}/exercises/{exerciseId:int}", async (
+    int clientId,
+    int workoutId,
+    int dayId,
+    int exerciseId,
+    HttpContext http,
+    UserManager<PanelUser> userManager,
+    IWorkoutService workoutService) =>
+{
+    var coachId = userManager.GetUserId(http.User)!;
+    var (success, message) = await workoutService.DeleteExerciseAsync(exerciseId, coachId);
+    return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
+});
 
-            var (success, message) =
-                await workoutService.DeleteExerciseAsync(exerciseId, coachId);
-
-            return success
-                ? Results.Ok(new { message })
-                : Results.NotFound(new { message });
-        });
+// PUT /api/clients/{clientId}/workouts/{workoutId}/days/{dayId}/exercises/{exerciseId}
+group.MapPut("/{workoutId:int}/days/{dayId:int}/exercises/{exerciseId:int}", async (
+    int clientId,
+    int workoutId,
+    int dayId,
+    int exerciseId,
+    CreateExerciseDto dto,
+    HttpContext http,
+    UserManager<PanelUser> userManager,
+    IWorkoutService workoutService) =>
+{
+    var coachId = userManager.GetUserId(http.User)!;
+    var (success, message) = await workoutService.UpdateExerciseAsync(exerciseId, dto, coachId);
+    return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
+});
 
 
 

@@ -252,22 +252,42 @@ public class WorkoutService : IWorkoutService
             )).ToList()
         );
 
-    public async Task<(bool Success, string Message)> DeleteExerciseAsync(int exerciseId, string coachId)
+   public async Task<(bool Success, string Message)> DeleteExerciseAsync(
+    int exerciseId, string coachId)
 {
     var exercise = await _db.Excercises
         .Include(e => e.WorkOutDay)
             .ThenInclude(d => d.WorkOut)
                 .ThenInclude(w => w.Client)
-        .FirstOrDefaultAsync(e =>
-            e.Id == exerciseId &&
-            e.WorkOutDay.WorkOut.Client.CoachId == coachId);
+        .FirstOrDefaultAsync(e => e.Id == exerciseId
+            && e.WorkOutDay.WorkOut.Client.CoachId == coachId);
 
-    if (exercise == null)
-        return (false, "Exercise not found or unauthorized.");
+    if (exercise == null) return (false, "Exercise not found.");
 
     _db.Excercises.Remove(exercise);
     await _db.SaveChangesAsync();
-
     return (true, "Exercise deleted.");
 }
+
+        public async Task<(bool Success, string Message)> UpdateExerciseAsync(
+            int exerciseId, CreateExerciseDto dto, string coachId)
+        {
+            var exercise = await _db.Excercises
+                .Include(e => e.WorkOutDay)
+                    .ThenInclude(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                .FirstOrDefaultAsync(e => e.Id == exerciseId
+                    && e.WorkOutDay.WorkOut.Client.CoachId == coachId);
+
+            if (exercise == null) return (false, "Exercise not found.");
+
+            exercise.ExerciseName = dto.ExerciseName;
+            exercise.Sets = dto.Sets;
+            exercise.Reps = dto.Reps;
+            exercise.RestTime = dto.RestTime;
+            if (dto.ExerciseLink != null) exercise.ExcerciseLink = dto.ExerciseLink;
+
+            await _db.SaveChangesAsync();
+            return (true, "Exercise updated.");
+        }
 }

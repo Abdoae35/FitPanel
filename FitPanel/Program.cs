@@ -8,6 +8,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDietService, DietService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<IAlternativeService, AlternativeService>();
 
 // Add this so minimal APIs can read JSON bodies
 builder.Services.AddEndpointsApiExplorer();
@@ -68,6 +69,7 @@ app.MapClientEndpoints();
 app.MapDietEndpoints();
 app.MapWorkoutEndpoints();
 app.UseAntiforgery();
+app.MapAlternativeEndpoints();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

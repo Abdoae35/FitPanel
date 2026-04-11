@@ -18,7 +18,6 @@ public class DietService : IDietService
     public async Task<DietResponseDto> CreateDietAsync(
         int clientId, CreateDietDto dto, string coachId)
     {
-        // Verify client belongs to this coach
         var client = await _db.Clients
             .FirstOrDefaultAsync(c => c.Id == clientId && c.CoachId == coachId)
             ?? throw new UnauthorizedAccessException("Client not found.");
@@ -45,48 +44,69 @@ public class DietService : IDietService
         return await _db.Diets
             .Where(d => d.ClientId == clientId)
             .Include(d => d.MealItems)
+                .ThenInclude(m => m.AlternativeItems)
             .Select(d => new DietResponseDto(
                 d.Id,
                 d.NumberOfMeals,
                 d.CreatedAt,
                 d.MealItems.Select(m => new MealItemResponseDto(
-                    m.Id, m.MealName, m.Description,
-                    m.Protein, m.Carbs, m.Fats, m.Calories, m.Link
+                    m.Id,
+                    m.MealName,
+                    m.Description,
+                    m.Protein,
+                    m.Carbs,
+                    m.Fats,
+                    m.Calories,
+                    m.Link,
+                    m.AlternativeItems.Select(a => new AlternativeResponeDto(
+                        a.Id,
+                        a.MealName,
+                        a.Description,
+                        a.Protein,
+                        a.Carbs,
+                        a.Fats,
+                        a.Calories,
+                        a.Link
+                    )).ToList()
                 )).ToList()
             ))
             .ToListAsync();
     }
 
-    public async Task<DietResponseDto?> AddMealItemAsync(
-        int clientId, int dietId, CreateMealItemDto dto, string coachId)
+public async Task<DietResponseDto?> AddMealItemAsync(
+    int clientId, int dietId, CreateMealItemDto dto, string coachId)
+{
+    var diet = await _db.Diets
+        .Include(d => d.MealItems)
+            .ThenInclude(m => m.AlternativeItems)
+        .Include(d => d.Client)
+        .FirstOrDefaultAsync(d => d.Id == dietId
+            && d.ClientId == clientId
+            && d.Client.CoachId == coachId);
+
+    if (diet == null) return null;
+
+    var meal = new MealItem
     {
-        var diet = await _db.Diets
-            .Include(d => d.MealItems)
-            .Include(d => d.Client)
-            .FirstOrDefaultAsync(d => d.Id == dietId
-                && d.ClientId == clientId
-                && d.Client.CoachId == coachId);
+        DietId = dietId,
+        MealName = dto.MealName,
+        Description = dto.Description,
+        Protein = dto.Protein,
+        Carbs = dto.Carbs,
+        Fats = dto.Fats,
+        Calories = dto.Calories,
+        Link = dto.Link,
+        AlternativeItems = new List<AlternativeItem>() // ← prevents null crash
+    };
 
-        if (diet == null) return null;
+    _db.MealItems.Add(meal);
+    await _db.SaveChangesAsync();
 
-        var meal = new MealItem
-        {
-            DietId = dietId,
-            MealName = dto.MealName,
-            Description = dto.Description,
-            Protein = dto.Protein,
-            Carbs = dto.Carbs,
-            Fats = dto.Fats,
-            Calories = dto.Calories,
-            Link = dto.Link
-        };
+    // ← DO NOT call diet.MealItems.Add(meal) here
+    // EF already added it to diet.MealItems automatically via change tracking
 
-        _db.MealItems.Add(meal);
-        await _db.SaveChangesAsync();
-
-        return MapDietToDto(diet, diet.MealItems.ToList());
-    }
-
+    return MapDietToDto(diet, diet.MealItems.ToList());
+}
     public async Task<(bool Success, string Message)> DeleteDietAsync(
         int clientId, int dietId, string coachId)
     {
@@ -103,38 +123,59 @@ public class DietService : IDietService
         return (true, "Diet deleted.");
     }
 
-    private DietResponseDto MapDietToDto(Diet diet, List<MealItem> meals) =>
-        new(diet.Id, diet.NumberOfMeals, diet.CreatedAt,
-            meals.Select(m => new MealItemResponseDto(
-                m.Id, m.MealName, m.Description,
-                m.Protein, m.Carbs, m.Fats, m.Calories, m.Link
-            )).ToList());
-
     public async Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId)
-{
-    var meal = await _db.MealItems.FindAsync(mealId);
-    if (meal == null) return (false, "Meal not found.");
+    {
+        var meal = await _db.MealItems.FindAsync(mealId);
+        if (meal == null) return (false, "Meal not found.");
 
-    _db.MealItems.Remove(meal);
-    await _db.SaveChangesAsync();
-    return (true, "Meal deleted.");
-}
+        _db.MealItems.Remove(meal);
+        await _db.SaveChangesAsync();
+        return (true, "Meal deleted.");
+    }
 
-public async Task<(bool Success, string Message)> UpdateMealItemAsync(
-    int mealId, CreateMealItemDto dto)
-{
-    var meal = await _db.MealItems.FindAsync(mealId);
-    if (meal == null) return (false, "Meal not found.");
+    public async Task<(bool Success, string Message)> UpdateMealItemAsync(
+        int mealId, CreateMealItemDto dto)
+    {
+        var meal = await _db.MealItems.FindAsync(mealId);
+        if (meal == null) return (false, "Meal not found.");
 
-    meal.MealName = dto.MealName;
-    meal.Description = dto.Description;
-    meal.Protein = dto.Protein;
-    meal.Carbs = dto.Carbs;
-    meal.Fats = dto.Fats;
-    meal.Calories = dto.Calories;
-    if (dto.Link != null) meal.Link = dto.Link;
+        meal.MealName = dto.MealName;
+        meal.Description = dto.Description;
+        meal.Protein = dto.Protein;
+        meal.Carbs = dto.Carbs;
+        meal.Fats = dto.Fats;
+        meal.Calories = dto.Calories;
+        if (dto.Link != null) meal.Link = dto.Link;
 
-    await _db.SaveChangesAsync();
-    return (true, "Meal updated.");
-}
+        await _db.SaveChangesAsync();
+        return (true, "Meal updated.");
+    }
+
+    // ── Private Mapper ──────────────────────────────────────
+    private DietResponseDto MapDietToDto(Diet diet, List<MealItem> meals) =>
+        new(
+            diet.Id,
+            diet.NumberOfMeals,
+            diet.CreatedAt,
+            meals.Select(m => new MealItemResponseDto(
+                m.Id,
+                m.MealName,
+                m.Description,
+                m.Protein,
+                m.Carbs,
+                m.Fats,
+                m.Calories,
+                m.Link,
+                m.AlternativeItems.Select(a => new AlternativeResponeDto(
+                    a.Id,
+                    a.MealName,
+                    a.Description,
+                    a.Protein,
+                    a.Carbs,
+                    a.Fats,
+                    a.Calories,
+                    a.Link
+                )).ToList()
+            )).ToList()
+        );
 }

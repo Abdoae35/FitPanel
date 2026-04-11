@@ -34,4 +34,6 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
     public DbSet<MealItem> MealItems { get; set; }
     public DbSet<Cardio> Cardios { get; set; }
 
+    public DbSet<AlternativeItem> AlternativeItems { get; set; }
+
 }

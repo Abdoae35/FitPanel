@@ -1,0 +1,526 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.bunny.net/css?family=tajawal:400,700,900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Tajawal',sans-serif;background:#0d0d14;color:#fff;min-height:100vh}
+
+  /* ── Tabs ── */
+  .type-tabs{display:flex;justify-content:center;gap:0;padding:24px 0 0;position:sticky;top:0;z-index:100;background:#0d0d14}
+  .type-tab{padding:12px 40px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#aaa;transition:all .25s;letter-spacing:.5px}
+  .type-tab:first-child{border-radius:10px 0 0 10px}
+  .type-tab:last-child{border-radius:0 10px 10px 0}
+  .type-tab.active{background:linear-gradient(135deg,#1a3a6b,#0f2a52);color:#4da6ff;border-color:#1e4a8f}
+  .plan{display:none}.plan.active{display:block}
+
+  /* ── PDF page (A4 feel) ── */
+  .pdf-page{
+    background:#fff;color:#111;
+    width:794px;min-height:1123px;
+    margin:28px auto;
+    border-radius:4px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.6);
+    overflow:hidden;
+    page-break-after:always;
+    display:flex;flex-direction:column;
+  }
+
+  /* ── Page header ── */
+  .page-header{
+    background:linear-gradient(135deg,#0a1f3d 0%,#0d2d5a 60%,#0a2040 100%);
+    padding:28px 40px 22px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:3px solid #1a5aff;
+    flex-shrink:0;
+  }
+  .brand-block{display:flex;flex-direction:column;gap:4px}
+  .brand-name{font-size:26px;font-weight:900;color:#4da6ff;letter-spacing:2px}
+  .brand-sub{font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:1px;text-transform:uppercase}
+  .page-meta{text-align:start;display:flex;flex-direction:column;gap:4px}
+  .plan-label{font-size:11px;color:#4da6ff;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+  .client-name{font-size:18px;font-weight:700;color:#fff}
+  .page-num{font-size:11px;color:rgba(255,255,255,0.4)}
+
+  /* ── Day section (one per page) ── */
+  .day-section{flex:1;padding:32px 40px 32px;display:flex;flex-direction:column}
+  .day-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+  .day-badge{
+    background:linear-gradient(135deg,#1a5aff,#0d3dbf);
+    color:#fff;font-size:12px;font-weight:700;letter-spacing:1.5px;
+    padding:6px 14px;border-radius:4px;text-transform:uppercase;flex-shrink:0
+  }
+  .day-title{font-size:22px;font-weight:900;color:#0a1f3d;letter-spacing:.5px}
+  .day-eng{font-size:13px;color:#1a5aff;font-weight:700;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+
+  /* ── Table ── */
+  .plan-table{width:100%;border-collapse:collapse;flex:1}
+  .plan-table thead tr{background:linear-gradient(135deg,#0a1f3d,#0d2d5a)}
+  .plan-table th{
+    color:#fff;font-size:13px;font-weight:700;
+    padding:14px 18px;text-align:center;letter-spacing:.8px;text-transform:uppercase
+  }
+  .plan-table th:first-child{text-align:right;border-radius:0}
+  .plan-table tbody tr{border-bottom:1px solid #eaeef5}
+  .plan-table tbody tr:nth-child(even){background:#f8faff}
+  .plan-table tbody tr:last-child{border-bottom:none}
+  .plan-table td{padding:15px 18px;font-size:14px;text-align:center;vertical-align:middle;color:#222}
+  .plan-table td:first-child{text-align:right;font-weight:700;color:#0a1f3d}
+  .num-cell{color:#1a5aff;font-weight:900;font-size:16px}
+
+  /* Diet-specific */
+  .plan-table td.meal-name{font-weight:700;color:#0a3d1a}
+  .plan-table td.cal-cell{color:#d45a00;font-weight:900;font-size:15px}
+  .plan-table td.note-cell{color:#555;font-size:12px;font-style:italic}
+  .plan-table th.diet-col{background-image:linear-gradient(135deg,#0a3d1a,#0d5a24)}
+
+  /* ── Footer strip ── */
+  .page-footer{
+    background:#f4f6fb;border-top:2px solid #e0e6f0;
+    padding:14px 40px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0
+  }
+  .footer-brand{font-size:11px;font-weight:700;color:#1a5aff;letter-spacing:1.5px;text-transform:uppercase}
+  .footer-contact{font-size:11px;color:#888;direction:ltr}
+  .footer-divider{width:1px;height:20px;background:#d0d8e8}
+
+  /* ── Cover page ── */
+  .cover-page{
+    background:linear-gradient(160deg,#060d1a 0%,#0a1f3d 50%,#060d1a 100%);
+    width:794px;min-height:1123px;margin:28px auto;border-radius:4px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.7);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    position:relative;overflow:hidden
+  }
+  .cover-glow{
+    position:absolute;width:500px;height:500px;
+    background:radial-gradient(circle,rgba(26,90,255,0.2) 0%,transparent 70%);
+    border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none
+  }
+  .cover-line{width:60px;height:4px;background:linear-gradient(90deg,#1a5aff,#4da6ff);border-radius:2px;margin:20px auto}
+  .cover-logo-text{font-size:64px;font-weight:900;color:#4da6ff;letter-spacing:6px;text-align:center}
+  .cover-tagline{font-size:14px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:8px}
+  .cover-plan-type{
+    margin-top:40px;padding:10px 32px;
+    border:1.5px solid rgba(77,166,255,0.35);border-radius:4px;
+    font-size:13px;font-weight:700;color:#4da6ff;letter-spacing:2px;text-transform:uppercase
+  }
+  .cover-client{margin-top:60px;text-align:center}
+  .cover-client-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  .cover-client-name{font-size:28px;font-weight:700;color:#fff}
+  .cover-details{display:flex;gap:40px;margin-top:32px;justify-content:center}
+  .cover-detail{text-align:center}
+  .cover-detail-val{font-size:20px;font-weight:900;color:#4da6ff}
+  .cover-detail-lbl{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+  .cover-coach{position:absolute;bottom:40px;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:1px;text-align:center}
+
+  /* ── Responsive shell ── */
+  .viewer{overflow-x:auto;padding-bottom:40px}
+
+  /* ── Print ── */
+  @media print{
+    body{background:#fff}
+    .type-tabs{display:none}
+    .plan{display:block!important}
+    .pdf-page,.cover-page{margin:0;box-shadow:none;border-radius:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="type-tabs">
+  <button class="type-tab active" onclick="switchPlan('workout')">💪 برنامج التمارين</button>
+  <button class="type-tab" onclick="switchPlan('diet')">🥗 برنامج التغذية</button>
+</div>
+
+<div class="viewer">
+
+<!-- ══════════════════ WORKOUT PLAN ══════════════════ -->
+<div class="plan active" id="plan-workout">
+
+  <!-- Cover -->
+  <div class="cover-page">
+    <div class="cover-glow"></div>
+    <div class="cover-logo-text">AZRAK FIT</div>
+    <div class="cover-tagline">قوة · تحول · إرادة</div>
+    <div class="cover-line"></div>
+    <div class="cover-plan-type">برنامج التمارين الأسبوعي</div>
+    <div class="cover-client">
+      <div class="cover-client-label">مُعد لـ</div>
+      <div class="cover-client-name">يوسف محمد</div>
+    </div>
+    <div class="cover-details">
+      <div class="cover-detail"><div class="cover-detail-val">5</div><div class="cover-detail-lbl">أيام</div></div>
+      <div class="cover-detail"><div class="cover-detail-val">12</div><div class="cover-detail-lbl">أسبوع</div></div>
+      <div class="cover-detail"><div class="cover-detail-val">2026</div><div class="cover-detail-lbl">بداية</div></div>
+    </div>
+    <div class="cover-coach">AZRAK FIT · كوتش يوسف · 01044872308</div>
+  </div>
+
+  <!-- Day 1 -->
+  <div class="pdf-page">
+    <div class="page-header">
+      <div class="brand-block"><div class="brand-name">AZRAK FIT</div><div class="brand-sub">Weekly Training Program</div></div>
+      <div class="page-meta"><div class="plan-label">Workout Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 1 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge">اليوم 1</div>
+        <div><div class="day-title">الصدر</div><div class="day-eng">CHEST</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr></thead>
+        <tbody>
+          <tr><td>Bench Press — ضغط صدر بار</td><td class="num-cell">4</td><td class="num-cell">8–10</td><td>90 ث</td></tr>
+          <tr><td>Incline Dumbbell Press — ضغط مائل دمبل</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+          <tr><td>Cable Fly — فلاي كابل</td><td class="num-cell">3</td><td class="num-cell">12</td><td>60 ث</td></tr>
+          <tr><td>Chest Dips — دبس صدر</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+          <tr><td>Pec Deck — بك دك</td><td class="num-cell">3</td><td class="num-cell">15</td><td>60 ث</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Day 2 -->
+  <div class="pdf-page">
+    <div class="page-header">
+      <div class="brand-block"><div class="brand-name">AZRAK FIT</div><div class="brand-sub">Weekly Training Program</div></div>
+      <div class="page-meta"><div class="plan-label">Workout Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 2 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge">اليوم 2</div>
+        <div><div class="day-title">الظهر</div><div class="day-eng">BACK</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr></thead>
+        <tbody>
+          <tr><td>Pull Ups — عقلة</td><td class="num-cell">4</td><td class="num-cell">8</td><td>90 ث</td></tr>
+          <tr><td>Barbell Row — روينج بار</td><td class="num-cell">4</td><td class="num-cell">8</td><td>90 ث</td></tr>
+          <tr><td>Seated Cable Row — روينج كابل</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+          <tr><td>Lat Pulldown — لات بوللداون</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+          <tr><td>Face Pull — فيس بول</td><td class="num-cell">3</td><td class="num-cell">15</td><td>60 ث</td></tr>
+          <tr><td>Barbell Curl — كيرل بار</td><td class="num-cell">3</td><td class="num-cell">10</td><td>60 ث</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Day 3 -->
+  <div class="pdf-page">
+    <div class="page-header">
+      <div class="brand-block"><div class="brand-name">AZRAK FIT</div><div class="brand-sub">Weekly Training Program</div></div>
+      <div class="page-meta"><div class="plan-label">Workout Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 3 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge">اليوم 3</div>
+        <div><div class="day-title">الأرجل</div><div class="day-eng">LEGS</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr></thead>
+        <tbody>
+          <tr><td>Squat — سكوات</td><td class="num-cell">4</td><td class="num-cell">6–8</td><td>120 ث</td></tr>
+          <tr><td>Leg Press — ليج بريس</td><td class="num-cell">3</td><td class="num-cell">10</td><td>90 ث</td></tr>
+          <tr><td>Romanian Deadlift — رومانيان</td><td class="num-cell">3</td><td class="num-cell">10</td><td>90 ث</td></tr>
+          <tr><td>Leg Curl — ليج كيرل</td><td class="num-cell">3</td><td class="num-cell">12</td><td>75 ث</td></tr>
+          <tr><td>Leg Extension — ليج إكستينشن</td><td class="num-cell">3</td><td class="num-cell">12</td><td>60 ث</td></tr>
+          <tr><td>Calf Raises — كالف رايز</td><td class="num-cell">4</td><td class="num-cell">15</td><td>45 ث</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Day 4 -->
+  <div class="pdf-page">
+    <div class="page-header">
+      <div class="brand-block"><div class="brand-name">AZRAK FIT</div><div class="brand-sub">Weekly Training Program</div></div>
+      <div class="page-meta"><div class="plan-label">Workout Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 4 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge">اليوم 4</div>
+        <div><div class="day-title">صدر + ظهر</div><div class="day-eng">CHEST + BACK</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr></thead>
+        <tbody>
+          <tr><td>Incline Bench Press — ضغط مائل بار</td><td class="num-cell">4</td><td class="num-cell">8</td><td>90 ث</td></tr>
+          <tr><td>Cable Fly — فلاي كابل</td><td class="num-cell">3</td><td class="num-cell">12</td><td>60 ث</td></tr>
+          <tr><td>T-Bar Row — تي بار روينج</td><td class="num-cell">4</td><td class="num-cell">8</td><td>90 ث</td></tr>
+          <tr><td>Lat Pulldown — لات بوللداون</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+          <tr><td>Chest Dips — دبس صدر</td><td class="num-cell">3</td><td class="num-cell">10</td><td>75 ث</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Day 5 -->
+  <div class="pdf-page">
+    <div class="page-header">
+      <div class="brand-block"><div class="brand-name">AZRAK FIT</div><div class="brand-sub">Weekly Training Program</div></div>
+      <div class="page-meta"><div class="plan-label">Workout Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 5 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge">اليوم 5</div>
+        <div><div class="day-title">أكتاف + أذرع</div><div class="day-eng">SHOULDERS + ARMS</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr></thead>
+        <tbody>
+          <tr><td>Shoulder Press — ضغط أكتاف بار</td><td class="num-cell">4</td><td class="num-cell">8</td><td>90 ث</td></tr>
+          <tr><td>Lateral Raise — رفعة جانبية</td><td class="num-cell">4</td><td class="num-cell">12</td><td>60 ث</td></tr>
+          <tr><td>Rear Delt Fly — رفعة خلفية</td><td class="num-cell">3</td><td class="num-cell">12</td><td>60 ث</td></tr>
+          <tr><td>Barbell Curl — كيرل بار</td><td class="num-cell">3</td><td class="num-cell">10</td><td>60 ث</td></tr>
+          <tr><td>Skull Crusher — سكال كراشر</td><td class="num-cell">3</td><td class="num-cell">10</td><td>60 ث</td></tr>
+          <tr><td>Hammer Curl — هامر كيرل</td><td class="num-cell">3</td><td class="num-cell">12</td><td>45 ث</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+</div><!-- /plan-workout -->
+
+<!-- ══════════════════ DIET PLAN ══════════════════ -->
+<div class="plan" id="plan-diet">
+
+  <!-- Cover -->
+  <div class="cover-page" style="background:linear-gradient(160deg,#061a0a 0%,#0a3d18 50%,#061a0a 100%)">
+    <div class="cover-glow" style="background:radial-gradient(circle,rgba(26,140,60,0.2) 0%,transparent 70%)"></div>
+    <div class="cover-logo-text" style="color:#4dcc80">AZRAK FIT</div>
+    <div class="cover-tagline">صحة · توازن · نتائج</div>
+    <div class="cover-line" style="background:linear-gradient(90deg,#1a8c3c,#4dcc80)"></div>
+    <div class="cover-plan-type" style="border-color:rgba(77,204,128,0.35);color:#4dcc80">برنامج التغذية اليومي</div>
+    <div class="cover-client">
+      <div class="cover-client-label">مُعد لـ</div>
+      <div class="cover-client-name">يوسف محمد</div>
+    </div>
+    <div class="cover-details">
+      <div class="cover-detail"><div class="cover-detail-val" style="color:#4dcc80">5</div><div class="cover-detail-lbl">وجبات</div></div>
+      <div class="cover-detail"><div class="cover-detail-val" style="color:#4dcc80">2200</div><div class="cover-detail-lbl">سعرة/يوم</div></div>
+      <div class="cover-detail"><div class="cover-detail-val" style="color:#4dcc80">180g</div><div class="cover-detail-lbl">بروتين</div></div>
+    </div>
+    <div class="cover-coach">AZRAK FIT · كوتش يوسف · 01044872308</div>
+  </div>
+
+  <!-- Meal 1 -->
+  <div class="pdf-page">
+    <div class="page-header" style="background:linear-gradient(135deg,#061a0a,#0d3d18)">
+      <div class="brand-block"><div class="brand-name" style="color:#4dcc80">AZRAK FIT</div><div class="brand-sub">Daily Nutrition Program</div></div>
+      <div class="page-meta"><div class="plan-label" style="color:#4dcc80">Diet Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 1 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge" style="background:linear-gradient(135deg,#1a8c3c,#0d5c24)">وجبة 1</div>
+        <div><div class="day-title">الإفطار</div><div class="day-eng" style="color:#1a8c3c">BREAKFAST</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr style="background:linear-gradient(135deg,#061a0a,#0d3d18)"><th>الوجبة / المكون</th><th>الكمية</th><th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th></tr></thead>
+        <tbody>
+          <tr><td class="meal-name">بيض مسلوق</td><td>4 بيضات</td><td>24g</td><td>2g</td><td>18g</td><td class="cal-cell">254</td></tr>
+          <tr><td class="meal-name">شوفان بالحليب</td><td>80g شوفان + 200ml حليب</td><td>14g</td><td>62g</td><td>7g</td><td class="cal-cell">368</td></tr>
+          <tr><td class="meal-name">موزة</td><td>1 حبة متوسطة</td><td>1g</td><td>27g</td><td>0g</td><td class="cal-cell">105</td></tr>
+          <tr><td class="meal-name">زيت زيتون</td><td>ملعقة كبيرة</td><td>0g</td><td>0g</td><td>14g</td><td class="cal-cell">119</td></tr>
+          <tr style="background:#f0faf4;font-weight:700"><td colspan="5" style="text-align:center;color:#1a8c3c">إجمالي الوجبة</td><td class="cal-cell">846</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;padding:14px 18px;background:#f0faf4;border-right:4px solid #1a8c3c;border-radius:0 6px 6px 0">
+        <span style="font-size:12px;color:#0a5a1e;font-weight:700">ملاحظة الكوتش:</span>
+        <span style="font-size:12px;color:#333;margin-right:8px">تناول الإفطار خلال ساعة من الاستيقاظ. الشوفان يمد الجسم بطاقة تدريجية مستدامة.</span>
+      </div>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand" style="color:#1a8c3c">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Meal 2 -->
+  <div class="pdf-page">
+    <div class="page-header" style="background:linear-gradient(135deg,#061a0a,#0d3d18)">
+      <div class="brand-block"><div class="brand-name" style="color:#4dcc80">AZRAK FIT</div><div class="brand-sub">Daily Nutrition Program</div></div>
+      <div class="page-meta"><div class="plan-label" style="color:#4dcc80">Diet Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 2 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge" style="background:linear-gradient(135deg,#1a8c3c,#0d5c24)">وجبة 2</div>
+        <div><div class="day-title">وجبة ما قبل التمرين</div><div class="day-eng" style="color:#1a8c3c">PRE-WORKOUT</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr style="background:linear-gradient(135deg,#061a0a,#0d3d18)"><th>الوجبة / المكون</th><th>الكمية</th><th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th></tr></thead>
+        <tbody>
+          <tr><td class="meal-name">صدر دجاج مشوي</td><td>200g</td><td>46g</td><td>0g</td><td>4g</td><td class="cal-cell">220</td></tr>
+          <tr><td class="meal-name">أرز بسمتي</td><td>150g مطبوخ</td><td>4g</td><td>44g</td><td>0g</td><td class="cal-cell">195</td></tr>
+          <tr><td class="meal-name">خضار مشوية</td><td>1 طبق كبير</td><td>3g</td><td>15g</td><td>1g</td><td class="cal-cell">80</td></tr>
+          <tr style="background:#f0faf4;font-weight:700"><td colspan="5" style="text-align:center;color:#1a8c3c">إجمالي الوجبة</td><td class="cal-cell">495</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;padding:14px 18px;background:#f0faf4;border-right:4px solid #1a8c3c;border-radius:0 6px 6px 0">
+        <span style="font-size:12px;color:#0a5a1e;font-weight:700">توقيت:</span>
+        <span style="font-size:12px;color:#333;margin-right:8px">قبل التمرين بـ 90 دقيقة. الكارب يملأ مخازن الجليكوجين والبروتين يحمي العضلات.</span>
+      </div>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand" style="color:#1a8c3c">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Meal 3 -->
+  <div class="pdf-page">
+    <div class="page-header" style="background:linear-gradient(135deg,#061a0a,#0d3d18)">
+      <div class="brand-block"><div class="brand-name" style="color:#4dcc80">AZRAK FIT</div><div class="brand-sub">Daily Nutrition Program</div></div>
+      <div class="page-meta"><div class="plan-label" style="color:#4dcc80">Diet Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 3 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge" style="background:linear-gradient(135deg,#1a8c3c,#0d5c24)">وجبة 3</div>
+        <div><div class="day-title">وجبة ما بعد التمرين</div><div class="day-eng" style="color:#1a8c3c">POST-WORKOUT</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr style="background:linear-gradient(135deg,#061a0a,#0d3d18)"><th>الوجبة / المكون</th><th>الكمية</th><th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th></tr></thead>
+        <tbody>
+          <tr><td class="meal-name">واي بروتين</td><td>1 سكوب (30g)</td><td>25g</td><td>3g</td><td>2g</td><td class="cal-cell">130</td></tr>
+          <tr><td class="meal-name">موزة</td><td>2 حبة</td><td>2g</td><td>54g</td><td>0g</td><td class="cal-cell">210</td></tr>
+          <tr><td class="meal-name">لبن زبادي</td><td>200g</td><td>10g</td><td>8g</td><td>5g</td><td class="cal-cell">117</td></tr>
+          <tr style="background:#f0faf4;font-weight:700"><td colspan="5" style="text-align:center;color:#1a8c3c">إجمالي الوجبة</td><td class="cal-cell">457</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;padding:14px 18px;background:#f0faf4;border-right:4px solid #1a8c3c;border-radius:0 6px 6px 0">
+        <span style="font-size:12px;color:#0a5a1e;font-weight:700">توقيت:</span>
+        <span style="font-size:12px;color:#333;margin-right:8px">مباشرة بعد التمرين خلال 30 دقيقة. النافذة الأنابوليكية — أهم وجبة في اليوم.</span>
+      </div>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand" style="color:#1a8c3c">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Meal 4 -->
+  <div class="pdf-page">
+    <div class="page-header" style="background:linear-gradient(135deg,#061a0a,#0d3d18)">
+      <div class="brand-block"><div class="brand-name" style="color:#4dcc80">AZRAK FIT</div><div class="brand-sub">Daily Nutrition Program</div></div>
+      <div class="page-meta"><div class="plan-label" style="color:#4dcc80">Diet Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 4 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge" style="background:linear-gradient(135deg,#1a8c3c,#0d5c24)">وجبة 4</div>
+        <div><div class="day-title">الغداء</div><div class="day-eng" style="color:#1a8c3c">LUNCH</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr style="background:linear-gradient(135deg,#061a0a,#0d3d18)"><th>الوجبة / المكون</th><th>الكمية</th><th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th></tr></thead>
+        <tbody>
+          <tr><td class="meal-name">لحم بقري مشوي</td><td>180g</td><td>38g</td><td>0g</td><td>10g</td><td class="cal-cell">250</td></tr>
+          <tr><td class="meal-name">بطاطس مشوية</td><td>200g</td><td>4g</td><td>38g</td><td>0g</td><td class="cal-cell">170</td></tr>
+          <tr><td class="meal-name">سلطة خضراء + زيت</td><td>طبق كبير</td><td>2g</td><td>10g</td><td>14g</td><td class="cal-cell">170</td></tr>
+          <tr style="background:#f0faf4;font-weight:700"><td colspan="5" style="text-align:center;color:#1a8c3c">إجمالي الوجبة</td><td class="cal-cell">590</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;padding:14px 18px;background:#f0faf4;border-right:4px solid #1a8c3c;border-radius:0 6px 6px 0">
+        <span style="font-size:12px;color:#0a5a1e;font-weight:700">ملاحظة:</span>
+        <span style="font-size:12px;color:#333;margin-right:8px">اللحم البقري يمد الجسم بالحديد والكرياتين الطبيعي. يمكن استبداله بسمك السالمون لمزيد من أوميجا 3.</span>
+      </div>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand" style="color:#1a8c3c">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+  <!-- Meal 5 -->
+  <div class="pdf-page">
+    <div class="page-header" style="background:linear-gradient(135deg,#061a0a,#0d3d18)">
+      <div class="brand-block"><div class="brand-name" style="color:#4dcc80">AZRAK FIT</div><div class="brand-sub">Daily Nutrition Program</div></div>
+      <div class="page-meta"><div class="plan-label" style="color:#4dcc80">Diet Plan</div><div class="client-name">يوسف محمد</div><div class="page-num">صفحة 5 / 5</div></div>
+    </div>
+    <div class="day-section">
+      <div class="day-header">
+        <div class="day-badge" style="background:linear-gradient(135deg,#1a8c3c,#0d5c24)">وجبة 5</div>
+        <div><div class="day-title">العشاء</div><div class="day-eng" style="color:#1a8c3c">DINNER</div></div>
+      </div>
+      <table class="plan-table">
+        <thead><tr style="background:linear-gradient(135deg,#061a0a,#0d3d18)"><th>الوجبة / المكون</th><th>الكمية</th><th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th></tr></thead>
+        <tbody>
+          <tr><td class="meal-name">صدر دجاج مسلوق</td><td>200g</td><td>46g</td><td>0g</td><td>4g</td><td class="cal-cell">220</td></tr>
+          <tr><td class="meal-name">جبن قريش</td><td>150g</td><td>18g</td><td>3g</td><td>1g</td><td class="cal-cell">92</td></tr>
+          <tr><td class="meal-name">خضار مسلوقة</td><td>طبق كبير</td><td>4g</td><td>16g</td><td>0g</td><td class="cal-cell">80</td></tr>
+          <tr><td class="meal-name">مكسرات مشكلة</td><td>30g</td><td>5g</td><td>6g</td><td>15g</td><td class="cal-cell">175</td></tr>
+          <tr style="background:#f0faf4;font-weight:700"><td colspan="5" style="text-align:center;color:#1a8c3c">إجمالي الوجبة</td><td class="cal-cell">567</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Daily summary -->
+      <div style="margin-top:24px;background:linear-gradient(135deg,#061a0a,#0d3d18);border-radius:8px;padding:20px 24px;color:#fff">
+        <div style="font-size:13px;color:#4dcc80;font-weight:700;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase">الإجمالي اليومي</div>
+        <div style="display:flex;gap:0;text-align:center">
+          <div style="flex:1;border-left:1px solid rgba(255,255,255,0.1);padding:0 12px">
+            <div style="font-size:22px;font-weight:900;color:#4dcc80">2,955</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">سعرة</div>
+          </div>
+          <div style="flex:1;border-left:1px solid rgba(255,255,255,0.1);padding:0 12px">
+            <div style="font-size:22px;font-weight:900;color:#4da6ff">186g</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">بروتين</div>
+          </div>
+          <div style="flex:1;border-left:1px solid rgba(255,255,255,0.1);padding:0 12px">
+            <div style="font-size:22px;font-weight:900;color:#ffcc44">228g</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">كارب</div>
+          </div>
+          <div style="flex:1;padding:0 12px">
+            <div style="font-size:22px;font-weight:900;color:#ff8c44">74g</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">دهون</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <div class="footer-brand" style="color:#1a8c3c">AZRAK FIT</div>
+      <div class="footer-divider"></div>
+      <div class="footer-contact">youssefmohamed3e@gmail.com · 01044872308</div>
+    </div>
+  </div>
+
+</div><!-- /plan-diet -->
+</div><!-- /viewer -->
+
+<script>
+function switchPlan(type) {
+  document.querySelectorAll('.plan').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('plan-' + type).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

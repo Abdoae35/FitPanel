@@ -7,6 +7,7 @@ namespace FitPanel.DTOs.Diet;
 
 
 
+ // DTOs/Diet/CreateDietDto.cs — update this record
 public record MealItemResponseDto(
     int Id,
     string MealName,
@@ -15,5 +16,6 @@ public record MealItemResponseDto(
     int Carbs,
     int Fats,
     int Calories,
-    string? Link
+    string? Link,
+    List<AlternativeResponeDto> Alternatives  // ← add this
 );

@@ -22,6 +22,11 @@ namespace FitPanel.Data.Configurations
         builder.Property(m => m.Carbs).IsRequired();
         builder.Property(m => m.Fats).IsRequired();
         builder.Property(m => m.Calories).IsRequired();
+
+        builder.HasMany(m => m.AlternativeItems)
+               .WithOne(a => a.MealItem)
+               .HasForeignKey(a => a.MealItemId)
+               .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

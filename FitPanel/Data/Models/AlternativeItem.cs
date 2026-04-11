@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FitPanel.Data.Models;
-
-    public class MealItem
+namespace FitPanel.Data.Models
+{
+    public class AlternativeItem
     {
-        public int Id { get; set; }
+         public int Id { get; set; }
 
         public string MealName { get; set; }
         public string Description { get; set; }
@@ -19,14 +19,11 @@ namespace FitPanel.Data.Models;
 
         public int Calories { get; set; }
 
+        // Foreign Key to MealItem
+        public int MealItemId { get; set; }   // FK
+        public MealItem MealItem { get; set; }    // Navigation
 
-        // Foreign Key to Diet
 
-        public int DietId { get; set; }   // FK
-        public Diet Diet { get; set; }    // Navigation
 
-        public ICollection<AlternativeItem> AlternativeItems { get; set; }
-        
-
-       
     }
+}

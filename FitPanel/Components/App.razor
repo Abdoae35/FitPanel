@@ -33,6 +33,18 @@
     </CascadingAuthenticationState>
 
     <script src="_framework/blazor.web.js"></script>
+    <script>
+  window.fitpanel = {
+    downloadPdf: function (base64, fileName) {
+      const a = document.createElement('a');
+      a.href = 'data:application/pdf;base64,' + base64;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
+</script>
 </body>
 
 </html>

@@ -14,15 +14,15 @@
 @inject IDietService DietService
 @inject IWorkoutService WorkoutService
 @inject IAlternativeService AlternativeService
+@inject IPdfService PdfService
+@inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
-
 <PageTitle>Client Profile — FitPanel</PageTitle>
 <head>
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
 </head>
-
 @if (isLoading)
 {
     <div class="fp-loading">
@@ -141,7 +141,6 @@ else
                     <i class="fa fa-plus"></i> New Diet Plan
                 </button>
             </div>
-
             @if (!diets.Any())
             {
                 <div class="fp-empty-card">
@@ -162,6 +161,22 @@ else
                                 <span class="fp-plan-date">Created @diet.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="fp-plan-actions">
+                                @* ── PDF Button ── *@
+                                <button class="fp-icon-btn fp-icon-btn-pdf"
+                                        title="Download Diet PDF"
+                                        disabled="@(generatingPdfDietId == diet.Id)"
+                                        @onclick="() => DownloadDietPdf(diet.Id)">
+                                    @if (generatingPdfDietId == diet.Id)
+                                    {
+                                        <span class="fp-spinner-sm fp-spinner-green"></span>
+                                        <span>Generating...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa fa-file-pdf"></i>
+                                        <span>PDF</span>
+                                    }
+                                </button>
                                 <button class="fp-icon-btn" title="Edit meal count"
                                         @onclick="() => OpenEditDietModal(diet)">
                                     <i class="fa fa-edit"></i>
@@ -179,7 +194,6 @@ else
                                 </button>
                             </div>
                         </div>
-
                         <div class="fp-progress-row">
                             <span class="fp-progress-label">@diet.MealItems.Count / @diet.NumberOfMeals meals added</span>
                             <div class="fp-progress-bar">
@@ -188,7 +202,6 @@ else
                                 </div>
                             </div>
                         </div>
-
                         @if (diet.MealItems.Any())
                         {
                             <div class="fp-meals-grid">
@@ -213,9 +226,7 @@ else
                                                 </button>
                                             </div>
                                         </div>
-
                                         <div class="fp-meal-desc">@meal.Description</div>
-
                                         @* ── Macros ── *@
                                         <div class="fp-macro-row">
                                             <div class="fp-macro">
@@ -235,14 +246,12 @@ else
                                                 <span class="fp-macro-label">Calories</span>
                                             </div>
                                         </div>
-
                                         @if (!string.IsNullOrEmpty(meal.Link))
                                         {
                                             <a href="@meal.Link" target="_blank" class="fp-meal-link">
                                                 <i class="fa fa-play-circle"></i> Watch Video
                                             </a>
                                         }
-
                                         @* ── Alternatives ── *@
                                         @if (meal.Alternatives.Any())
                                         {
@@ -323,7 +332,6 @@ else
                     <i class="fa fa-plus"></i> New Workout Plan
                 </button>
             </div>
-
             @if (!workouts.Any())
             {
                 <div class="fp-empty-card">
@@ -344,6 +352,22 @@ else
                                 <span class="fp-plan-date">@workout.NumberOfWorkoutDays days · @workout.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="fp-plan-actions">
+                                @* ── PDF Button ── *@
+                                <button class="fp-icon-btn fp-icon-btn-pdf fp-icon-btn-pdf-blue"
+                                        title="Download Workout PDF"
+                                        disabled="@(generatingPdfWorkoutId == workout.Id)"
+                                        @onclick="() => DownloadWorkoutPdf(workout.Id)">
+                                    @if (generatingPdfWorkoutId == workout.Id)
+                                    {
+                                        <span class="fp-spinner-sm fp-spinner-blue"></span>
+                                        <span>Generating...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa fa-file-pdf"></i>
+                                        <span>PDF</span>
+                                    }
+                                </button>
                                 <button class="fp-icon-btn" title="Edit day count"
                                         @onclick="() => OpenEditWorkoutModal(workout)">
                                     <i class="fa fa-edit"></i>
@@ -361,7 +385,6 @@ else
                                 </button>
                             </div>
                         </div>
-
                         <div class="fp-progress-row">
                             <span class="fp-progress-label">@workout.WorkoutDays.Count / @workout.NumberOfWorkoutDays days added</span>
                             <div class="fp-progress-bar">
@@ -370,7 +393,6 @@ else
                                 </div>
                             </div>
                         </div>
-
                         @if (workout.WorkoutDays.Any())
                         {
                             <div class="fp-days-list">
@@ -387,7 +409,6 @@ else
                                                 <i class="fa fa-plus"></i> Exercise
                                             </button>
                                         </div>
-
                                         @if (day.Exercises.Any())
                                         {
                                             <table class="fp-table fp-exercise-table">
@@ -433,7 +454,6 @@ else
                                                 </tbody>
                                             </table>
                                         }
-
                                         @if (day.Cardio != null)
                                         {
                                             <div class="fp-cardio-badge">
@@ -827,10 +847,18 @@ else
     </div>
 }
 
+@* PDF Error Toast *@
+@if (showPdfError)
+{
+    <div class="fp-toast fp-toast-error">
+        <i class="fa fa-exclamation-circle"></i>
+        <span>Failed to generate PDF. Please try again.</span>
+        <button @onclick='() => showPdfError = false'><i class="fa fa-times"></i></button>
+    </div>
+}
 
 @code {
     [Parameter] public int ClientId { get; set; }
-
     private ClientResponseDto? client;
     private List<DietResponseDto> diets = new();
     private List<WorkoutResponseDto> workouts = new();
@@ -887,10 +915,15 @@ else
     private string renewMessage = string.Empty;
     private bool renewSuccess = false;
 
+    // ── PDF state ──
+    private int generatingPdfDietId = 0;
+    private int generatingPdfWorkoutId = 0;
+    private bool showPdfError = false;
+
     // Form models
     private CreateDietDto newDiet = new();
     private CreateMealItemDto newMeal = new();
-   private CreateAlternativeDto newAlternative = new();
+    private CreateAlternativeDto newAlternative = new();
     private CreateWorkoutDto newWorkout = new();
     private CreateWorkoutDayDto newDay = new();
     private CreateExerciseDto newExercise = new();
@@ -918,7 +951,63 @@ else
         isLoading = false;
     }
 
-    // ── Edit Client ──
+    // ── PDF ──────────────────────────────────────────────────────
+
+    private async Task DownloadDietPdf(int dietId)
+    {
+        showPdfError = false;
+        generatingPdfDietId = dietId;
+        StateHasChanged();
+
+        try
+        {
+            var bytes = await PdfService.GenerateDietPdfAsync(ClientId, dietId, coachId);
+            if (bytes is null) { showPdfError = true; return; }
+
+            var diet = diets.FirstOrDefault(d => d.Id == dietId);
+
+            var base64 = Convert.ToBase64String(bytes);
+            await JS.InvokeVoidAsync("fitpanel.downloadPdf",
+                base64, $"{client!.Name}_diet_{diet.CreatedAt:yyyy-MM-dd}.pdf");
+        }
+        catch
+        {
+            showPdfError = true;
+        }
+        finally
+        {
+            generatingPdfDietId = 0;
+        }
+    }
+
+    private async Task DownloadWorkoutPdf(int workoutId)
+    {
+        showPdfError = false;
+        generatingPdfWorkoutId = workoutId;
+        StateHasChanged();
+
+        try
+        {
+            var bytes = await PdfService.GenerateWorkoutPdfAsync(ClientId, workoutId, coachId);
+            if (bytes is null) { showPdfError = true; return; }
+            var workout = workouts.FirstOrDefault(w => w.Id == workoutId);
+
+            var base64 = Convert.ToBase64String(bytes);
+            await JS.InvokeVoidAsync("fitpanel.downloadPdf",
+                base64, $"{client!.Name}_workout_{workout.CreatedAt:yyyy-MM-dd}.pdf");
+        }
+        catch
+        {
+            showPdfError = true;
+        }
+        finally
+        {
+            generatingPdfWorkoutId = 0;
+        }
+    }
+
+    // ── Edit Client ──────────────────────────────────────────────
+
     private void OpenEditClientModal()
     {
         editClient = new UpdateClientDto
@@ -951,13 +1040,14 @@ else
         }
     }
 
-    // ── Delete Confirm System ──
+    // ── Delete Confirm System ────────────────────────────────────
+
     private void ConfirmDeleteDiet(int dietId, int mealCount)
     {
         deleteConfirmType = "Diet Plan";
         deleteConfirmName = $"{mealCount} Meals/Day Plan";
         deleteConfirmMessage = "This will permanently delete all meals and alternatives in this plan.";
-        deleteAction = async () => { var (s,_) = await DietService.DeleteDietAsync(ClientId, dietId, coachId); if(s) diets.RemoveAll(d=>d.Id==dietId); };
+        deleteAction = async () => { var (s, _) = await DietService.DeleteDietAsync(ClientId, dietId, coachId); if (s) diets.RemoveAll(d => d.Id == dietId); };
         showDeleteConfirm = true;
     }
 
@@ -966,7 +1056,7 @@ else
         deleteConfirmType = "Meal";
         deleteConfirmName = mealName;
         deleteConfirmMessage = "This meal and all its alternatives will be permanently removed.";
-        deleteAction = async () => { var (s,_) = await DietService.DeleteMealItemAsync(mealId); if(s) { var d=diets.FirstOrDefault(d=>d.Id==dietId); d?.MealItems.RemoveAll(m=>m.Id==mealId); } };
+        deleteAction = async () => { var (s, _) = await DietService.DeleteMealItemAsync(mealId); if (s) { var d = diets.FirstOrDefault(d => d.Id == dietId); d?.MealItems.RemoveAll(m => m.Id == mealId); } };
         showDeleteConfirm = true;
     }
 
@@ -993,7 +1083,7 @@ else
         deleteConfirmType = "Workout Plan";
         deleteConfirmName = splitName;
         deleteConfirmMessage = "This will permanently delete all days and exercises in this plan.";
-        deleteAction = async () => { var (s,_) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId); if(s) workouts.RemoveAll(w=>w.Id==workoutId); };
+        deleteAction = async () => { var (s, _) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId); if (s) workouts.RemoveAll(w => w.Id == workoutId); };
         showDeleteConfirm = true;
     }
 
@@ -1004,8 +1094,8 @@ else
         deleteConfirmMessage = "This exercise will be permanently removed from the workout day.";
         deleteAction = async () =>
         {
-            var (s,_) = await WorkoutService.DeleteExerciseAsync(exerciseId, coachId);
-            if(s) { var day=workouts.FirstOrDefault(w=>w.Id==workoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==dayId); day?.Exercises.RemoveAll(e=>e.Id==exerciseId); }
+            var (s, _) = await WorkoutService.DeleteExerciseAsync(exerciseId, coachId);
+            if (s) { var day = workouts.FirstOrDefault(w => w.Id == workoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == dayId); day?.Exercises.RemoveAll(e => e.Id == exerciseId); }
         };
         showDeleteConfirm = true;
     }
@@ -1017,7 +1107,8 @@ else
         deleteAction = null;
     }
 
-    // ── Diet ──
+    // ── Diet ─────────────────────────────────────────────────────
+
     private async Task CreateDiet()
     {
         var diet = await DietService.CreateDietAsync(ClientId, newDiet, coachId);
@@ -1047,7 +1138,7 @@ else
     private void OpenEditMealModal(int dietId, MealItemResponseDto meal)
     {
         activeDietId = dietId; editMealId = meal.Id;
-        newMeal = new CreateMealItemDto { MealName=meal.MealName, Description=meal.Description, Protein=meal.Protein, Carbs=meal.Carbs, Fats=meal.Fats, Calories=meal.Calories, Link=meal.Link };
+        newMeal = new CreateMealItemDto { MealName = meal.MealName, Description = meal.Description, Protein = meal.Protein, Carbs = meal.Carbs, Fats = meal.Fats, Calories = meal.Calories, Link = meal.Link };
         showMealModal = true;
     }
 
@@ -1067,25 +1158,26 @@ else
                             editMealId, newMeal.MealName, newMeal.Description,
                             newMeal.Protein, newMeal.Carbs, newMeal.Fats,
                             newMeal.Calories, newMeal.Link,
-                            diet.MealItems[idx].Alternatives); // preserve alternatives
+                            diet.MealItems[idx].Alternatives);
                 }
             }
         }
         else
         {
             var result = await DietService.AddMealItemAsync(ClientId, activeDietId, newMeal, coachId);
-            if (result != null) { var idx = diets.FindIndex(d=>d.Id==activeDietId); if(idx>=0) diets[idx]=result; }
+            if (result != null) { var idx = diets.FindIndex(d => d.Id == activeDietId); if (idx >= 0) diets[idx] = result; }
         }
         newMeal = new(); editMealId = 0; showMealModal = false;
     }
 
-    // ── Alternatives ──
+    // ── Alternatives ─────────────────────────────────────────────
+
     private void OpenAddAlternativeModal(int mealId, int dietId)
     {
         activeMealId = mealId;
         activeDietId = dietId;
         editAlternativeId = 0;
-        newAlternative = newAlternative = new();    
+        newAlternative = new();
         showAlternativeModal = true;
     }
 
@@ -1094,16 +1186,16 @@ else
         activeMealId = mealId;
         activeDietId = dietId;
         editAlternativeId = alt.Id;
-        newAlternative = newAlternative = new CreateAlternativeDto
-{
-    MealName = alt.MealName,
-    Description = alt.Description,
-    Protein = alt.Protein,
-    Carbs = alt.Carbs,
-    Fats = alt.Fats,
-    Calories = alt.Calories,
-    Link = alt.Link
-};
+        newAlternative = new CreateAlternativeDto
+        {
+            MealName = alt.MealName,
+            Description = alt.Description,
+            Protein = alt.Protein,
+            Carbs = alt.Carbs,
+            Fats = alt.Fats,
+            Calories = alt.Calories,
+            Link = alt.Link
+        };
         showAlternativeModal = true;
     }
 
@@ -1111,7 +1203,6 @@ else
     {
         if (editAlternativeId > 0)
         {
-            // Update
             var (success, _) = await AlternativeService.UpdateAlternativeAsync(editAlternativeId, newAlternative, coachId);
             if (success)
             {
@@ -1130,18 +1221,18 @@ else
         }
         else
         {
-            // Add new
             var result = await AlternativeService.AddAlternativeAsync(activeMealId, newAlternative, coachId);
             var diet = diets.FirstOrDefault(d => d.Id == activeDietId);
             var meal = diet?.MealItems.FirstOrDefault(m => m.Id == activeMealId);
             meal?.Alternatives.Add(result);
         }
-        newAlternative = newAlternative = new();
+        newAlternative = new();
         editAlternativeId = 0;
         showAlternativeModal = false;
     }
 
-    // ── Workout ──
+    // ── Workout ──────────────────────────────────────────────────
+
     private async Task CreateWorkout()
     {
         var workout = await WorkoutService.CreateWorkoutAsync(ClientId, newWorkout, coachId);
@@ -1170,16 +1261,16 @@ else
     {
         newDay.Day = (Days)newDayEnum;
         var day = await WorkoutService.AddWorkoutDayAsync(ClientId, activeWorkoutId, newDay, coachId);
-        if (day != null) workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.Add(day);
+        if (day != null) workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.Add(day);
         newDay = new(); showDayModal = false;
     }
 
-    private void OpenAddExerciseModal(int workoutId, int dayId) { activeWorkoutId=workoutId; activeDayId=dayId; editExerciseId=0; newExercise=new(); showExerciseModal=true; }
+    private void OpenAddExerciseModal(int workoutId, int dayId) { activeWorkoutId = workoutId; activeDayId = dayId; editExerciseId = 0; newExercise = new(); showExerciseModal = true; }
 
     private void OpenEditExerciseModal(int workoutId, int dayId, ExerciseResponseDto ex)
     {
-        activeWorkoutId=workoutId; activeDayId=dayId; editExerciseId=ex.Id;
-        newExercise = new CreateExerciseDto { ExerciseName=ex.ExerciseName, Sets=ex.Sets, Reps=ex.Reps, RestTime=ex.RestTime, ExerciseLink=ex.ExerciseLink };
+        activeWorkoutId = workoutId; activeDayId = dayId; editExerciseId = ex.Id;
+        newExercise = new CreateExerciseDto { ExerciseName = ex.ExerciseName, Sets = ex.Sets, Reps = ex.Reps, RestTime = ex.RestTime, ExerciseLink = ex.ExerciseLink };
         showExerciseModal = true;
     }
 
@@ -1187,32 +1278,33 @@ else
     {
         if (editExerciseId > 0)
         {
-            var (success,_) = await WorkoutService.UpdateExerciseAsync(editExerciseId, newExercise, coachId);
+            var (success, _) = await WorkoutService.UpdateExerciseAsync(editExerciseId, newExercise, coachId);
             if (success)
             {
-                var day = workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId);
-                if (day != null) { var idx=day.Exercises.FindIndex(e=>e.Id==editExerciseId); if(idx>=0) day.Exercises[idx]=new ExerciseResponseDto(editExerciseId,newExercise.ExerciseName,newExercise.Sets,newExercise.Reps,newExercise.RestTime,newExercise.ExerciseLink); }
+                var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
+                if (day != null) { var idx = day.Exercises.FindIndex(e => e.Id == editExerciseId); if (idx >= 0) day.Exercises[idx] = new ExerciseResponseDto(editExerciseId, newExercise.ExerciseName, newExercise.Sets, newExercise.Reps, newExercise.RestTime, newExercise.ExerciseLink); }
             }
         }
         else
         {
             var ex = await WorkoutService.AddExerciseAsync(ClientId, activeWorkoutId, activeDayId, newExercise, coachId);
-            if (ex != null) workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId)?.Exercises.Add(ex);
+            if (ex != null) workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId)?.Exercises.Add(ex);
         }
-        newExercise=new(); editExerciseId=0; showExerciseModal=false;
+        newExercise = new(); editExerciseId = 0; showExerciseModal = false;
     }
 
-    private void OpenAddCardioModal(int workoutId, int dayId) { activeWorkoutId=workoutId; activeDayId=dayId; newCardio=new(); newCardioIntensity=1; showCardioModal=true; }
+    private void OpenAddCardioModal(int workoutId, int dayId) { activeWorkoutId = workoutId; activeDayId = dayId; newCardio = new(); newCardioIntensity = 1; showCardioModal = true; }
 
     private async Task AddCardio()
     {
         newCardio.Intensity = (CardioIntensity)newCardioIntensity;
         var cardio = await WorkoutService.AddCardioAsync(ClientId, activeWorkoutId, activeDayId, newCardio, coachId);
-        if (cardio != null) { var day=workouts.FirstOrDefault(w=>w.Id==activeWorkoutId)?.WorkoutDays.FirstOrDefault(d=>d.Id==activeDayId); if(day!=null) day.Cardio=cardio; }
-        newCardio=new(); showCardioModal=false;
+        if (cardio != null) { var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId); if (day != null) day.Cardio = cardio; }
+        newCardio = new(); showCardioModal = false;
     }
 
-    // ── Subscription ──
+    // ── Subscription ─────────────────────────────────────────────
+
     private async Task RenewSubscription()
     {
         if (client == null) return;

@@ -131,3 +131,62 @@
     .fp-modal-body{padding:24px}
     .fp-modal-footer{padding:16px 24px;border-top:1px solid var(--fp-border);display:flex;align-items:center;justify-content:flex-end;gap:12px}
 
+/* PDF button — diet (green) */
+.fp-icon-btn-pdf {
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+.fp-icon-btn-pdf:hover {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    color: #22c55e;
+}
+
+/* PDF button — workout (blue) */
+.fp-icon-btn-pdf-blue {
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+.fp-icon-btn-pdf-blue:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+    color: #3b82f6;
+}
+
+/* Spinner color variants */
+.fp-spinner-green { border-top-color: #22c55e !important; }
+.fp-spinner-blue  { border-top-color: #3b82f6 !important; }
+
+/* Error toast */
+.fp-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    border-left: 4px solid;
+    max-width: 360px;
+    animation: fp-slide-in .25s ease;
+}
+.fp-toast-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+.fp-toast button {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 13px;
+}
+@keyframes fp-slide-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}

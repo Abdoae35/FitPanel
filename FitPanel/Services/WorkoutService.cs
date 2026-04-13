@@ -290,4 +290,29 @@ public class WorkoutService : IWorkoutService
             await _db.SaveChangesAsync();
             return (true, "Exercise updated.");
         }
+
+            public async Task<(bool Success, string Message)> UpdateCardioAsync(
+                int clientId, int workoutId, int dayId, CreateCardioDto dto, string coachId)
+            {
+                var day = await _db.WorkOutDays
+                    .Include(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                    .Include(d => d.Cardio)
+                    .FirstOrDefaultAsync(d => d.Id == dayId
+                        && d.WorkOutId == workoutId
+                        && d.WorkOut.ClientId == clientId
+                        && d.WorkOut.Client.CoachId == coachId);
+
+                if (day == null) return (false, "Day not found.");
+                if (day.Cardio == null) return (false, "No cardio on this day.");
+
+                day.Cardio.CardioType = dto.CardioType;
+                day.Cardio.DurationMinutes = dto.DurationMinutes;
+                day.Cardio.Intensity = dto.Intensity;
+                day.Cardio.Notes = dto.Notes;
+
+                await _db.SaveChangesAsync();
+                return (true, "Cardio updated.");
+            }
+
 }

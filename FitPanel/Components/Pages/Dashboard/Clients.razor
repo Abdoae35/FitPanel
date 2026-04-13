@@ -100,39 +100,45 @@ else
                 </div>
             }
 
-            <div class="fp-modal-body">
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Full Name *</label>
-                        <input @bind="newClient.Name" placeholder="John Doe" />
+                <div class="fp-modal-body">
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>Full Name *</label>
+                            <input @bind="newClient.Name" placeholder="John Doe" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Weight (kg) *</label>
+                            <input type="number" @bind="newClient.Weight" placeholder="80" />
+                        </div>
                     </div>
-                    <div class="fp-input-group">
-                        <label>Weight (kg) *</label>
-                        <input type="number" @bind="newClient.Weight" placeholder="80" />
-                    </div>
-                </div>
 
-                <div class="fp-input-group">
-                    <label>Subscription Duration (months) *</label>
-                    <input type="number" @bind="newClient.SubscriptionDurationPerMonth" placeholder="1" min="1" max="12" />
-                </div>
-
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Inbody Link (optional)</label>
-                        <input @bind="newClient.InbodyLink" placeholder="https://..." />
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>BMR (kcal) *</label>
+                            <input type="number" @bind="newClient.Bmr" placeholder="1800" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Subscription Duration (months) *</label>
+                            <input type="number" @bind="newClient.SubscriptionDurationPerMonth" placeholder="1" min="1" max="12" />
+                        </div>
                     </div>
+
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>Inbody Link (optional)</label>
+                            <input @bind="newClient.InbodyLink" placeholder="https://..." />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Before Photo Link (optional)</label>
+                            <input @bind="newClient.FromPicLink" placeholder="https://..." />
+                        </div>
+                    </div>
+
                     <div class="fp-input-group">
-                        <label>Before Photo Link (optional)</label>
-                        <input @bind="newClient.FromPicLink" placeholder="https://..." />
+                        <label>After Photo Link (optional)</label>
+                        <input @bind="newClient.ToPicLink" placeholder="https://..." />
                     </div>
                 </div>
-
-                <div class="fp-input-group">
-                    <label>After Photo Link (optional)</label>
-                    <input @bind="newClient.ToPicLink" placeholder="https://..." />
-                </div>
-            </div>
 
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick="CloseModal">Cancel</button>
@@ -180,6 +186,17 @@ else
 }
 
 <style>
+    .fp-input-group label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--fp-text-muted);
+    margin-bottom: 8px;
+}
     .fp-client-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -407,24 +424,25 @@ else
         newClient = new();
     }
 
-    private async Task CreateClient()
-    {
-        formError = string.Empty;
+   private async Task CreateClient()
+{
+    formError = string.Empty;
 
-        if (string.IsNullOrWhiteSpace(newClient.Name))
-        { formError = "Name is required."; return; }
-        if (newClient.Weight <= 0)
-        { formError = "Please enter a valid weight."; return; }
-        if (newClient.SubscriptionDurationPerMonth < 1)
-        { formError = "Subscription must be at least 1 month."; return; }
+    if (string.IsNullOrWhiteSpace(newClient.Name))
+    { formError = "Name is required."; return; }
+    if (newClient.Weight <= 0)
+    { formError = "Please enter a valid weight."; return; }
+    if (newClient.Bmr <= 0)
+    { formError = "Please enter a valid BMR."; return; }
+    if (newClient.SubscriptionDurationPerMonth < 1)
+    { formError = "Subscription must be at least 1 month."; return; }
 
-        isSaving = true;
-        var created = await ClientService.CreateClientAsync(newClient, coachId);
-        clients.Add(created);
-        isSaving = false;
-        CloseModal();
-    }
-
+    isSaving = true;
+    var created = await ClientService.CreateClientAsync(newClient, coachId);
+    clients.Add(created);
+    isSaving = false;
+    CloseModal();
+}
     private void ConfirmDelete(int id, string name)
     {
         deleteClientId = id;

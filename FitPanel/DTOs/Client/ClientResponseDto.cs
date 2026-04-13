@@ -5,6 +5,7 @@ public record ClientResponseDto(
     int Id,
     string Name,
     double Weight,
+    double Bmr,
     int SubscriptionDurationPerMonth,
     string? InbodyLink,
     string? FromPicLink,

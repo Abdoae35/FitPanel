@@ -157,7 +157,9 @@ public async Task<DietResponseDto?> AddMealItemAsync(
             diet.Id,
             diet.NumberOfMeals,
             diet.CreatedAt,
-            meals.Select(m => new MealItemResponseDto(
+            meals
+            .OrderBy(m => m.Id)
+            .Select(m => new MealItemResponseDto(
                 m.Id,
                 m.MealName,
                 m.Description,
@@ -166,7 +168,8 @@ public async Task<DietResponseDto?> AddMealItemAsync(
                 m.Fats,
                 m.Calories,
                 m.Link,
-                m.AlternativeItems.Select(a => new AlternativeResponeDto(
+                m.AlternativeItems.OrderBy(a => a.Id)
+                .Select(a => new AlternativeResponeDto(
                     a.Id,
                     a.MealName,
                     a.Description,

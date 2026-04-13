@@ -14,4 +14,6 @@ public interface IWorkoutService
     Task<(bool Success, string Message)> DeleteCardioAsync(int clientId, int workoutId, int dayId, string coachId);
     Task<(bool Success, string Message)> DeleteExerciseAsync(int exerciseId, string coachId);      // ← NEW
     Task<(bool Success, string Message)> UpdateExerciseAsync(int exerciseId, CreateExerciseDto dto, string coachId); // ← NEW
+    Task<(bool Success, string Message)> UpdateCardioAsync(
+    int clientId, int workoutId, int dayId, CreateCardioDto dto, string coachId);
 }

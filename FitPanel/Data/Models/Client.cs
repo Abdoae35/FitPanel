@@ -13,6 +13,7 @@ namespace FitPanel.Data.Models;
         public string? FromPicLink { get; set; }
         public string? ToPicLink { get; set; }
         public double Weight { get; set; }
+        public double Bmr { get; set; }
        public DateTime CreatedAt { get; set; }
        public DateTime StartDate { get; set; }
        public DateTime EndDate { get; set; }

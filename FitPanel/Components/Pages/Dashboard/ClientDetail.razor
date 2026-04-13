@@ -22,7 +22,9 @@
 <PageTitle>Client Profile — FitPanel</PageTitle>
 <head>
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
+    <link href="/lib/fitpanel-accordion-fix.css" rel="stylesheet" />
 </head>
+
 @if (isLoading)
 {
     <div class="fp-loading">
@@ -49,6 +51,7 @@ else
                 <h1 class="fp-client-title">@client.Name</h1>
                 <div class="fp-client-meta-row">
                     <span><i class="fa fa-weight"></i> @client.Weight kg</span>
+                    <span><i class="fa fa-fire"></i> @client.Bmr kcal BMR</span>
                     <span><i class="fa fa-calendar"></i> @client.SubscriptionDurationPerMonth month subscription</span>
                     <span><i class="fa fa-clock"></i> Joined @client.CreatedAt.ToString("MMM dd, yyyy")</span>
                 </div>
@@ -113,9 +116,12 @@ else
                 </span>
             </div>
         </div>
-        <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
-            <i class="fa fa-refresh"></i> Renew
-        </button>
+        @if (IsExpired)
+        {
+            <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
+                <i class="fa fa-refresh"></i> Renew
+            </button>
+        }
     </div>
 
     @* ── Tabs ── *@
@@ -141,6 +147,7 @@ else
                     <i class="fa fa-plus"></i> New Diet Plan
                 </button>
             </div>
+
             @if (!diets.Any())
             {
                 <div class="fp-empty-card">
@@ -150,168 +157,190 @@ else
             }
             else
             {
-                @foreach (var diet in diets)
+                @for (int i = 0; i < diets.Count; i++)
                 {
+                    var diet = diets[i];
+                    var monthNum = i + 1;
+                    var isOpen = expandedDietMonths.Contains(monthNum);
                     var mealsLeft = diet.NumberOfMeals - diet.MealItems.Count;
-                    <div class="fp-plan-card">
-                        <div class="fp-plan-card-header">
-                            <div>
-                                <span class="fp-plan-badge">Diet Plan</span>
-                                <h3>@diet.NumberOfMeals Meals / Day</h3>
-                                <span class="fp-plan-date">Created @diet.CreatedAt.ToString("MMM dd, yyyy")</span>
+
+                    <div class="fp-month-accordion @(isOpen ? "fp-month-open" : "")">
+                        <button class="fp-month-header" @onclick="() => ToggleDietMonth(monthNum)">
+                            <div class="fp-month-header-left">
+                                <span class="fp-month-number">Month @monthNum</span>
+                                <div class="fp-month-pills">
+                                    <span class="fp-pill fp-pill-green">
+                                        <i class="fa fa-utensils"></i> @diet.NumberOfMeals meals/day
+                                    </span>
+                                    <span class="fp-pill fp-pill-muted">
+                                        @diet.MealItems.Count / @diet.NumberOfMeals meals added
+                                    </span>
+                                </div>
                             </div>
-                            <div class="fp-plan-actions">
-                                @* ── PDF Button ── *@
-                                <button class="fp-icon-btn fp-icon-btn-pdf"
-                                        title="Download Diet PDF"
-                                        disabled="@(generatingPdfDietId == diet.Id)"
-                                        @onclick="() => DownloadDietPdf(diet.Id)">
-                                    @if (generatingPdfDietId == diet.Id)
+                            <i class="fa fa-chevron-@(isOpen ? "up" : "down") fp-month-chevron"></i>
+                        </button>
+
+                        @if (isOpen)
+                        {
+                            <div class="fp-month-body">
+                                <div class="fp-plan-card">
+                                    <div class="fp-plan-card-header">
+                                        <div>
+                                            <span class="fp-plan-badge">Diet Plan</span>
+                                            <h3>@diet.NumberOfMeals Meals / Day</h3>
+                                            <span class="fp-plan-date">Created @diet.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        <div class="fp-plan-actions">
+                                            <button class="fp-icon-btn fp-icon-btn-pdf"
+                                                    title="Download Diet PDF"
+                                                    disabled="@(generatingPdfDietId == diet.Id)"
+                                                    @onclick="() => DownloadDietPdf(diet.Id)">
+                                                @if (generatingPdfDietId == diet.Id)
+                                                {
+                                                    <span class="fp-spinner-sm fp-spinner-green"></span>
+                                                    <span>Generating...</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fa fa-file-pdf"></i>
+                                                    <span>PDF</span>
+                                                }
+                                            </button>
+                                            <button class="fp-icon-btn" title="Edit meal count"
+                                                    @onclick="() => OpenEditDietModal(diet)">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-icon-btn @(mealsLeft <= 0 ? "fp-icon-btn-disabled" : "")"
+                                                    disabled="@(mealsLeft <= 0)"
+                                                    title="@(mealsLeft <= 0 ? "Meal limit reached" : $"Add Meal ({mealsLeft} left)")"
+                                                    @onclick="() => OpenAddMealModal(diet.Id)">
+                                                <i class="fa fa-plus"></i>
+                                                <span>@(mealsLeft <= 0 ? "Full" : $"{mealsLeft} left")</span>
+                                            </button>
+                                            <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Diet"
+                                                    @onclick="() => ConfirmDeleteDiet(diet.Id, diet.NumberOfMeals)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="fp-progress-row">
+                                        <span class="fp-progress-label">@diet.MealItems.Count / @diet.NumberOfMeals meals added</span>
+                                        <div class="fp-progress-bar">
+                                            <div class="fp-progress-fill"
+                                                 style="width:@(diet.NumberOfMeals > 0 ? (diet.MealItems.Count * 100 / diet.NumberOfMeals) : 0)%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (diet.MealItems.Any())
                                     {
-                                        <span class="fp-spinner-sm fp-spinner-green"></span>
-                                        <span>Generating...</span>
+                                        <div class="fp-meals-grid">
+                                            @foreach (var meal in diet.MealItems)
+                                            {
+                                                <div class="fp-meal-card">
+                                                    <div class="fp-meal-card-header">
+                                                        <div class="fp-meal-name">@meal.MealName</div>
+                                                        <div class="fp-meal-actions">
+                                                            <button class="fp-meal-btn" title="Add Alternative"
+                                                                    @onclick="() => OpenAddAlternativeModal(meal.Id, diet.Id)">
+                                                                <i class="fa fa-exchange-alt"></i>
+                                                            </button>
+                                                            <button class="fp-meal-btn" title="Edit"
+                                                                    @onclick="() => OpenEditMealModal(diet.Id, meal)">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <button class="fp-meal-btn fp-meal-btn-danger" title="Delete"
+                                                                    @onclick="() => ConfirmDeleteMeal(meal.Id, meal.MealName, diet.Id)">
+                                                                <i class="fa fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="fp-meal-desc">@meal.Description</div>
+                                                    <div class="fp-macro-row">
+                                                        <div class="fp-macro">
+                                                            <span class="fp-macro-val">@meal.Protein<small>g</small></span>
+                                                            <span class="fp-macro-label">Protein</span>
+                                                        </div>
+                                                        <div class="fp-macro">
+                                                            <span class="fp-macro-val">@meal.Carbs<small>g</small></span>
+                                                            <span class="fp-macro-label">Carbs</span>
+                                                        </div>
+                                                        <div class="fp-macro">
+                                                            <span class="fp-macro-val">@meal.Fats<small>g</small></span>
+                                                            <span class="fp-macro-label">Fats</span>
+                                                        </div>
+                                                        <div class="fp-macro fp-macro-cal">
+                                                            <span class="fp-macro-val">@meal.Calories<small>kcal</small></span>
+                                                            <span class="fp-macro-label">Calories</span>
+                                                        </div>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(meal.Link))
+                                                    {
+                                                        <a href="@meal.Link" target="_blank" class="fp-meal-link">
+                                                            <i class="fa fa-play-circle"></i> Watch Video
+                                                        </a>
+                                                    }
+                                                    @if (meal.Alternatives.Any())
+                                                    {
+                                                        <div class="fp-alt-section">
+                                                            <div class="fp-alt-header">
+                                                                <i class="fa fa-exchange-alt"></i>
+                                                                <span>@meal.Alternatives.Count Alternative@(meal.Alternatives.Count != 1 ? "s" : "")</span>
+                                                            </div>
+                                                            @foreach (var alt in meal.Alternatives)
+                                                            {
+                                                                <div class="fp-alt-card">
+                                                                    <div class="fp-alt-card-header">
+                                                                        <span class="fp-alt-name">@alt.MealName</span>
+                                                                        <div class="fp-meal-actions">
+                                                                            <button class="fp-meal-btn" title="Edit Alternative"
+                                                                                    @onclick="() => OpenEditAlternativeModal(meal.Id, diet.Id, alt)">
+                                                                                <i class="fa fa-edit"></i>
+                                                                            </button>
+                                                                            <button class="fp-meal-btn fp-meal-btn-danger" title="Delete Alternative"
+                                                                                    @onclick="() => ConfirmDeleteAlternative(alt.Id, alt.MealName, meal.Id, diet.Id)">
+                                                                                <i class="fa fa-trash"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    @if (!string.IsNullOrEmpty(alt.Description))
+                                                                    {
+                                                                        <div class="fp-alt-desc">@alt.Description</div>
+                                                                    }
+                                                                    <div class="fp-alt-macros">
+                                                                        <span class="fp-alt-macro"><strong>@alt.Protein</strong>g P</span>
+                                                                        <span class="fp-alt-macro"><strong>@alt.Carbs</strong>g C</span>
+                                                                        <span class="fp-alt-macro"><strong>@alt.Fats</strong>g F</span>
+                                                                        <span class="fp-alt-macro fp-alt-cal"><strong>@alt.Calories</strong> kcal</span>
+                                                                    </div>
+                                                                    @if (!string.IsNullOrEmpty(alt.Link))
+                                                                    {
+                                                                        <a href="@alt.Link" target="_blank" class="fp-meal-link" style="font-size:11px;margin-top:6px;">
+                                                                            <i class="fa fa-play-circle"></i> Watch
+                                                                        </a>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="fp-add-alt-btn"
+                                                                @onclick="() => OpenAddAlternativeModal(meal.Id, diet.Id)">
+                                                            <i class="fa fa-exchange-alt"></i> Add Alternative
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
                                     }
                                     else
                                     {
-                                        <i class="fa fa-file-pdf"></i>
-                                        <span>PDF</span>
+                                        <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
+                                            No meals yet. You can add up to @diet.NumberOfMeals meals.
+                                        </p>
                                     }
-                                </button>
-                                <button class="fp-icon-btn" title="Edit meal count"
-                                        @onclick="() => OpenEditDietModal(diet)">
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                                <button class="fp-icon-btn @(mealsLeft <= 0 ? "fp-icon-btn-disabled" : "")"
-                                        disabled="@(mealsLeft <= 0)"
-                                        title="@(mealsLeft <= 0 ? "Meal limit reached" : $"Add Meal ({mealsLeft} left)")"
-                                        @onclick="() => OpenAddMealModal(diet.Id)">
-                                    <i class="fa fa-plus"></i>
-                                    <span>@(mealsLeft <= 0 ? "Full" : $"{mealsLeft} left")</span>
-                                </button>
-                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Diet"
-                                        @onclick="() => ConfirmDeleteDiet(diet.Id, diet.NumberOfMeals)">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="fp-progress-row">
-                            <span class="fp-progress-label">@diet.MealItems.Count / @diet.NumberOfMeals meals added</span>
-                            <div class="fp-progress-bar">
-                                <div class="fp-progress-fill"
-                                     style="width:@(diet.NumberOfMeals > 0 ? (diet.MealItems.Count * 100 / diet.NumberOfMeals) : 0)%">
                                 </div>
                             </div>
-                        </div>
-                        @if (diet.MealItems.Any())
-                        {
-                            <div class="fp-meals-grid">
-                                @foreach (var meal in diet.MealItems)
-                                {
-                                    <div class="fp-meal-card">
-                                        @* ── Meal Header ── *@
-                                        <div class="fp-meal-card-header">
-                                            <div class="fp-meal-name">@meal.MealName</div>
-                                            <div class="fp-meal-actions">
-                                                <button class="fp-meal-btn" title="Add Alternative"
-                                                        @onclick="() => OpenAddAlternativeModal(meal.Id, diet.Id)">
-                                                    <i class="fa fa-exchange-alt"></i>
-                                                </button>
-                                                <button class="fp-meal-btn" title="Edit"
-                                                        @onclick="() => OpenEditMealModal(diet.Id, meal)">
-                                                    <i class="fa fa-edit"></i>
-                                                </button>
-                                                <button class="fp-meal-btn fp-meal-btn-danger" title="Delete"
-                                                        @onclick="() => ConfirmDeleteMeal(meal.Id, meal.MealName, diet.Id)">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="fp-meal-desc">@meal.Description</div>
-                                        @* ── Macros ── *@
-                                        <div class="fp-macro-row">
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Protein<small>g</small></span>
-                                                <span class="fp-macro-label">Protein</span>
-                                            </div>
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Carbs<small>g</small></span>
-                                                <span class="fp-macro-label">Carbs</span>
-                                            </div>
-                                            <div class="fp-macro">
-                                                <span class="fp-macro-val">@meal.Fats<small>g</small></span>
-                                                <span class="fp-macro-label">Fats</span>
-                                            </div>
-                                            <div class="fp-macro fp-macro-cal">
-                                                <span class="fp-macro-val">@meal.Calories<small>kcal</small></span>
-                                                <span class="fp-macro-label">Calories</span>
-                                            </div>
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(meal.Link))
-                                        {
-                                            <a href="@meal.Link" target="_blank" class="fp-meal-link">
-                                                <i class="fa fa-play-circle"></i> Watch Video
-                                            </a>
-                                        }
-                                        @* ── Alternatives ── *@
-                                        @if (meal.Alternatives.Any())
-                                        {
-                                            <div class="fp-alt-section">
-                                                <div class="fp-alt-header">
-                                                    <i class="fa fa-exchange-alt"></i>
-                                                    <span>@meal.Alternatives.Count Alternative@(meal.Alternatives.Count != 1 ? "s" : "")</span>
-                                                </div>
-                                                @foreach (var alt in meal.Alternatives)
-                                                {
-                                                    <div class="fp-alt-card">
-                                                        <div class="fp-alt-card-header">
-                                                            <span class="fp-alt-name">@alt.MealName</span>
-                                                            <div class="fp-meal-actions">
-                                                                <button class="fp-meal-btn" title="Edit Alternative"
-                                                                        @onclick="() => OpenEditAlternativeModal(meal.Id, diet.Id, alt)">
-                                                                    <i class="fa fa-edit"></i>
-                                                                </button>
-                                                                <button class="fp-meal-btn fp-meal-btn-danger" title="Delete Alternative"
-                                                                        @onclick="() => ConfirmDeleteAlternative(alt.Id, alt.MealName, meal.Id, diet.Id)">
-                                                                    <i class="fa fa-trash"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        @if (!string.IsNullOrEmpty(alt.Description))
-                                                        {
-                                                            <div class="fp-alt-desc">@alt.Description</div>
-                                                        }
-                                                        <div class="fp-alt-macros">
-                                                            <span class="fp-alt-macro"><strong>@alt.Protein</strong>g P</span>
-                                                            <span class="fp-alt-macro"><strong>@alt.Carbs</strong>g C</span>
-                                                            <span class="fp-alt-macro"><strong>@alt.Fats</strong>g F</span>
-                                                            <span class="fp-alt-macro fp-alt-cal"><strong>@alt.Calories</strong> kcal</span>
-                                                        </div>
-                                                        @if (!string.IsNullOrEmpty(alt.Link))
-                                                        {
-                                                            <a href="@alt.Link" target="_blank" class="fp-meal-link" style="font-size:11px;margin-top:6px;">
-                                                                <i class="fa fa-play-circle"></i> Watch
-                                                            </a>
-                                                        }
-                                                    </div>
-                                                }
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <button class="fp-add-alt-btn"
-                                                    @onclick="() => OpenAddAlternativeModal(meal.Id, diet.Id)">
-                                                <i class="fa fa-exchange-alt"></i> Add Alternative
-                                            </button>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
-                                No meals yet. You can add up to @diet.NumberOfMeals meals.
-                            </p>
                         }
                     </div>
                 }
@@ -332,6 +361,7 @@ else
                     <i class="fa fa-plus"></i> New Workout Plan
                 </button>
             </div>
+
             @if (!workouts.Any())
             {
                 <div class="fp-empty-card">
@@ -341,146 +371,181 @@ else
             }
             else
             {
-                @foreach (var workout in workouts)
+                @for (int i = 0; i < workouts.Count; i++)
                 {
+                    var workout = workouts[i];
+                    var monthNum = i + 1;
+                    var isOpen = expandedWorkoutMonths.Contains(monthNum);
                     var daysLeft = workout.NumberOfWorkoutDays - workout.WorkoutDays.Count;
-                    <div class="fp-plan-card">
-                        <div class="fp-plan-card-header">
-                            <div>
-                                <span class="fp-plan-badge fp-plan-badge-blue">Workout Plan</span>
-                                <h3>@workout.SplitName</h3>
-                                <span class="fp-plan-date">@workout.NumberOfWorkoutDays days · @workout.CreatedAt.ToString("MMM dd, yyyy")</span>
+
+                    <div class="fp-month-accordion @(isOpen ? "fp-month-open" : "")">
+                        <button class="fp-month-header" @onclick="() => ToggleWorkoutMonth(monthNum)">
+                            <div class="fp-month-header-left">
+                                <span class="fp-month-number">Month @monthNum</span>
+                                <div class="fp-month-pills">
+                                    <span class="fp-pill fp-pill-blue">
+                                        <i class="fa fa-dumbbell"></i> @workout.SplitName
+                                    </span>
+                                    <span class="fp-pill fp-pill-muted">
+                                        @workout.WorkoutDays.Count / @workout.NumberOfWorkoutDays days
+                                    </span>
+                                </div>
                             </div>
-                            <div class="fp-plan-actions">
-                                @* ── PDF Button ── *@
-                                <button class="fp-icon-btn fp-icon-btn-pdf fp-icon-btn-pdf-blue"
-                                        title="Download Workout PDF"
-                                        disabled="@(generatingPdfWorkoutId == workout.Id)"
-                                        @onclick="() => DownloadWorkoutPdf(workout.Id)">
-                                    @if (generatingPdfWorkoutId == workout.Id)
+                            <i class="fa fa-chevron-@(isOpen ? "up" : "down") fp-month-chevron"></i>
+                        </button>
+
+                        @if (isOpen)
+                        {
+                            <div class="fp-month-body">
+                                <div class="fp-plan-card">
+                                    <div class="fp-plan-card-header">
+                                        <div>
+                                            <span class="fp-plan-badge fp-plan-badge-blue">Workout Plan</span>
+                                            <h3>@workout.SplitName</h3>
+                                            <span class="fp-plan-date">@workout.NumberOfWorkoutDays days · @workout.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        <div class="fp-plan-actions">
+                                            <button class="fp-icon-btn fp-icon-btn-pdf fp-icon-btn-pdf-blue"
+                                                    title="Download Workout PDF"
+                                                    disabled="@(generatingPdfWorkoutId == workout.Id)"
+                                                    @onclick="() => DownloadWorkoutPdf(workout.Id)">
+                                                @if (generatingPdfWorkoutId == workout.Id)
+                                                {
+                                                    <span class="fp-spinner-sm fp-spinner-blue"></span>
+                                                    <span>Generating...</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fa fa-file-pdf"></i>
+                                                    <span>PDF</span>
+                                                }
+                                            </button>
+                                            <button class="fp-icon-btn" title="Edit day count"
+                                                    @onclick="() => OpenEditWorkoutModal(workout)">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-icon-btn @(daysLeft <= 0 ? "fp-icon-btn-disabled" : "")"
+                                                    disabled="@(daysLeft <= 0)"
+                                                    title="@(daysLeft <= 0 ? "Day limit reached" : $"Add Day ({daysLeft} left)")"
+                                                    @onclick="() => OpenAddDayModal(workout.Id)">
+                                                <i class="fa fa-plus"></i>
+                                                <span>@(daysLeft <= 0 ? "Full" : $"{daysLeft} left")</span>
+                                            </button>
+                                            <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Workout"
+                                                    @onclick="() => ConfirmDeleteWorkout(workout.Id, workout.SplitName)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="fp-progress-row">
+                                        <span class="fp-progress-label">@workout.WorkoutDays.Count / @workout.NumberOfWorkoutDays days added</span>
+                                        <div class="fp-progress-bar">
+                                            <div class="fp-progress-fill"
+                                                 style="width:@(workout.NumberOfWorkoutDays > 0 ? (workout.WorkoutDays.Count * 100 / workout.NumberOfWorkoutDays) : 0)%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (workout.WorkoutDays.Any())
                                     {
-                                        <span class="fp-spinner-sm fp-spinner-blue"></span>
-                                        <span>Generating...</span>
+                                        <div class="fp-days-list">
+                                            @foreach (var day in workout.WorkoutDays)
+                                            {
+                                                <div class="fp-day-card">
+                                                    <div class="fp-day-header">
+                                                        <div class="fp-day-info">
+                                                            <span class="fp-day-badge">@day.Day.ToString()</span>
+                                                            <span class="fp-day-name">@day.DayName</span>
+                                                        </div>
+                                                        <button class="fp-icon-btn" title="Add Exercise"
+                                                                @onclick="() => OpenAddExerciseModal(workout.Id, day.Id)">
+                                                            <i class="fa fa-plus"></i> Exercise
+                                                        </button>
+                                                    </div>
+                                                    @if (day.Exercises.Any())
+                                                    {
+                                                        <table class="fp-table fp-exercise-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Exercise</th>
+                                                                    <th>Sets</th>
+                                                                    <th>Reps</th>
+                                                                    <th>Rest</th>
+                                                                    <th></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var ex in day.Exercises)
+                                                                {
+                                                                    <tr>
+                                                                        <td>
+                                                                            @if (!string.IsNullOrEmpty(ex.ExerciseLink))
+                                                                            {
+                                                                                <a href="@ex.ExerciseLink" target="_blank" class="fp-exercise-link">
+                                                                                    @ex.ExerciseName <i class="fa fa-external-link-alt"></i>
+                                                                                </a>
+                                                                            }
+                                                                            else { @ex.ExerciseName }
+                                                                        </td>
+                                                                        <td><span class="fp-badge fp-badge-red">@ex.Sets</span></td>
+                                                                        <td>@ex.Reps</td>
+                                                                        <td style="color:var(--fp-text-muted)">@ex.RestTime</td>
+                                                                        <td>
+                                                                            <div style="display:flex;gap:6px;">
+                                                                                <button class="fp-meal-btn" title="Edit"
+                                                                                        @onclick="() => OpenEditExerciseModal(workout.Id, day.Id, ex)">
+                                                                                    <i class="fa fa-edit"></i>
+                                                                                </button>
+                                                                                <button class="fp-meal-btn fp-meal-btn-danger" title="Delete"
+                                                                                        @onclick="() => ConfirmDeleteExercise(ex.Id, ex.ExerciseName, workout.Id, day.Id)">
+                                                                                    <i class="fa fa-trash"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    }
+                                                    @if (day.Cardio != null)
+                                                    {
+                                                        <div class="fp-cardio-badge">
+                                                            <i class="fa fa-running"></i>
+                                                            <span>@day.Cardio.CardioType · @day.Cardio.DurationMinutes min · @day.Cardio.Intensity</span>
+                                                            @if (!string.IsNullOrEmpty(day.Cardio.Notes))
+                                                            {
+                                                                <span style="color:var(--fp-text-muted)"> — @day.Cardio.Notes</span>
+                                                            }
+                                                            <div style="margin-left:auto;display:flex;gap:6px;flex-shrink:0;">
+                                                                <button class="fp-meal-btn" title="Edit Cardio"
+                                                                        @onclick="() => OpenEditCardioModal(workout.Id, day.Id, day.Cardio)">
+                                                                    <i class="fa fa-edit"></i>
+                                                                </button>
+                                                                <button class="fp-meal-btn fp-meal-btn-danger" title="Delete Cardio"
+                                                                        @onclick="() => ConfirmDeleteCardio(workout.Id, day.Id, day.Cardio.CardioType)">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="fp-add-cardio-btn"
+                                                                @onclick="() => OpenAddCardioModal(workout.Id, day.Id)">
+                                                            <i class="fa fa-plus"></i> Add Cardio
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
                                     }
                                     else
                                     {
-                                        <i class="fa fa-file-pdf"></i>
-                                        <span>PDF</span>
+                                        <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
+                                            No days yet. You can add up to @workout.NumberOfWorkoutDays days.
+                                        </p>
                                     }
-                                </button>
-                                <button class="fp-icon-btn" title="Edit day count"
-                                        @onclick="() => OpenEditWorkoutModal(workout)">
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                                <button class="fp-icon-btn @(daysLeft <= 0 ? "fp-icon-btn-disabled" : "")"
-                                        disabled="@(daysLeft <= 0)"
-                                        title="@(daysLeft <= 0 ? "Day limit reached" : $"Add Day ({daysLeft} left)")"
-                                        @onclick="() => OpenAddDayModal(workout.Id)">
-                                    <i class="fa fa-plus"></i>
-                                    <span>@(daysLeft <= 0 ? "Full" : $"{daysLeft} left")</span>
-                                </button>
-                                <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Workout"
-                                        @onclick="() => ConfirmDeleteWorkout(workout.Id, workout.SplitName)">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="fp-progress-row">
-                            <span class="fp-progress-label">@workout.WorkoutDays.Count / @workout.NumberOfWorkoutDays days added</span>
-                            <div class="fp-progress-bar">
-                                <div class="fp-progress-fill"
-                                     style="width:@(workout.NumberOfWorkoutDays > 0 ? (workout.WorkoutDays.Count * 100 / workout.NumberOfWorkoutDays) : 0)%">
                                 </div>
                             </div>
-                        </div>
-                        @if (workout.WorkoutDays.Any())
-                        {
-                            <div class="fp-days-list">
-                                @foreach (var day in workout.WorkoutDays)
-                                {
-                                    <div class="fp-day-card">
-                                        <div class="fp-day-header">
-                                            <div class="fp-day-info">
-                                                <span class="fp-day-badge">@day.Day.ToString()</span>
-                                                <span class="fp-day-name">@day.DayName</span>
-                                            </div>
-                                            <button class="fp-icon-btn" title="Add Exercise"
-                                                    @onclick="() => OpenAddExerciseModal(workout.Id, day.Id)">
-                                                <i class="fa fa-plus"></i> Exercise
-                                            </button>
-                                        </div>
-                                        @if (day.Exercises.Any())
-                                        {
-                                            <table class="fp-table fp-exercise-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Exercise</th>
-                                                        <th>Sets</th>
-                                                        <th>Reps</th>
-                                                        <th>Rest</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach (var ex in day.Exercises)
-                                                    {
-                                                        <tr>
-                                                            <td>
-                                                                @if (!string.IsNullOrEmpty(ex.ExerciseLink))
-                                                                {
-                                                                    <a href="@ex.ExerciseLink" target="_blank" class="fp-exercise-link">
-                                                                        @ex.ExerciseName <i class="fa fa-external-link-alt"></i>
-                                                                    </a>
-                                                                }
-                                                                else { @ex.ExerciseName }
-                                                            </td>
-                                                            <td><span class="fp-badge fp-badge-red">@ex.Sets</span></td>
-                                                            <td>@ex.Reps</td>
-                                                            <td style="color:var(--fp-text-muted)">@ex.RestTime</td>
-                                                            <td>
-                                                                <div style="display:flex;gap:6px;">
-                                                                    <button class="fp-meal-btn" title="Edit"
-                                                                            @onclick="() => OpenEditExerciseModal(workout.Id, day.Id, ex)">
-                                                                        <i class="fa fa-edit"></i>
-                                                                    </button>
-                                                                    <button class="fp-meal-btn fp-meal-btn-danger" title="Delete"
-                                                                            @onclick="() => ConfirmDeleteExercise(ex.Id, ex.ExerciseName, workout.Id, day.Id)">
-                                                                        <i class="fa fa-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        }
-                                        @if (day.Cardio != null)
-                                        {
-                                            <div class="fp-cardio-badge">
-                                                <i class="fa fa-running"></i>
-                                                <span>@day.Cardio.CardioType · @day.Cardio.DurationMinutes min · @day.Cardio.Intensity</span>
-                                                @if (!string.IsNullOrEmpty(day.Cardio.Notes))
-                                                {
-                                                    <span style="color:var(--fp-text-muted)"> — @day.Cardio.Notes</span>
-                                                }
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <button class="fp-add-cardio-btn"
-                                                    @onclick="() => OpenAddCardioModal(workout.Id, day.Id)">
-                                                <i class="fa fa-plus"></i> Add Cardio
-                                            </button>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
-                                No days yet. You can add up to @workout.NumberOfWorkoutDays days.
-                            </p>
                         }
                     </div>
                 }
@@ -511,6 +576,7 @@ else
                     <div class="fp-input-group"><label>Full Name</label><input @bind="editClient.Name" placeholder="Full name" /></div>
                     <div class="fp-input-group"><label>Weight (kg)</label><input type="number" @bind="editClient.Weight" placeholder="80" /></div>
                 </div>
+                <div class="fp-input-group"><label>BMR (kcal)</label><input type="number" @bind="editClient.Bmr" placeholder="1800" /></div>
                 <div class="fp-input-group"><label>Inbody Link</label><input @bind="editClient.InbodyLink" placeholder="https://drive.google.com/..." /></div>
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Before Photo Link</label><input @bind="editClient.FromPicLink" placeholder="https://drive.google.com/..." /></div>
@@ -538,7 +604,10 @@ else
                 <button class="fp-modal-close" @onclick='() => showDietModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Number of Meals per Day *</label><input type="number" @bind="newDiet.NumberOfMeals" min="1" max="10" placeholder="5" /></div>
+                <div class="fp-input-group">
+                    <label>Number of Meals per Day *</label>
+                    <input type="number" @bind="newDiet.NumberOfMeals" min="1" max="10" placeholder="5" />
+                </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more meals than this number.</p>
             </div>
             <div class="fp-modal-footer">
@@ -559,7 +628,10 @@ else
                 <button class="fp-modal-close" @onclick='() => showEditDietModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Number of Meals per Day *</label><input type="number" @bind="editDietMealCount" min="@editDietCurrentCount" max="10" /></div>
+                <div class="fp-input-group">
+                    <label>Number of Meals per Day *</label>
+                    <input type="number" @bind="editDietMealCount" min="@editDietCurrentCount" max="10" />
+                </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editDietCurrentCount meals — cannot set less.</p>
             </div>
             <div class="fp-modal-footer">
@@ -676,7 +748,10 @@ else
                 <button class="fp-modal-close" @onclick='() => showEditWorkoutModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Number of Workout Days *</label><input type="number" @bind="editWorkoutDayCount" min="@editWorkoutCurrentCount" max="7" /></div>
+                <div class="fp-input-group">
+                    <label>Number of Workout Days *</label>
+                    <input type="number" @bind="editWorkoutDayCount" min="@editWorkoutCurrentCount" max="7" />
+                </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editWorkoutCurrentCount days — cannot set less.</p>
             </div>
             <div class="fp-modal-footer">
@@ -701,13 +776,15 @@ else
                 <div class="fp-input-group">
                     <label>Day of Week *</label>
                     <select @bind="newDayEnum">
-                        <option value="0">@Days.Day1.ToString()</option>
-                        <option value="1">@Days.Day2.ToString()</option>
-                        <option value="2">@Days.Day3.ToString()</option>
-                        <option value="3">@Days.Day4.ToString()</option>
-                        <option value="4">@Days.Day5.ToString()</option>
-                        <option value="5">@Days.Day6.ToString()</option>
-                        <option value="6">@Days.Day7.ToString()</option>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var day = (Days)i;
+                            var isUsed = UsedDaysForActiveWorkout.Contains(day);
+                            if (!isUsed)
+                            {
+                                <option value="@i">@day.ToString()</option>
+                            }
+                        }
                     </select>
                 </div>
             </div>
@@ -777,6 +854,38 @@ else
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showCardioModal = false'>Cancel</button>
                 <button class="fp-btn-primary" @onclick="AddCardio"><i class="fa fa-check"></i> Add Cardio</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Edit Cardio *@
+@if (showEditCardioModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditCardioModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-running"></i> EDIT CARDIO</span>
+                <button class="fp-modal-close" @onclick='() => showEditCardioModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group"><label>Cardio Type *</label><input @bind="editCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group"><label>Duration (minutes) *</label><input type="number" @bind="editCardio.DurationMinutes" placeholder="20" /></div>
+                    <div class="fp-input-group">
+                        <label>Intensity *</label>
+                        <select @bind="editCardioIntensity">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fp-input-group"><label>Notes (optional)</label><input @bind="editCardio.Notes" placeholder="After session, fasted..." /></div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditCardioModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveEditCardio"><i class="fa fa-check"></i> Update Cardio</button>
             </div>
         </div>
     </div>
@@ -866,7 +975,7 @@ else
     private string activeTab = "diet";
     private bool isLoading = true;
 
-    // Modals
+    // ── Modals ────────────────────────────────────────────────────
     private bool showEditClientModal = false;
     private bool showDietModal = false;
     private bool showEditDietModal = false;
@@ -877,16 +986,21 @@ else
     private bool showDayModal = false;
     private bool showExerciseModal = false;
     private bool showCardioModal = false;
+    private bool showEditCardioModal = false;
     private bool showRenewModal = false;
     private bool showDeleteConfirm = false;
 
-    // Edit client
+    // ── Month accordion state ─────────────────────────────────────
+    private HashSet<int> expandedDietMonths = new() { 1 };
+    private HashSet<int> expandedWorkoutMonths = new() { 1 };
+
+    // ── Edit client ───────────────────────────────────────────────
     private UpdateClientDto editClient = new();
     private bool isSavingClient = false;
     private string editClientMessage = string.Empty;
     private bool editClientSuccess = false;
 
-    // Edit context
+    // ── Edit context ──────────────────────────────────────────────
     private int editMealId = 0;
     private int editExerciseId = 0;
     private int editAlternativeId = 0;
@@ -895,7 +1009,7 @@ else
     private int activeWorkoutId = 0;
     private int activeDayId = 0;
 
-    // Edit diet/workout count
+    // ── Edit diet/workout count ───────────────────────────────────
     private int editingDietId = 0;
     private int editDietMealCount = 1;
     private int editDietCurrentCount = 0;
@@ -903,24 +1017,24 @@ else
     private int editWorkoutDayCount = 1;
     private int editWorkoutCurrentCount = 0;
 
-    // Delete confirm
+    // ── Delete confirm ────────────────────────────────────────────
     private string deleteConfirmType = string.Empty;
     private string deleteConfirmName = string.Empty;
     private string deleteConfirmMessage = string.Empty;
     private Func<Task>? deleteAction;
 
-    // Renew
+    // ── Renew ─────────────────────────────────────────────────────
     private int renewMonths = 1;
     private bool isRenewing = false;
     private string renewMessage = string.Empty;
     private bool renewSuccess = false;
 
-    // ── PDF state ──
+    // ── PDF state ─────────────────────────────────────────────────
     private int generatingPdfDietId = 0;
     private int generatingPdfWorkoutId = 0;
     private bool showPdfError = false;
 
-    // Form models
+    // ── Form models ───────────────────────────────────────────────
     private CreateDietDto newDiet = new();
     private CreateMealItemDto newMeal = new();
     private CreateAlternativeDto newAlternative = new();
@@ -928,13 +1042,25 @@ else
     private CreateWorkoutDayDto newDay = new();
     private CreateExerciseDto newExercise = new();
     private CreateCardioDto newCardio = new();
+    private CreateCardioDto editCardio = new();
     private int newDayEnum = 0;
     private int newCardioIntensity = 1;
+    private int editCardioIntensity = 1;
 
-    // Computed
-    private bool IsExpired => client != null && client.EndDate < DateTime.UtcNow;
-    private bool IsExpiringSoon => client != null && !IsExpired && client.EndDate <= DateTime.UtcNow.AddDays(7);
-    private int DaysLeft => client != null ? Math.Max(0, (client.EndDate - DateTime.UtcNow).Days) : 0;
+    // ── Computed ──────────────────────────────────────────────────
+    private static DateTime Today => DateTime.UtcNow.Date;
+    private bool IsExpired => client != null && client.EndDate.ToUniversalTime().Date < Today;
+    private bool IsExpiringSoon => client != null && !IsExpired && client.EndDate.ToUniversalTime().Date <= Today.AddDays(7);
+    private int DaysLeft => client != null
+        ? Math.Max(0, (client.EndDate.ToUniversalTime().Date - Today).Days)
+        : 0;
+
+    private HashSet<Days> UsedDaysForActiveWorkout =>
+        workouts.FirstOrDefault(w => w.Id == activeWorkoutId)
+                ?.WorkoutDays.Select(d => d.Day).ToHashSet()
+        ?? new HashSet<Days>();
+
+    // ── Lifecycle ─────────────────────────────────────────────────
 
     protected override async Task OnInitializedAsync()
     {
@@ -951,33 +1077,38 @@ else
         isLoading = false;
     }
 
-    // ── PDF ──────────────────────────────────────────────────────
+    // ── Month Accordion ───────────────────────────────────────────
+
+    private void ToggleDietMonth(int month)
+    {
+        if (!expandedDietMonths.Add(month))
+            expandedDietMonths.Remove(month);
+    }
+
+    private void ToggleWorkoutMonth(int month)
+    {
+        if (!expandedWorkoutMonths.Add(month))
+            expandedWorkoutMonths.Remove(month);
+    }
+
+    // ── PDF ───────────────────────────────────────────────────────
 
     private async Task DownloadDietPdf(int dietId)
     {
         showPdfError = false;
         generatingPdfDietId = dietId;
         StateHasChanged();
-
         try
         {
             var bytes = await PdfService.GenerateDietPdfAsync(ClientId, dietId, coachId);
             if (bytes is null) { showPdfError = true; return; }
-
             var diet = diets.FirstOrDefault(d => d.Id == dietId);
-
             var base64 = Convert.ToBase64String(bytes);
             await JS.InvokeVoidAsync("fitpanel.downloadPdf",
-                base64, $"{client!.Name}_diet_{diet.CreatedAt:yyyy-MM-dd}.pdf");
+                base64, $"{client!.Name}_diet_{diet!.CreatedAt:yyyy-MM-dd}.pdf");
         }
-        catch
-        {
-            showPdfError = true;
-        }
-        finally
-        {
-            generatingPdfDietId = 0;
-        }
+        catch { showPdfError = true; }
+        finally { generatingPdfDietId = 0; }
     }
 
     private async Task DownloadWorkoutPdf(int workoutId)
@@ -985,28 +1116,20 @@ else
         showPdfError = false;
         generatingPdfWorkoutId = workoutId;
         StateHasChanged();
-
         try
         {
             var bytes = await PdfService.GenerateWorkoutPdfAsync(ClientId, workoutId, coachId);
             if (bytes is null) { showPdfError = true; return; }
             var workout = workouts.FirstOrDefault(w => w.Id == workoutId);
-
             var base64 = Convert.ToBase64String(bytes);
             await JS.InvokeVoidAsync("fitpanel.downloadPdf",
-                base64, $"{client!.Name}_workout_{workout.CreatedAt:yyyy-MM-dd}.pdf");
+                base64, $"{client!.Name}_workout_{workout!.CreatedAt:yyyy-MM-dd}.pdf");
         }
-        catch
-        {
-            showPdfError = true;
-        }
-        finally
-        {
-            generatingPdfWorkoutId = 0;
-        }
+        catch { showPdfError = true; }
+        finally { generatingPdfWorkoutId = 0; }
     }
 
-    // ── Edit Client ──────────────────────────────────────────────
+    // ── Edit Client ───────────────────────────────────────────────
 
     private void OpenEditClientModal()
     {
@@ -1014,6 +1137,7 @@ else
         {
             Name = client!.Name,
             Weight = client.Weight,
+            Bmr = client.Bmr,
             InbodyLink = client.InbodyLink,
             FromPicLink = client.FromPicLink,
             ToPicLink = client.ToPicLink
@@ -1040,14 +1164,18 @@ else
         }
     }
 
-    // ── Delete Confirm System ────────────────────────────────────
+    // ── Delete Confirm System ─────────────────────────────────────
 
     private void ConfirmDeleteDiet(int dietId, int mealCount)
     {
         deleteConfirmType = "Diet Plan";
         deleteConfirmName = $"{mealCount} Meals/Day Plan";
         deleteConfirmMessage = "This will permanently delete all meals and alternatives in this plan.";
-        deleteAction = async () => { var (s, _) = await DietService.DeleteDietAsync(ClientId, dietId, coachId); if (s) diets.RemoveAll(d => d.Id == dietId); };
+        deleteAction = async () =>
+        {
+            var (s, _) = await DietService.DeleteDietAsync(ClientId, dietId, coachId);
+            if (s) diets.RemoveAll(d => d.Id == dietId);
+        };
         showDeleteConfirm = true;
     }
 
@@ -1056,7 +1184,15 @@ else
         deleteConfirmType = "Meal";
         deleteConfirmName = mealName;
         deleteConfirmMessage = "This meal and all its alternatives will be permanently removed.";
-        deleteAction = async () => { var (s, _) = await DietService.DeleteMealItemAsync(mealId); if (s) { var d = diets.FirstOrDefault(d => d.Id == dietId); d?.MealItems.RemoveAll(m => m.Id == mealId); } };
+        deleteAction = async () =>
+        {
+            var (s, _) = await DietService.DeleteMealItemAsync(mealId);
+            if (s)
+            {
+                var d = diets.FirstOrDefault(d => d.Id == dietId);
+                d?.MealItems.RemoveAll(m => m.Id == mealId);
+            }
+        };
         showDeleteConfirm = true;
     }
 
@@ -1083,7 +1219,11 @@ else
         deleteConfirmType = "Workout Plan";
         deleteConfirmName = splitName;
         deleteConfirmMessage = "This will permanently delete all days and exercises in this plan.";
-        deleteAction = async () => { var (s, _) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId); if (s) workouts.RemoveAll(w => w.Id == workoutId); };
+        deleteAction = async () =>
+        {
+            var (s, _) = await WorkoutService.DeleteWorkoutAsync(ClientId, workoutId, coachId);
+            if (s) workouts.RemoveAll(w => w.Id == workoutId);
+        };
         showDeleteConfirm = true;
     }
 
@@ -1095,7 +1235,30 @@ else
         deleteAction = async () =>
         {
             var (s, _) = await WorkoutService.DeleteExerciseAsync(exerciseId, coachId);
-            if (s) { var day = workouts.FirstOrDefault(w => w.Id == workoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == dayId); day?.Exercises.RemoveAll(e => e.Id == exerciseId); }
+            if (s)
+            {
+                var day = workouts.FirstOrDefault(w => w.Id == workoutId)
+                                  ?.WorkoutDays.FirstOrDefault(d => d.Id == dayId);
+                day?.Exercises.RemoveAll(e => e.Id == exerciseId);
+            }
+        };
+        showDeleteConfirm = true;
+    }
+
+    private void ConfirmDeleteCardio(int workoutId, int dayId, string cardioType)
+    {
+        deleteConfirmType = "Cardio";
+        deleteConfirmName = cardioType;
+        deleteConfirmMessage = "The cardio session will be removed from this workout day.";
+        deleteAction = async () =>
+        {
+            var (s, _) = await WorkoutService.DeleteCardioAsync(ClientId, workoutId, dayId, coachId);
+            if (s)
+            {
+                var day = workouts.FirstOrDefault(w => w.Id == workoutId)
+                                  ?.WorkoutDays.FirstOrDefault(d => d.Id == dayId);
+                if (day != null) day.Cardio = null;
+            }
         };
         showDeleteConfirm = true;
     }
@@ -1107,12 +1270,13 @@ else
         deleteAction = null;
     }
 
-    // ── Diet ─────────────────────────────────────────────────────
+    // ── Diet ──────────────────────────────────────────────────────
 
     private async Task CreateDiet()
     {
         var diet = await DietService.CreateDietAsync(ClientId, newDiet, coachId);
         diets.Add(diet);
+        expandedDietMonths.Add(diets.Count);
         newDiet = new();
         showDietModal = false;
     }
@@ -1129,16 +1293,36 @@ else
     {
         if (editDietMealCount < editDietCurrentCount) { editDietMealCount = editDietCurrentCount; return; }
         var idx = diets.FindIndex(d => d.Id == editingDietId);
-        if (idx >= 0) { var d = diets[idx]; diets[idx] = new DietResponseDto(d.Id, editDietMealCount, d.CreatedAt, d.MealItems); }
+        if (idx >= 0)
+        {
+            var d = diets[idx];
+            diets[idx] = new DietResponseDto(d.Id, editDietMealCount, d.CreatedAt, d.MealItems);
+        }
         showEditDietModal = false;
     }
 
-    private void OpenAddMealModal(int dietId) { activeDietId = dietId; editMealId = 0; newMeal = new(); showMealModal = true; }
+    private void OpenAddMealModal(int dietId)
+    {
+        activeDietId = dietId;
+        editMealId = 0;
+        newMeal = new();
+        showMealModal = true;
+    }
 
     private void OpenEditMealModal(int dietId, MealItemResponseDto meal)
     {
-        activeDietId = dietId; editMealId = meal.Id;
-        newMeal = new CreateMealItemDto { MealName = meal.MealName, Description = meal.Description, Protein = meal.Protein, Carbs = meal.Carbs, Fats = meal.Fats, Calories = meal.Calories, Link = meal.Link };
+        activeDietId = dietId;
+        editMealId = meal.Id;
+        newMeal = new CreateMealItemDto
+        {
+            MealName = meal.MealName,
+            Description = meal.Description,
+            Protein = meal.Protein,
+            Carbs = meal.Carbs,
+            Fats = meal.Fats,
+            Calories = meal.Calories,
+            Link = meal.Link
+        };
         showMealModal = true;
     }
 
@@ -1165,12 +1349,18 @@ else
         else
         {
             var result = await DietService.AddMealItemAsync(ClientId, activeDietId, newMeal, coachId);
-            if (result != null) { var idx = diets.FindIndex(d => d.Id == activeDietId); if (idx >= 0) diets[idx] = result; }
+            if (result != null)
+            {
+                var idx = diets.FindIndex(d => d.Id == activeDietId);
+                if (idx >= 0) diets[idx] = result;
+            }
         }
-        newMeal = new(); editMealId = 0; showMealModal = false;
+        newMeal = new();
+        editMealId = 0;
+        showMealModal = false;
     }
 
-    // ── Alternatives ─────────────────────────────────────────────
+    // ── Alternatives ──────────────────────────────────────────────
 
     private void OpenAddAlternativeModal(int mealId, int dietId)
     {
@@ -1231,12 +1421,15 @@ else
         showAlternativeModal = false;
     }
 
-    // ── Workout ──────────────────────────────────────────────────
+    // ── Workout ───────────────────────────────────────────────────
 
     private async Task CreateWorkout()
     {
         var workout = await WorkoutService.CreateWorkoutAsync(ClientId, newWorkout, coachId);
-        workouts.Add(workout); newWorkout = new(); showWorkoutModal = false;
+        workouts.Add(workout);
+        expandedWorkoutMonths.Add(workouts.Count);
+        newWorkout = new();
+        showWorkoutModal = false;
     }
 
     private void OpenEditWorkoutModal(WorkoutResponseDto workout)
@@ -1251,26 +1444,58 @@ else
     {
         if (editWorkoutDayCount < editWorkoutCurrentCount) { editWorkoutDayCount = editWorkoutCurrentCount; return; }
         var idx = workouts.FindIndex(w => w.Id == editingWorkoutId);
-        if (idx >= 0) { var w = workouts[idx]; workouts[idx] = new WorkoutResponseDto(w.Id, w.SplitName, editWorkoutDayCount, w.CreatedAt, w.WorkoutDays); }
+        if (idx >= 0)
+        {
+            var w = workouts[idx];
+            workouts[idx] = new WorkoutResponseDto(w.Id, w.SplitName, editWorkoutDayCount, w.CreatedAt, w.WorkoutDays);
+        }
         showEditWorkoutModal = false;
     }
 
-    private void OpenAddDayModal(int workoutId) { activeWorkoutId = workoutId; newDay = new(); newDayEnum = 0; showDayModal = true; }
+    private void OpenAddDayModal(int workoutId)
+    {
+        activeWorkoutId = workoutId;
+        newDay = new();
+        var used = UsedDaysForActiveWorkout;
+        var firstAvailable = Enumerable.Range(0, 7)
+            .Select(i => (Days)i)
+            .FirstOrDefault(d => !used.Contains(d));
+        newDayEnum = (int)firstAvailable;
+        showDayModal = true;
+    }
 
     private async Task AddWorkoutDay()
     {
         newDay.Day = (Days)newDayEnum;
         var day = await WorkoutService.AddWorkoutDayAsync(ClientId, activeWorkoutId, newDay, coachId);
-        if (day != null) workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.Add(day);
-        newDay = new(); showDayModal = false;
+        if (day != null)
+            workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.Add(day);
+        newDay = new();
+        showDayModal = false;
     }
 
-    private void OpenAddExerciseModal(int workoutId, int dayId) { activeWorkoutId = workoutId; activeDayId = dayId; editExerciseId = 0; newExercise = new(); showExerciseModal = true; }
+    private void OpenAddExerciseModal(int workoutId, int dayId)
+    {
+        activeWorkoutId = workoutId;
+        activeDayId = dayId;
+        editExerciseId = 0;
+        newExercise = new();
+        showExerciseModal = true;
+    }
 
     private void OpenEditExerciseModal(int workoutId, int dayId, ExerciseResponseDto ex)
     {
-        activeWorkoutId = workoutId; activeDayId = dayId; editExerciseId = ex.Id;
-        newExercise = new CreateExerciseDto { ExerciseName = ex.ExerciseName, Sets = ex.Sets, Reps = ex.Reps, RestTime = ex.RestTime, ExerciseLink = ex.ExerciseLink };
+        activeWorkoutId = workoutId;
+        activeDayId = dayId;
+        editExerciseId = ex.Id;
+        newExercise = new CreateExerciseDto
+        {
+            ExerciseName = ex.ExerciseName,
+            Sets = ex.Sets,
+            Reps = ex.Reps,
+            RestTime = ex.RestTime,
+            ExerciseLink = ex.ExerciseLink
+        };
         showExerciseModal = true;
     }
 
@@ -1281,41 +1506,108 @@ else
             var (success, _) = await WorkoutService.UpdateExerciseAsync(editExerciseId, newExercise, coachId);
             if (success)
             {
-                var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
-                if (day != null) { var idx = day.Exercises.FindIndex(e => e.Id == editExerciseId); if (idx >= 0) day.Exercises[idx] = new ExerciseResponseDto(editExerciseId, newExercise.ExerciseName, newExercise.Sets, newExercise.Reps, newExercise.RestTime, newExercise.ExerciseLink); }
+                var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)
+                                  ?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
+                if (day != null)
+                {
+                    var idx = day.Exercises.FindIndex(e => e.Id == editExerciseId);
+                    if (idx >= 0)
+                        day.Exercises[idx] = new ExerciseResponseDto(
+                            editExerciseId, newExercise.ExerciseName, newExercise.Sets,
+                            newExercise.Reps, newExercise.RestTime, newExercise.ExerciseLink);
+                }
             }
         }
         else
         {
             var ex = await WorkoutService.AddExerciseAsync(ClientId, activeWorkoutId, activeDayId, newExercise, coachId);
-            if (ex != null) workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId)?.Exercises.Add(ex);
+            if (ex != null)
+                workouts.FirstOrDefault(w => w.Id == activeWorkoutId)
+                        ?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId)
+                        ?.Exercises.Add(ex);
         }
-        newExercise = new(); editExerciseId = 0; showExerciseModal = false;
+        newExercise = new();
+        editExerciseId = 0;
+        showExerciseModal = false;
     }
 
-    private void OpenAddCardioModal(int workoutId, int dayId) { activeWorkoutId = workoutId; activeDayId = dayId; newCardio = new(); newCardioIntensity = 1; showCardioModal = true; }
+    // ── Cardio ────────────────────────────────────────────────────
+
+    private void OpenAddCardioModal(int workoutId, int dayId)
+    {
+        activeWorkoutId = workoutId;
+        activeDayId = dayId;
+        newCardio = new();
+        newCardioIntensity = 1;
+        showCardioModal = true;
+    }
 
     private async Task AddCardio()
     {
         newCardio.Intensity = (CardioIntensity)newCardioIntensity;
         var cardio = await WorkoutService.AddCardioAsync(ClientId, activeWorkoutId, activeDayId, newCardio, coachId);
-        if (cardio != null) { var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId); if (day != null) day.Cardio = cardio; }
-        newCardio = new(); showCardioModal = false;
+        if (cardio != null)
+        {
+            var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)
+                              ?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
+            if (day != null) day.Cardio = cardio;
+        }
+        newCardio = new();
+        showCardioModal = false;
     }
 
-    // ── Subscription ─────────────────────────────────────────────
+    private void OpenEditCardioModal(int workoutId, int dayId, CardioResponseDto cardio)
+    {
+        activeWorkoutId = workoutId;
+        activeDayId = dayId;
+        editCardio = new CreateCardioDto
+        {
+            CardioType = cardio.CardioType,
+            DurationMinutes = cardio.DurationMinutes,
+            Intensity = cardio.Intensity,
+            Notes = cardio.Notes
+        };
+        editCardioIntensity = (int)cardio.Intensity;
+        showEditCardioModal = true;
+    }
+
+    private async Task SaveEditCardio()
+    {
+        editCardio.Intensity = (CardioIntensity)editCardioIntensity;
+        var (success, _) = await WorkoutService.UpdateCardioAsync(
+            ClientId, activeWorkoutId, activeDayId, editCardio, coachId);
+        if (success)
+        {
+            var day = workouts.FirstOrDefault(w => w.Id == activeWorkoutId)
+                              ?.WorkoutDays.FirstOrDefault(d => d.Id == activeDayId);
+            if (day != null)
+                day.Cardio = new CardioResponseDto(
+                    day.Cardio!.Id,
+                    editCardio.CardioType,
+                    editCardio.DurationMinutes,
+                    editCardio.Intensity,
+                    editCardio.Notes);
+        }
+        showEditCardioModal = false;
+    }
+
+    // ── Subscription ──────────────────────────────────────────────
 
     private async Task RenewSubscription()
     {
         if (client == null) return;
-        isRenewing = true; renewMessage = string.Empty;
+        isRenewing = true;
+        renewMessage = string.Empty;
         var (success, message) = await ClientService.RenewSubscriptionAsync(ClientId, renewMonths, coachId);
-        isRenewing = false; renewSuccess = success; renewMessage = message;
+        isRenewing = false;
+        renewSuccess = success;
+        renewMessage = message;
         if (success)
         {
             client = await ClientService.GetClientByIdAsync(ClientId, coachId);
             await Task.Delay(1500);
-            showRenewModal = false; renewMessage = string.Empty;
+            showRenewModal = false;
+            renewMessage = string.Empty;
         }
     }
 }

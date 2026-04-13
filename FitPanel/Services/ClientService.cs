@@ -27,7 +27,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
     // Update subscription
     client.StartDate = DateTime.UtcNow;
     client.SubscriptionDurationPerMonth = months;
-    client.EndDate = client.StartDate.AddMonths(months);
+    client.EndDate = client.StartDate.AddDays(months * 30);
 
     await _db.SaveChangesAsync();
 
@@ -39,6 +39,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
         {
             Name = dto.Name,
             Weight = dto.Weight,
+            Bmr = dto.Bmr,
             SubscriptionDurationPerMonth = dto.SubscriptionDurationPerMonth,
             InbodyLink = dto.InbodyLink,
             FromPicLink = dto.FromPicLink,
@@ -46,7 +47,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
             CoachId = coachId,
             CreatedAt = DateTime.UtcNow,
             StartDate = DateTime.UtcNow,
-            EndDate = DateTime.UtcNow.AddMonths(dto.SubscriptionDurationPerMonth)
+            EndDate = DateTime.UtcNow.AddDays(dto.SubscriptionDurationPerMonth * 30)
         };
 
         _db.Clients.Add(client);
@@ -65,6 +66,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
                 c.Id,
                 c.Name,
                 c.Weight,
+                c.Bmr,
                 c.SubscriptionDurationPerMonth,
                 c.InbodyLink,
                 c.FromPicLink,
@@ -86,6 +88,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
                 c.Id,
                 c.Name,
                 c.Weight,
+                c.Bmr,
                 c.SubscriptionDurationPerMonth,
                 c.InbodyLink,
                 c.FromPicLink,
@@ -94,6 +97,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
                 c.Coach.FullName
                 , c.StartDate,
                 c.EndDate
+              
             ))
             .FirstOrDefaultAsync();
     }
@@ -109,6 +113,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
 
         if (dto.Name != null) client.Name = dto.Name;
         if (dto.Weight != null) client.Weight = dto.Weight.Value;
+        if (dto.Bmr != null) client.Bmr = dto.Bmr.Value;
         if (dto.SubscriptionDurationPerMonth != null)
             client.SubscriptionDurationPerMonth = dto.SubscriptionDurationPerMonth.Value;
         if (dto.InbodyLink != null) client.InbodyLink = dto.InbodyLink;

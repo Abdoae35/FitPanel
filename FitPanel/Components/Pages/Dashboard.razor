@@ -28,7 +28,9 @@
     </div>
     <div class="fp-stat-card">
         <span class="fp-stat-card-label">Avg. Subscription</span>
-        <span class="fp-stat-card-value">@avgSub<span style="font-size:24px;color:var(--fp-text-muted)">mo</span></span>
+        <span class="fp-stat-card-value">
+            @avgSub<span class="fp-stat-unit">mo</span>
+        </span>
     </div>
     <div class="fp-stat-card">
         <span class="fp-stat-card-label">New This Month</span>
@@ -60,7 +62,7 @@
     }
     else
     {
-        @* Desktop table — hidden on mobile *@
+        @* ── Desktop table ── *@
         <div class="fp-table-wrap">
             <table class="fp-table">
                 <thead>
@@ -78,23 +80,26 @@
                     {
                         <tr>
                             <td>
-                                <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="fp-client-name-cell">
                                     <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
                                     <span style="font-weight:600;">@client.Name</span>
                                 </div>
                             </td>
-                            <td>@client.Weight <span style="color:var(--fp-text-muted);font-size:12px;">kg</span></td>
+                            <td>
+                                @client.Weight
+                                <span class="fp-unit">kg</span>
+                            </td>
                             <td>
                                 <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
                             </td>
-                            <td style="color:var(--fp-text-muted);font-size:13px;">
+                            <td class="fp-muted-cell">
                                 @client.CreatedAt.ToString("MMM dd, yyyy")
                             </td>
-                            <td style="color:var(--fp-text-muted);font-size:13px;">
+                            <td class="fp-muted-cell">
                                 @(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))
                             </td>
                             <td>
-                                <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="padding:6px 14px;font-size:12px;">
+                                <a href="/dashboard/clients/@client.Id" class="fp-btn-outline fp-btn-sm">
                                     <i class="fa fa-eye"></i> View
                                 </a>
                             </td>
@@ -104,34 +109,34 @@
             </table>
         </div>
 
-        @* Mobile cards — hidden on desktop *@
+        @* ── Mobile cards ── *@
         <div class="fp-mobile-cards">
             @foreach (var client in clients.Take(5))
             {
                 <div class="fp-mobile-client-card">
                     <div class="fp-mobile-client-card-header">
-                        <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="fp-client-name-cell">
                             <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
                             <span style="font-weight:600;font-size:15px;">@client.Name</span>
                         </div>
                         <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
                     </div>
                     <div class="fp-mobile-client-card-meta">
-                        <div>
+                        <div class="fp-meta-item">
                             <span class="fp-meta-label">Weight</span>
                             <span class="fp-meta-value">@client.Weight kg</span>
                         </div>
-                        <div>
+                        <div class="fp-meta-item">
                             <span class="fp-meta-label">Joined</span>
                             <span class="fp-meta-value">@client.CreatedAt.ToString("MMM dd, yyyy")</span>
                         </div>
-                        <div>
+                        <div class="fp-meta-item">
                             <span class="fp-meta-label">Expires</span>
                             <span class="fp-meta-value">@(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))</span>
                         </div>
                     </div>
-                    <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="display:inline-block;margin-top:10px;padding:6px 14px;font-size:12px;">
-                        <i class="fa fa-eye"></i> View
+                    <a href="/dashboard/clients/@client.Id" class="fp-btn-outline fp-btn-sm fp-btn-block">
+                        <i class="fa fa-eye"></i> View Client
                     </a>
                 </div>
             }
@@ -139,7 +144,7 @@
 
         @if (clients.Count > 5)
         {
-            <div style="margin-top:20px;text-align:center;">
+            <div class="fp-view-all-wrap">
                 <a href="/dashboard/clients" class="fp-btn-outline">
                     View all @clients.Count clients <i class="fa fa-arrow-right"></i>
                 </a>
@@ -149,14 +154,23 @@
 </div>
 
 <style>
-    /* ── Stats grid ── */
+    /* ───────────────────────────────────────────
+       Stats grid
+    ─────────────────────────────────────────── */
     .fp-grid-4 {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
     }
 
-    /* ── Loading ── */
+    .fp-stat-unit {
+        font-size: 24px;
+        color: var(--fp-text-muted);
+    }
+
+    /* ───────────────────────────────────────────
+       Loading state
+    ─────────────────────────────────────────── */
     .fp-loading {
         display: flex;
         align-items: center;
@@ -165,17 +179,24 @@
         color: var(--fp-text-muted);
         font-size: 15px;
     }
+
     .fp-spinner-lg {
-        width: 28px; height: 28px;
+        width: 28px;
+        height: 28px;
         border: 3px solid var(--fp-border);
         border-top-color: var(--fp-accent);
         border-radius: 50%;
         animation: fp-spin 0.8s linear infinite;
         flex-shrink: 0;
     }
-    @@keyframes fp-spin { to { transform: rotate(360deg); } }
 
-    /* ── Empty state ── */
+    @@keyframes fp-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ───────────────────────────────────────────
+       Empty state
+    ─────────────────────────────────────────── */
     .fp-empty {
         display: flex;
         flex-direction: column;
@@ -184,15 +205,57 @@
         padding: 60px 0;
         color: var(--fp-text-muted);
     }
-    .fp-empty i { font-size: 40px; opacity: 0.3; }
-    .fp-empty p { font-size: 15px; }
-    .fp-link { color: var(--fp-accent); text-decoration: none; }
-    .fp-link:hover { text-decoration: underline; }
 
-    /* ── Client avatar ── */
+    .fp-empty i {
+        font-size: 40px;
+        opacity: 0.3;
+    }
+
+    .fp-empty p {
+        font-size: 15px;
+        text-align: center;
+    }
+
+    .fp-link {
+        color: var(--fp-accent);
+        text-decoration: none;
+    }
+
+    .fp-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ───────────────────────────────────────────
+       Table helpers
+    ─────────────────────────────────────────── */
+    .fp-unit {
+        color: var(--fp-text-muted);
+        font-size: 12px;
+    }
+
+    .fp-muted-cell {
+        color: var(--fp-text-muted);
+        font-size: 13px;
+    }
+
+    .fp-btn-sm {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+
+    .fp-client-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* ───────────────────────────────────────────
+       Client avatar
+    ─────────────────────────────────────────── */
     .fp-client-avatar {
-        width: 34px; height: 34px;
-        background: rgba(234,33,39,0.15);
+        width: 34px;
+        height: 34px;
+        background: rgba(234, 33, 39, 0.15);
         color: var(--fp-accent);
         font-family: 'Teko', sans-serif;
         font-size: 16px;
@@ -201,57 +264,132 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        border-radius: 4px;
     }
 
-    /* ── Responsive: table vs cards ── */
-    .fp-table-wrap  { display: block; overflow-x: auto; }
+    /* ───────────────────────────────────────────
+       Desktop table / Mobile cards toggle
+    ─────────────────────────────────────────── */
+    .fp-table-wrap   { display: block; overflow-x: auto; }
     .fp-mobile-cards { display: none; }
 
-    /* ── Mobile client card ── */
+    /* ───────────────────────────────────────────
+       Mobile client card
+    ─────────────────────────────────────────── */
     .fp-mobile-client-card {
         border: 1px solid var(--fp-border);
         border-radius: 8px;
         padding: 14px;
         margin-bottom: 12px;
     }
+
     .fp-mobile-client-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        gap: 8px;
+        flex-wrap: wrap;
     }
+
     .fp-mobile-client-card-meta {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px 12px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px 12px;
+        margin-bottom: 12px;
     }
+
+    .fp-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
     .fp-meta-label {
-        display: block;
         font-size: 11px;
         color: var(--fp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
+
     .fp-meta-value {
         font-size: 13px;
-        color: var(--fp-text-primary, inherit);
         font-weight: 500;
     }
 
-    /* ── Mobile breakpoint ── */
-    @@media (max-width: 640px) {
+    /* Full-width button on mobile cards */
+    .fp-btn-block {
+        display: flex !important;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ───────────────────────────────────────────
+       View-all link
+    ─────────────────────────────────────────── */
+    .fp-view-all-wrap {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    /* ───────────────────────────────────────────
+       Breakpoints
+    ─────────────────────────────────────────── */
+
+    /* Tablet – 2-column stat grid, keep table */
+    @@media (max-width: 900px) {
         .fp-grid-4 {
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
+    }
 
-        .fp-table-wrap  { display: none; }
+    /* Mobile – switch to card layout */
+    @@media (max-width: 640px) {
+        .fp-grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .fp-stat-card {
+            padding: 14px;
+        }
+
+        .fp-stat-card-value {
+            font-size: 28px;
+        }
+
+        .fp-stat-unit {
+            font-size: 16px;
+        }
+
+        .fp-stat-card-label {
+            font-size: 11px;
+        }
+
+        .fp-card {
+            padding: 16px;
+        }
+
+        .fp-card-title {
+            font-size: 16px;
+        }
+
+        .fp-card-sub {
+            font-size: 13px;
+        }
+
+        /* Swap table ↔ cards */
+        .fp-table-wrap   { display: none; }
         .fp-mobile-cards { display: block; }
+    }
 
-        .fp-card { padding: 16px; }
-        .fp-stat-card { padding: 14px; }
-        .fp-stat-card-value { font-size: 28px; }
-
-        .fp-card-title { font-size: 16px; }
-        .fp-card-sub   { font-size: 13px; }
+    /* Very small screens – stack meta to 2 columns */
+    @@media (max-width: 380px) {
+        .fp-mobile-client-card-meta {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 </style>
 
@@ -272,11 +410,13 @@
         isLoading = false;
 
         activeClients = clients.Count(c => c.SubscriptionDurationPerMonth > 0);
+
         avgSub = clients.Any()
             ? (int)clients.Average(c => c.SubscriptionDurationPerMonth)
             : 0;
+
         newThisMonth = clients.Count(c =>
             c.CreatedAt.Month == DateTime.UtcNow.Month &&
-            c.CreatedAt.Year == DateTime.UtcNow.Year);
+            c.CreatedAt.Year  == DateTime.UtcNow.Year);
     }
 }

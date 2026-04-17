@@ -17,17 +17,6 @@ public class PdfService : IPdfService
         _webRootPath = env.WebRootPath;
     }
 
-    // ── IMAGE HELPER ──────────────────────────────────────────────
-    private string ImageToBase64(string fileName)
-    {
-        var fullPath = Path.Combine(_webRootPath, "pdf-assets", fileName);
-        if (!File.Exists(fullPath)) return "";
-        var bytes = File.ReadAllBytes(fullPath);
-        var ext   = Path.GetExtension(fullPath).TrimStart('.').ToLower();
-        var mime  = ext == "png" ? "image/png" : "image/jpeg";
-        return $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
-    }
-
     // ── PUBLIC METHODS ────────────────────────────────────────────
     public async Task<byte[]?> GenerateWorkoutPdfAsync(
         int clientId, int workoutId, string coachId)
@@ -87,7 +76,7 @@ public class PdfService : IPdfService
     }
 
     // ── WORKOUT HTML BUILDER ──────────────────────────────────────
-    private string BuildWorkoutHtml(WorkOut workout)
+    private static string BuildWorkoutHtml(WorkOut workout)
     {
         var client     = workout.Client;
         var coach      = client.Coach;
@@ -96,9 +85,6 @@ public class PdfService : IPdfService
         var coachPhone = coach?.PhoneNumber ?? "";
         var days       = workout.WorkOutDays.OrderBy(d => d.Id).ToList();
         int totalPages = days.Count;
-
-        var imgLeft  = ImageToBase64("img-left.jpeg");
-        var imgRight = ImageToBase64("img-right.jpeg");
 
         var pages = new System.Text.StringBuilder();
         for (int i = 0; i < days.Count; i++)
@@ -115,7 +101,7 @@ public class PdfService : IPdfService
           <style>{SharedCss()}{WorkoutCss()}</style>
         </head>
         <body>
-          {WorkoutCover(client, workout, coachName, coachPhone, imgLeft, imgRight)}
+          {WorkoutCover(client, workout, coachName, coachPhone)}
           {pages}
         </body>
         </html>
@@ -123,7 +109,7 @@ public class PdfService : IPdfService
     }
 
     // ── DIET HTML BUILDER ─────────────────────────────────────────
-    private string BuildDietHtml(Diet diet)
+    private static string BuildDietHtml(Diet diet)
     {
         var client       = diet.Client;
         var coach        = client.Coach;
@@ -135,10 +121,6 @@ public class PdfService : IPdfService
         int totalProtein = meals.Sum(m => m.Protein);
         int totalCarbs   = meals.Sum(m => m.Carbs);
         int totalFats    = meals.Sum(m => m.Fats);
-
-        // ── load images just like the workout cover ──
-        var imgLeft  = ImageToBase64("img-left.jpeg");
-        var imgRight = ImageToBase64("img-right.jpeg");
 
         var pages = new System.Text.StringBuilder();
         for (int i = 0; i < meals.Count; i++)
@@ -155,161 +137,73 @@ public class PdfService : IPdfService
           <style>{SharedCss()}{DietCss()}</style>
         </head>
         <body>
-          {DietCover(client, diet, coachPhone, totalCal, totalProtein, totalCarbs, totalFats, imgLeft, imgRight)}
+          {DietCover(client, diet, coachPhone, totalCal, totalProtein, totalCarbs, totalFats)}
           {pages}
         </body>
         </html>
         """;
     }
 
-    // ── WORKOUT COVER ─────────────────────────────────────────────
+    // ── COVER PAGES (from old design) ─────────────────────────────
     private static string WorkoutCover(
         Client client, WorkOut workout,
-        string coachName, string coachPhone,
-        string imgLeft, string imgRight) => $"""
-        <div class="cover-page workout-cover" dir="ltr">
-          <div class="cv-header">
-            <div class="cv-logo">
-              <div class="cv-logo-icon">
-                <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="30" cy="42" rx="12" ry="13" fill="white"/>
-                  <circle cx="30" cy="20" r="9" fill="white"/>
-                  <path d="M18 38 C6 30 8 18 16 16 C20 15 22 20 18 25 C22 28 20 34 20 38Z" fill="white"/>
-                  <ellipse cx="11" cy="20" rx="5" ry="7" fill="white" transform="rotate(-20 11 20)"/>
-                  <path d="M42 38 C54 30 52 18 44 16 C40 15 38 20 42 25 C38 28 40 34 40 38Z" fill="white"/>
-                  <ellipse cx="49" cy="20" rx="5" ry="7" fill="white" transform="rotate(20 49 20)"/>
-                </svg>
-              </div>
-              <div class="cv-logo-name">Atlam</div>
-              <div class="cv-logo-fitness">FITNESS</div>
+        string coachName, string coachPhone) => $"""
+        <div class="cover-page">
+          <div class="cover-glow"></div>
+          <div class="cover-logo-text">Atlam FIT</div>
+          <div class="cover-tagline">قوة · تحول · إرادة</div>
+          <div class="cover-line"></div>
+          <div class="cover-plan-type">برنامج التمارين الأسبوعي</div>
+          <div class="cover-client">
+            <div class="cover-client-label">مُعد لـ</div>
+            <div class="cover-client-name">{client.Name}</div>
+          </div>
+          <div class="cover-details">
+            <div class="cover-detail">
+              <div class="cover-detail-val">{workout.NumberOfWorkOutDays}</div>
+              <div class="cover-detail-lbl">أيام</div>
             </div>
-            <div class="cv-x-grid">
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
+            <div class="cover-detail">
+              <div class="cover-detail-val">{client.SubscriptionDurationPerMonth}</div>
+              <div class="cover-detail-lbl">أسبوع</div>
+            </div>
+            <div class="cover-detail">
+              <div class="cover-detail-val">{client.StartDate:yyyy}</div>
+              <div class="cover-detail-lbl">بداية</div>
             </div>
           </div>
-          <div class="cv-photo-area">
-            {(string.IsNullOrEmpty(imgLeft)  ? "" : $"<div class='photo-left'><img src='{imgLeft}' /></div>")}
-            {(string.IsNullOrEmpty(imgRight) ? "" : $"<div class='photo-right'><img src='{imgRight}' /></div>")}
-            <div class="cv-photo-fade"></div>
-            <div class="cv-accents-left">
-              <div class="cv-acc-row"><div class="cv-acc-bar"></div><div class="cv-acc-bar"></div></div>
-              <div class="cv-acc-row"><div class="cv-acc-bar hollow"></div><div class="cv-acc-bar hollow"></div></div>
-            </div>
-            <div class="cv-chevrons">
-              <svg width="62" height="40" viewBox="0 0 62 40" fill="none"><polygon points="0,0 31,22 62,0 62,14 31,36 0,14" fill="#e31c1c"/></svg>
-              <svg width="62" height="28" viewBox="0 0 62 28" fill="none" style="margin-top:-2px"><polyline points="3,3 31,22 59,3" stroke="#e31c1c" stroke-width="3" stroke-linejoin="round" fill="none"/></svg>
-              <svg width="56" height="24" viewBox="0 0 56 24" fill="none" style="margin-top:0;opacity:.55"><polyline points="3,3 28,18 53,3" stroke="#e31c1c" stroke-width="2.5" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-          </div>
-          <div class="cv-bottom">
-            <div class="cv-bottom-inner">
-              <div class="cv-red-vbar"></div>
-              <div class="cv-text-block">
-                <span class="cv-line1">GET FIT</span>
-                <span class="cv-line2">BE STRONG</span>
-                <div class="cv-client-info">
-                  <div class="cv-prepared" dir="rtl">مُعد لـ <strong>{client.Name}</strong></div>
-                  <div class="cv-stats">
-                    <div class="cv-stat">
-                      <span class="cv-stat-val">{workout.NumberOfWorkOutDays}</span>
-                      <span class="cv-stat-lbl" dir="rtl">أيام</span>
-                    </div>
-                    <div class="cv-stat">
-                      <span class="cv-stat-val">{client.SubscriptionDurationPerMonth}</span>
-                      <span class="cv-stat-lbl" dir="rtl">أسبوع</span>
-                    </div>
-                    <div class="cv-stat">
-                      <span class="cv-stat-val">{client.StartDate:yyyy}</span>
-                      <span class="cv-stat-lbl" dir="rtl">بداية</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="cv-bottom-accents">
-              <div class="cv-ba solid"></div><div class="cv-ba solid"></div><div class="cv-ba hollow"></div>
-            </div>
-            <div class="cv-footer-text">Atlam FIT · {coachName} · {coachPhone}</div>
-          </div>
+          <div class="cover-coach">Atlam FIT · {coachName} · {coachPhone}</div>
         </div>
         """;
 
-    // ── DIET COVER ────────────────────────────────────────────────
-    // imgLeft and imgRight added to signature so images appear on diet cover too
     private static string DietCover(
         Client client, Diet diet, string coachPhone,
-        int cal, int protein, int carbs, int fats,
-        string imgLeft, string imgRight) => $"""
-        <div class="cover-page diet-cover" dir="ltr">
-          <div class="cv-header">
-            <div class="cv-logo">
-              <div class="cv-logo-icon diet-icon">
-                <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="30" cy="42" rx="12" ry="13" fill="white"/>
-                  <circle cx="30" cy="20" r="9" fill="white"/>
-                  <path d="M18 38 C6 30 8 18 16 16 C20 15 22 20 18 25 C22 28 20 34 20 38Z" fill="white"/>
-                  <ellipse cx="11" cy="20" rx="5" ry="7" fill="white" transform="rotate(-20 11 20)"/>
-                  <path d="M42 38 C54 30 52 18 44 16 C40 15 38 20 42 25 C38 28 40 34 40 38Z" fill="white"/>
-                  <ellipse cx="49" cy="20" rx="5" ry="7" fill="white" transform="rotate(20 49 20)"/>
-                </svg>
-              </div>
-              <div class="cv-logo-name diet-green">Atlam</div>
-              <div class="cv-logo-fitness diet-green-sub">FITNESS</div>
+        int cal, int protein, int carbs, int fats) => $"""
+        <div class="cover-page diet-cover">
+          <div class="cover-glow diet-glow"></div>
+          <div class="cover-logo-text diet-green">Atlam FIT</div>
+          <div class="cover-tagline">صحة · توازن · نتائج</div>
+          <div class="cover-line diet-line"></div>
+          <div class="cover-plan-type diet-plan-type">برنامج التغذية اليومي</div>
+          <div class="cover-client">
+            <div class="cover-client-label">مُعد لـ</div>
+            <div class="cover-client-name">{client.Name}</div>
+          </div>
+          <div class="cover-details">
+            <div class="cover-detail">
+              <div class="cover-detail-val diet-green">{diet.NumberOfMeals}</div>
+              <div class="cover-detail-lbl">وجبات</div>
             </div>
-            <div class="cv-x-grid diet-x">
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
-              <span>×</span><span>×</span><span>×</span><span>×</span>
+            <div class="cover-detail">
+              <div class="cover-detail-val diet-green">{cal}</div>
+              <div class="cover-detail-lbl">سعرة/يوم</div>
+            </div>
+            <div class="cover-detail">
+              <div class="cover-detail-val diet-green">{protein}g</div>
+              <div class="cover-detail-lbl">بروتين</div>
             </div>
           </div>
-          <div class="cv-photo-area diet-photo">
-            {(string.IsNullOrEmpty(imgLeft)  ? "" : $"<div class='photo-left'><img src='{imgLeft}' /></div>")}
-            {(string.IsNullOrEmpty(imgRight) ? "" : $"<div class='photo-right'><img src='{imgRight}' /></div>")}
-            <div class="cv-photo-fade diet-fade"></div>
-            <div class="cv-accents-left">
-              <div class="cv-acc-row"><div class="cv-acc-bar diet-acc"></div><div class="cv-acc-bar diet-acc"></div></div>
-              <div class="cv-acc-row"><div class="cv-acc-bar hollow diet-acc-hollow"></div><div class="cv-acc-bar hollow diet-acc-hollow"></div></div>
-            </div>
-            <div class="cv-chevrons">
-              <svg width="62" height="40" viewBox="0 0 62 40" fill="none"><polygon points="0,0 31,22 62,0 62,14 31,36 0,14" fill="#1a8c3c"/></svg>
-              <svg width="62" height="28" viewBox="0 0 62 28" fill="none" style="margin-top:-2px"><polyline points="3,3 31,22 59,3" stroke="#1a8c3c" stroke-width="3" stroke-linejoin="round" fill="none"/></svg>
-              <svg width="56" height="24" viewBox="0 0 56 24" fill="none" style="margin-top:0;opacity:.55"><polyline points="3,3 28,18 53,3" stroke="#1a8c3c" stroke-width="2.5" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-          </div>
-          <div class="cv-bottom">
-            <div class="cv-bottom-inner">
-              <div class="cv-red-vbar diet-vbar"></div>
-              <div class="cv-text-block">
-                <span class="cv-line1">EAT SMART</span>
-                <span class="cv-line2 diet-line2">LIVE STRONG</span>
-                <div class="cv-client-info">
-                  <div class="cv-prepared" dir="rtl">مُعد لـ <strong>{client.Name}</strong></div>
-                  <div class="cv-stats">
-                    <div class="cv-stat">
-                      <span class="cv-stat-val diet-green">{diet.NumberOfMeals}</span>
-                      <span class="cv-stat-lbl" dir="rtl">وجبات</span>
-                    </div>
-                    <div class="cv-stat">
-                      <span class="cv-stat-val diet-green">{cal}</span>
-                      <span class="cv-stat-lbl" dir="rtl">سعرة/يوم</span>
-                    </div>
-                    <div class="cv-stat">
-                      <span class="cv-stat-val diet-green">{protein}g</span>
-                      <span class="cv-stat-lbl" dir="rtl">بروتين</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="cv-bottom-accents">
-              <div class="cv-ba diet-solid"></div><div class="cv-ba diet-solid"></div><div class="cv-ba diet-hollow"></div>
-            </div>
-            <div class="cv-footer-text">Atlam FIT · {coachPhone}</div>
-          </div>
+          <div class="cover-coach">Atlam FIT · {coachPhone}</div>
         </div>
         """;
 
@@ -495,70 +389,37 @@ public class PdfService : IPdfService
     private static string SharedCss() => """
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Tajawal',sans-serif;background:#111;color:#111}
+
+        /* ── OLD-DESIGN COVER ── */
         .cover-page{
-            width:794px;height:1123px;
-            background:#111111;
-            position:relative;overflow:hidden;
-            page-break-after:always;
+            background:linear-gradient(160deg,#060d1a 0%,#0a1f3d 50%,#060d1a 100%);
+            width:794px;min-height:1123px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            position:relative;overflow:hidden;page-break-after:always;
         }
-        .cover-page::before{
-            content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-            background-image:
-                repeating-linear-gradient(17deg,transparent,transparent 120px,rgba(255,255,255,0.012) 120px,rgba(255,255,255,0.012) 121px),
-                repeating-linear-gradient(-43deg,transparent,transparent 90px,rgba(255,255,255,0.008) 90px,rgba(255,255,255,0.008) 91px);
+        .cover-glow{
+            position:absolute;width:500px;height:500px;
+            background:radial-gradient(circle,rgba(26,90,255,0.2) 0%,transparent 70%);
+            border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);
         }
-        .cv-header{
-            position:absolute;top:0;left:0;right:0;z-index:10;
-            padding:28px 32px 0;
-            display:flex;justify-content:space-between;align-items:flex-start;
-            flex-direction:row;
+        .cover-logo-text{font-size:64px;font-weight:900;color:#4da6ff;letter-spacing:6px;text-align:center}
+        .cover-tagline{font-size:14px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:8px}
+        .cover-line{width:60px;height:4px;background:linear-gradient(90deg,#1a5aff,#4da6ff);border-radius:2px;margin:20px auto}
+        .cover-plan-type{
+            margin-top:40px;padding:10px 32px;
+            border:1.5px solid rgba(77,166,255,0.35);border-radius:4px;
+            font-size:13px;font-weight:700;color:#4da6ff;letter-spacing:2px;text-transform:uppercase
         }
-        .cv-logo{display:flex;flex-direction:column;align-items:flex-start;gap:0}
-        .cv-logo-icon{
-            width:48px;height:48px;background:#e31c1c;border-radius:50%;
-            display:flex;align-items:center;justify-content:center;margin-bottom:6px;
-        }
-        .cv-logo-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;color:#fff;letter-spacing:4px;line-height:1;font-weight:900}
-        .cv-logo-fitness{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:#e31c1c;letter-spacing:7px;margin-top:3px}
-        .cv-x-grid{display:grid;grid-template-columns:repeat(4,14px);grid-template-rows:repeat(4,14px);gap:2px}
-        .cv-x-grid span{color:#e31c1c;font-size:11px;font-weight:700;line-height:14px;text-align:center}
-        .cv-photo-area{
-            position:absolute;top:115px;left:0;right:0;height:570px;z-index:5;
-            background:linear-gradient(135deg,#1a0a0a 0%,#2a0a0a 40%,#1a1a1a 100%);
-        }
-        .cv-photo-fade{
-            position:absolute;bottom:0;left:0;right:0;height:180px;
-            background:linear-gradient(to bottom,transparent 0%,#111111 100%);z-index:6;
-        }
-        .cv-accents-left{position:absolute;bottom:62px;left:24px;z-index:8;display:flex;flex-direction:column;gap:7px}
-        .cv-acc-row{display:flex;gap:6px}
-        .cv-acc-bar{width:30px;height:4px;background:#e31c1c;transform:skewX(-22deg)}
-        .cv-acc-bar.hollow{background:transparent;border:2px solid #e31c1c}
-        .cv-chevrons{position:absolute;right:28px;bottom:55px;z-index:8;display:flex;flex-direction:column;align-items:flex-end;gap:0}
-        .cv-bottom{position:absolute;bottom:0;left:0;right:0;z-index:10;padding:0 0 38px 0}
-        .cv-bottom-inner{display:flex;align-items:stretch;padding-left:32px;flex-direction:row;}
-        .cv-red-vbar{width:5px;background:#e31c1c;margin-right:20px;border-radius:1px;flex-shrink:0}
-        .cv-text-block{flex:1}
-        .cv-line1{
-            font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;
-            font-size:108px;color:#ffffff;text-transform:uppercase;letter-spacing:-2px;line-height:.88;display:block;
-        }
-        .cv-line2{
-            font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;
-            font-size:108px;color:#e31c1c;text-transform:uppercase;letter-spacing:-2px;line-height:.88;display:block;
-        }
-        .cv-client-info{margin-top:18px}
-        .cv-prepared{font-family:'Tajawal',sans-serif;font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:12px}
-        .cv-prepared strong{color:#fff;font-size:20px}
-        .cv-stats{display:flex;gap:32px;flex-direction:row;}
-        .cv-stat{display:flex;flex-direction:column;align-items:center}
-        .cv-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#e31c1c}
-        .cv-stat-lbl{font-family:'Tajawal',sans-serif;font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-        .cv-bottom-accents{position:absolute;bottom:36px;right:28px;display:flex;gap:7px;z-index:11;flex-direction:row;}
-        .cv-ba{width:22px;height:4px;transform:skewX(-22deg)}
-        .cv-ba.solid{background:#e31c1c}
-        .cv-ba.hollow{background:transparent;border:2px solid #e31c1c}
-        .cv-footer-text{font-family:'Tajawal',sans-serif;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;padding-left:32px;margin-top:12px}
+        .cover-client{margin-top:60px;text-align:center}
+        .cover-client-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+        .cover-client-name{font-size:28px;font-weight:700;color:#fff}
+        .cover-details{display:flex;gap:40px;margin-top:32px;justify-content:center}
+        .cover-detail{text-align:center}
+        .cover-detail-val{font-size:20px;font-weight:900;color:#4da6ff}
+        .cover-detail-lbl{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+        .cover-coach{position:absolute;bottom:40px;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:1px}
+
+        /* ── INNER PAGES ── */
         .pdf-page{
             background:#111;color:#eee;
             width:794px;min-height:1123px;
@@ -618,22 +479,6 @@ public class PdfService : IPdfService
         .footer-brand{font-size:10px;font-weight:700;color:#e31c1c;letter-spacing:2px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif}
         .footer-contact{font-size:10px;color:rgba(255,255,255,0.35);direction:ltr}
         .footer-divider{width:1px;height:18px;background:#2a2a2a}
-        .photo-left{
-            position:absolute;top:0;left:0;width:490px;height:100%;
-            clip-path:polygon(0 0,78% 0,95% 100%,0 100%);overflow:hidden;z-index:4;
-        }
-        .photo-left img{
-            width:100%;height:100%;object-fit:cover;object-position:center 31%;
-            filter:grayscale(100%) contrast(1.15) brightness(0.9);display:block;
-        }
-        .photo-right{
-            position:absolute;top:38px;right:0;width:490px;height:calc(100% - 38px);
-            clip-path:polygon(12% 0,100% 0,100% 100%,0 100%);overflow:hidden;z-index:4;
-        }
-        .photo-right img{
-            width:100%;height:100%;object-fit:cover;object-position:center 100%;
-            filter:grayscale(100%) contrast(1.15) brightness(0.88);display:block;
-        }
     """;
 
     private static string WorkoutCss() => """
@@ -641,19 +486,14 @@ public class PdfService : IPdfService
     """;
 
     private static string DietCss() => """
-        .diet-cover{background:#0a140a}
-        .diet-cover .cv-photo-area{background:linear-gradient(135deg,#0a1a0a 0%,#0d2a0d 40%,#111a11 100%)}
-        .diet-cover .cv-photo-fade{background:linear-gradient(to bottom,transparent 0%,#0a140a 100%)}
-        .diet-icon{background:#1a8c3c !important}
-        .diet-green{color:#4dcc80 !important}
-        .diet-green-sub{color:#4dcc80 !important}
-        .diet-x span{color:#1a8c3c !important}
-        .diet-vbar{background:#1a8c3c !important}
-        .diet-line2{color:#1a8c3c !important}
-        .diet-acc{background:#1a8c3c !important}
-        .diet-acc-hollow{border-color:#1a8c3c !important}
-        .diet-solid{background:#1a8c3c !important}
-        .diet-hollow{background:transparent;border:2px solid #1a8c3c}
+        /* ── OLD-DESIGN DIET COVER OVERRIDES ── */
+        .diet-cover{background:linear-gradient(160deg,#061a0a 0%,#0a3d18 50%,#061a0a 100%)}
+        .diet-glow{background:radial-gradient(circle,rgba(26,140,60,0.2) 0%,transparent 70%)}
+        .diet-green{color:#4dcc80}
+        .diet-line{background:linear-gradient(90deg,#1a8c3c,#4dcc80)}
+        .diet-plan-type{border-color:rgba(77,204,128,0.35);color:#4dcc80}
+
+        /* ── MEAL PAGES ── */
         .meal-name{font-weight:700;color:#fff}
         .cal-cell{color:#4dcc80;font-weight:900;font-size:14px;font-family:'Barlow Condensed',sans-serif}
         .alt-row{background:#111a11}

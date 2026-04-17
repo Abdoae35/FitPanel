@@ -106,6 +106,7 @@ app.MapPost("/logout", async (SignInManager<PanelUser> signInManager) =>
 // ← Seed MUST be before app.Run()
 await SeedDatabase(app);
 
+
 app.Run();
 
 async Task SeedDatabase(WebApplication app)

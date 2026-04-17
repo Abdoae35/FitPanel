@@ -13,7 +13,9 @@
 @inject IClientService ClientService
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
+
 <PageTitle>Dashboard — FitPanel</PageTitle>
+
 @* ── Stats Row ── *@
 <div class="fp-grid-4" style="margin-bottom: 28px;">
     <div class="fp-stat-card">
@@ -33,6 +35,7 @@
         <span class="fp-stat-card-value">@newThisMonth</span>
     </div>
 </div>
+
 @* ── Recent Clients ── *@
 <div class="fp-card">
     <div class="fp-card-title">
@@ -40,6 +43,7 @@
         Recent Clients
     </div>
     <p class="fp-card-sub">Your most recently added clients</p>
+
     @if (isLoading)
     {
         <div class="fp-loading">
@@ -56,46 +60,83 @@
     }
     else
     {
-        <table class="fp-table">
-            <thead>
-                <tr>
-                    <th>Client</th>
-                    <th>Weight</th>
-                    <th>Subscription</th>
-                    <th>Joined</th>
-                    <th>ExpirationDate</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var client in clients.Take(5))
-                {
+        @* Desktop table — hidden on mobile *@
+        <div class="fp-table-wrap">
+            <table class="fp-table">
+                <thead>
                     <tr>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
-                                <span style="font-weight:600;">@client.Name</span>
-                            </div>
-                        </td>
-                        <td>@client.Weight <span style="color:var(--fp-text-muted);font-size:12px;">kg</span></td>
-                        <td>
-                            <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
-                        </td>
-                        <td style="color:var(--fp-text-muted);font-size:13px;">
-                            @client.CreatedAt.ToString("MMM dd, yyyy")
-                        </td>
-                        <td style="color:var(--fp-text-muted);font-size:13px;">
-                            @(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))
-                        </td>
-                        <td>
-                            <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="padding:6px 14px;font-size:12px;">
-                                <i class="fa fa-eye"></i> View
-                            </a>
-                        </td>
+                        <th>Client</th>
+                        <th>Weight</th>
+                        <th>Subscription</th>
+                        <th>Joined</th>
+                        <th>Expiration Date</th>
+                        <th>Action</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var client in clients.Take(5))
+                    {
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
+                                    <span style="font-weight:600;">@client.Name</span>
+                                </div>
+                            </td>
+                            <td>@client.Weight <span style="color:var(--fp-text-muted);font-size:12px;">kg</span></td>
+                            <td>
+                                <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
+                            </td>
+                            <td style="color:var(--fp-text-muted);font-size:13px;">
+                                @client.CreatedAt.ToString("MMM dd, yyyy")
+                            </td>
+                            <td style="color:var(--fp-text-muted);font-size:13px;">
+                                @(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))
+                            </td>
+                            <td>
+                                <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="padding:6px 14px;font-size:12px;">
+                                    <i class="fa fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* Mobile cards — hidden on desktop *@
+        <div class="fp-mobile-cards">
+            @foreach (var client in clients.Take(5))
+            {
+                <div class="fp-mobile-client-card">
+                    <div class="fp-mobile-client-card-header">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
+                            <span style="font-weight:600;font-size:15px;">@client.Name</span>
+                        </div>
+                        <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
+                    </div>
+                    <div class="fp-mobile-client-card-meta">
+                        <div>
+                            <span class="fp-meta-label">Weight</span>
+                            <span class="fp-meta-value">@client.Weight kg</span>
+                        </div>
+                        <div>
+                            <span class="fp-meta-label">Joined</span>
+                            <span class="fp-meta-value">@client.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <div>
+                            <span class="fp-meta-label">Expires</span>
+                            <span class="fp-meta-value">@(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))</span>
+                        </div>
+                    </div>
+                    <a href="/dashboard/clients/@client.Id" class="fp-btn-outline" style="display:inline-block;margin-top:10px;padding:6px 14px;font-size:12px;">
+                        <i class="fa fa-eye"></i> View
+                    </a>
+                </div>
+            }
+        </div>
+
         @if (clients.Count > 5)
         {
             <div style="margin-top:20px;text-align:center;">
@@ -106,7 +147,16 @@
         }
     }
 </div>
+
 <style>
+    /* ── Stats grid ── */
+    .fp-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    /* ── Loading ── */
     .fp-loading {
         display: flex;
         align-items: center;
@@ -124,6 +174,8 @@
         flex-shrink: 0;
     }
     @@keyframes fp-spin { to { transform: rotate(360deg); } }
+
+    /* ── Empty state ── */
     .fp-empty {
         display: flex;
         flex-direction: column;
@@ -136,6 +188,8 @@
     .fp-empty p { font-size: 15px; }
     .fp-link { color: var(--fp-accent); text-decoration: none; }
     .fp-link:hover { text-decoration: underline; }
+
+    /* ── Client avatar ── */
     .fp-client-avatar {
         width: 34px; height: 34px;
         background: rgba(234,33,39,0.15);
@@ -148,10 +202,60 @@
         justify-content: center;
         flex-shrink: 0;
     }
-</style>
-@code {
 
-    
+    /* ── Responsive: table vs cards ── */
+    .fp-table-wrap  { display: block; overflow-x: auto; }
+    .fp-mobile-cards { display: none; }
+
+    /* ── Mobile client card ── */
+    .fp-mobile-client-card {
+        border: 1px solid var(--fp-border);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+    .fp-mobile-client-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .fp-mobile-client-card-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+    }
+    .fp-meta-label {
+        display: block;
+        font-size: 11px;
+        color: var(--fp-text-muted);
+    }
+    .fp-meta-value {
+        font-size: 13px;
+        color: var(--fp-text-primary, inherit);
+        font-weight: 500;
+    }
+
+    /* ── Mobile breakpoint ── */
+    @@media (max-width: 640px) {
+        .fp-grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .fp-table-wrap  { display: none; }
+        .fp-mobile-cards { display: block; }
+
+        .fp-card { padding: 16px; }
+        .fp-stat-card { padding: 14px; }
+        .fp-stat-card-value { font-size: 28px; }
+
+        .fp-card-title { font-size: 16px; }
+        .fp-card-sub   { font-size: 13px; }
+    }
+</style>
+
+@code {
     private List<ClientResponseDto> clients = new();
     private bool isLoading = true;
     private int activeClients = 0;

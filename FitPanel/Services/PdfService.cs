@@ -83,12 +83,13 @@ public class PdfService : IPdfService
         var coachName  = coach?.FullName ?? "الكوتش";
         var coachEmail = coach?.Email ?? "";
         var coachPhone = coach?.PhoneNumber ?? "";
+        var brandName  = $"{coachName} FIT";
         var days       = workout.WorkOutDays.OrderBy(d => d.Id).ToList();
         int totalPages = days.Count;
 
         var pages = new System.Text.StringBuilder();
         for (int i = 0; i < days.Count; i++)
-            pages.Append(WorkoutDayPage(days[i], client.Name, coachEmail, coachPhone, i + 1, totalPages));
+            pages.Append(WorkoutDayPage(days[i], client.Name, coachEmail, coachPhone, i + 1, totalPages, brandName));
 
         return $"""
         <!DOCTYPE html>
@@ -101,7 +102,7 @@ public class PdfService : IPdfService
           <style>{SharedCss()}{WorkoutCss()}</style>
         </head>
         <body>
-          {WorkoutCover(client, workout, coachName, coachPhone)}
+          {WorkoutCover(client, workout, coachName, coachPhone, brandName)}
           {pages}
         </body>
         </html>
@@ -115,6 +116,8 @@ public class PdfService : IPdfService
         var coach        = client.Coach;
         var coachEmail   = coach?.Email ?? "";
         var coachPhone   = coach?.PhoneNumber ?? "";
+        var coachName    = coach?.FullName ?? "الكوتش";
+        var brandName    = $"{coachName} FIT";
         var meals        = diet.MealItems.ToList();
         int totalPages   = meals.Count;
         int totalCal     = meals.Sum(m => m.Calories);
@@ -124,7 +127,7 @@ public class PdfService : IPdfService
 
         var pages = new System.Text.StringBuilder();
         for (int i = 0; i < meals.Count; i++)
-            pages.Append(MealPage(meals[i], i + 1, totalPages, client.Name, coachEmail, coachPhone));
+            pages.Append(MealPage(meals[i], i + 1, totalPages, client.Name, coachEmail, coachPhone, brandName));
 
         return $"""
         <!DOCTYPE html>
@@ -137,20 +140,21 @@ public class PdfService : IPdfService
           <style>{SharedCss()}{DietCss()}</style>
         </head>
         <body>
-          {DietCover(client, diet, coachPhone, totalCal, totalProtein, totalCarbs, totalFats)}
+          {DietCover(client, diet, coachPhone, totalCal, totalProtein, totalCarbs, totalFats, brandName)}
           {pages}
         </body>
         </html>
         """;
     }
 
-    // ── COVER PAGES (from old design) ─────────────────────────────
+    // ── COVER PAGES ───────────────────────────────────────────────
     private static string WorkoutCover(
         Client client, WorkOut workout,
-        string coachName, string coachPhone) => $"""
+        string coachName, string coachPhone,
+        string brandName) => $"""
         <div class="cover-page">
           <div class="cover-glow"></div>
-          <div class="cover-logo-text">Atlam FIT</div>
+          <div class="cover-logo-text">{brandName}</div>
           <div class="cover-tagline">قوة · تحول · إرادة</div>
           <div class="cover-line"></div>
           <div class="cover-plan-type">برنامج التمارين الأسبوعي</div>
@@ -164,7 +168,7 @@ public class PdfService : IPdfService
               <div class="cover-detail-lbl">أيام</div>
             </div>
             <div class="cover-detail">
-              <div class="cover-detail-val">{client.SubscriptionDurationPerMonth}</div>
+              <div class="cover-detail-val">4</div>
               <div class="cover-detail-lbl">أسبوع</div>
             </div>
             <div class="cover-detail">
@@ -172,16 +176,17 @@ public class PdfService : IPdfService
               <div class="cover-detail-lbl">بداية</div>
             </div>
           </div>
-          <div class="cover-coach">Atlam FIT · {coachName} · {coachPhone}</div>
+          <div class="cover-coach">{brandName} · {coachName} · {coachPhone}</div>
         </div>
         """;
 
     private static string DietCover(
         Client client, Diet diet, string coachPhone,
-        int cal, int protein, int carbs, int fats) => $"""
+        int cal, int protein, int carbs, int fats,
+        string brandName) => $"""
         <div class="cover-page diet-cover">
           <div class="cover-glow diet-glow"></div>
-          <div class="cover-logo-text diet-green">Atlam FIT</div>
+          <div class="cover-logo-text diet-green">{brandName}</div>
           <div class="cover-tagline">صحة · توازن · نتائج</div>
           <div class="cover-line diet-line"></div>
           <div class="cover-plan-type diet-plan-type">برنامج التغذية اليومي</div>
@@ -203,7 +208,7 @@ public class PdfService : IPdfService
               <div class="cover-detail-lbl">بروتين</div>
             </div>
           </div>
-          <div class="cover-coach">Atlam FIT · {coachPhone}</div>
+          <div class="cover-coach">{brandName} · {coachPhone}</div>
         </div>
         """;
 
@@ -211,7 +216,8 @@ public class PdfService : IPdfService
     private static string WorkoutDayPage(
         WorkOutDay day, string clientName,
         string email, string phone,
-        int pageNum, int totalPages)
+        int pageNum, int totalPages,
+        string brandName)
     {
         var rows = new System.Text.StringBuilder();
         foreach (var ex in day.ExcerciseItems)
@@ -268,7 +274,7 @@ public class PdfService : IPdfService
                 </svg>
               </div>
               <div>
-                <div class="brand-name">ATLAM FIT</div>
+                <div class="brand-name">{brandName}</div>
                 <div class="brand-sub">Weekly Training Program</div>
               </div>
             </div>
@@ -292,7 +298,7 @@ public class PdfService : IPdfService
             {cardioSection}
           </div>
           <div class="page-footer">
-            <div class="footer-brand">ATLAM FIT</div>
+            <div class="footer-brand">{brandName}</div>
             <div class="footer-divider"></div>
             <div class="footer-contact">{email} · {phone}</div>
           </div>
@@ -303,7 +309,8 @@ public class PdfService : IPdfService
     // ── MEAL PAGE ─────────────────────────────────────────────────
     private static string MealPage(
         MealItem meal, int pageNum, int totalPages,
-        string clientName, string email, string phone)
+        string clientName, string email, string phone,
+        string brandName)
     {
         var rows = new System.Text.StringBuilder();
         rows.Append($"""
@@ -351,7 +358,7 @@ public class PdfService : IPdfService
                 </svg>
               </div>
               <div>
-                <div class="brand-name" style="color:#4dcc80;">ATLAM FIT</div>
+                <div class="brand-name" style="color:#4dcc80;">{brandName}</div>
                 <div class="brand-sub">Daily Nutrition Program</div>
               </div>
             </div>
@@ -377,7 +384,7 @@ public class PdfService : IPdfService
             </table>
           </div>
           <div class="page-footer" style="border-top:2px solid #1a8c3c;">
-            <div class="footer-brand" style="color:#4dcc80;">ATLAM FIT</div>
+            <div class="footer-brand" style="color:#4dcc80;">{brandName}</div>
             <div class="footer-divider"></div>
             <div class="footer-contact">{email} · {phone}</div>
           </div>
@@ -390,32 +397,32 @@ public class PdfService : IPdfService
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Tajawal',sans-serif;background:#111;color:#111}
 
-        /* ── OLD-DESIGN COVER ── */
+        /* ── COVER PAGE (matches inner page theme) ── */
         .cover-page{
-            background:linear-gradient(160deg,#060d1a 0%,#0a1f3d 50%,#060d1a 100%);
+            background:linear-gradient(160deg,#0d0505 0%,#1a0505 50%,#0d0505 100%);
             width:794px;min-height:1123px;
             display:flex;flex-direction:column;align-items:center;justify-content:center;
             position:relative;overflow:hidden;page-break-after:always;
         }
         .cover-glow{
             position:absolute;width:500px;height:500px;
-            background:radial-gradient(circle,rgba(26,90,255,0.2) 0%,transparent 70%);
+            background:radial-gradient(circle,rgba(227,28,28,0.2) 0%,transparent 70%);
             border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);
         }
-        .cover-logo-text{font-size:64px;font-weight:900;color:#4da6ff;letter-spacing:6px;text-align:center}
+        .cover-logo-text{font-size:64px;font-weight:900;color:#e31c1c;letter-spacing:6px;text-align:center}
         .cover-tagline{font-size:14px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:8px}
-        .cover-line{width:60px;height:4px;background:linear-gradient(90deg,#1a5aff,#4da6ff);border-radius:2px;margin:20px auto}
+        .cover-line{width:60px;height:4px;background:linear-gradient(90deg,#a01010,#e31c1c);border-radius:2px;margin:20px auto}
         .cover-plan-type{
             margin-top:40px;padding:10px 32px;
-            border:1.5px solid rgba(77,166,255,0.35);border-radius:4px;
-            font-size:13px;font-weight:700;color:#4da6ff;letter-spacing:2px;text-transform:uppercase
+            border:1.5px solid rgba(227,28,28,0.35);border-radius:4px;
+            font-size:13px;font-weight:700;color:#e31c1c;letter-spacing:2px;text-transform:uppercase
         }
         .cover-client{margin-top:60px;text-align:center}
         .cover-client-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
         .cover-client-name{font-size:28px;font-weight:700;color:#fff}
         .cover-details{display:flex;gap:40px;margin-top:32px;justify-content:center}
         .cover-detail{text-align:center}
-        .cover-detail-val{font-size:20px;font-weight:900;color:#4da6ff}
+        .cover-detail-val{font-size:20px;font-weight:900;color:#e31c1c}
         .cover-detail-lbl{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
         .cover-coach{position:absolute;bottom:40px;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:1px}
 

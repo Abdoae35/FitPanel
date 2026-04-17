@@ -6,6 +6,7 @@
 
 @inherits LayoutComponentBase
 @implements IDisposable
+@inject IJSRuntime JS
 
 <div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")">
 
@@ -16,6 +17,9 @@
         <div class="fp-sidebar-logo">
             <span class="fp-logo-icon">FP</span>
             <span class="fp-logo-text @(sidebarOpen ? "" : "hidden")">FIT<span>PANEL</span></span>
+            <button class="fp-close-sidebar-mobile" @onclick="ToggleSidebar">
+                <i class="fa fa-times"></i>
+            </button>
         </div>
 
         @* Nav *@
@@ -23,7 +27,7 @@
             <div class="fp-nav-group">
                 <span class="fp-nav-label @(sidebarOpen ? "" : "hidden")">MAIN</span>
 
-                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item">
+                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
                     <i class="fa fa-chart-line"></i>
                     <span class="@(sidebarOpen ? "" : "hidden")">Dashboard</span>
                 </NavLink>
@@ -31,7 +35,7 @@
                 @* Admin only *@
                 <AuthorizeView Roles="Admin" Context="adminCtx">
                     <Authorized>
-                        <NavLink href="/dashboard/coaches" class="fp-nav-item">
+                        <NavLink href="/dashboard/coaches" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
                             <i class="fa fa-user-tie"></i>
                             <span class="@(sidebarOpen ? "" : "hidden")">Coaches</span>
                         </NavLink>
@@ -41,7 +45,7 @@
                 @* Coach only *@
                 <AuthorizeView Roles="Coach" Context="coachCtx">
                     <Authorized>
-                        <NavLink href="/dashboard/clients" class="fp-nav-item">
+                        <NavLink href="/dashboard/clients" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
                             <i class="fa fa-users"></i>
                             <span class="@(sidebarOpen ? "" : "hidden")">My Clients</span>
                         </NavLink>
@@ -78,7 +82,12 @@
         </div>
     </aside>
 
-    @* ── Main Area ── *@
+    @* ── Mobile Sidebar Backdrop ── *@
+    @if (sidebarOpen)
+    {
+        <div class="fp-sidebar-backdrop" @onclick="ToggleSidebar"></div>
+    }
+
     <div class="fp-main">
 
         @* Top Bar *@
@@ -88,8 +97,8 @@
                     <i class="fa @(sidebarOpen ? "fa-times" : "fa-bars")"></i>
                 </button>
                 <div class="fp-breadcrumb">
-                    <span>FitPanel</span>
-                    <i class="fa fa-chevron-right"></i>
+                    <span class="hide-mobile-breadcrumb">FitPanel</span>
+                    <i class="fa fa-chevron-right hide-mobile-breadcrumb"></i>
                     <span>@currentPage</span>
                 </div>
             </div>
@@ -103,7 +112,7 @@
         </header>
 
         @* Page Content *@
-        <main class="fp-content">
+        <main class="fp-content @(sidebarOpen ? "hide-on-mobile" : "")">
             @Body
         </main>
     </div>
@@ -178,6 +187,8 @@
         overflow: hidden;
         white-space: nowrap;
     }
+    .fp-close-sidebar-mobile { display: none; }
+
     .fp-logo-icon {
         width: 42px; height: 42px;
         background: var(--fp-accent);
@@ -579,9 +590,136 @@
         .fp-grid-4 { grid-template-columns: repeat(2, 1fr); }
         .fp-grid-3 { grid-template-columns: repeat(2, 1fr); }
     }
+    @@media (max-width: 768px) {
+        body, html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .fp-dashboard {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* fp-main must always be accessible on mobile */
+        .fp-main {
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        /* Topbar always on top, fully clickable */
+        .fp-topbar {
+            padding: 0 15px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+            pointer-events: auto;
+        }
+
+        /* Sidebar slides in as full-width overlay ABOVE everything */
+        .fp-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px !important;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .fp-sidebar.open {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        /* Every interactive element inside sidebar must be tappable */
+        .fp-sidebar a,
+        .fp-sidebar button,
+        .fp-sidebar .fp-nav-item,
+        .fp-close-sidebar-mobile,
+        .fp-logout-btn {
+            pointer-events: auto;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(234, 33, 39, 0.2);
+        }
+
+        /* Mobile Close button in sidebar */
+        .fp-close-sidebar-mobile {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            background: transparent;
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text);
+            width: 38px;
+            height: 38px;
+            min-width: 44px;
+            min-height: 44px;
+            transition: all 0.2s;
+        }
+        .fp-close-sidebar-mobile:hover,
+        .fp-close-sidebar-mobile:active {
+            color: var(--fp-accent);
+            border-color: var(--fp-accent);
+        }
+
+        /* Force show texts inside sidebar when open on mobile */
+        .fp-logo-text.hidden,
+        .fp-nav-label.hidden,
+        .fp-nav-item span.hidden,
+        .fp-user-info.hidden,
+        .fp-logout-btn span.hidden { 
+            opacity: 1 !important; 
+            width: auto !important; 
+            display: inline-block !important;
+        }
+
+        .hide-mobile-breadcrumb { display: none !important; }
+
+        /* Hide the content (slider) completely when sidebar is open */
+        .hide-on-mobile {
+            display: none !important;
+        }
+
+        /* Burger menu button — always tappable */
+        .fp-toggle-sidebar {
+            pointer-events: auto;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+            -webkit-tap-highlight-color: rgba(234, 33, 39, 0.2);
+        }
+
+        .fp-content {
+            padding: 15px;
+            width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+    }
     @@media (max-width: 640px) {
         .fp-grid-4, .fp-grid-3, .fp-grid-2 { grid-template-columns: 1fr; }
-        .fp-content { padding: 16px; }
+    }
+
+    /* Sidebar backdrop (mobile only) */
+    .fp-sidebar-backdrop {
+        display: none;
+    }
+    @@media (max-width: 768px) {
+        .fp-sidebar-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1999; /* just below sidebar z-index: 2000 */
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
     }
 </style>
 
@@ -611,6 +749,20 @@
         Nav.LocationChanged += OnLocationChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // On mobile, sidebar should start closed
+            var width = await JS.InvokeAsync<int>("eval", "window.innerWidth");
+            if (width <= 768)
+            {
+                sidebarOpen = false;
+                StateHasChanged();
+            }
+        }
+    }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         UpdateCurrentPage(e.Location);
@@ -631,6 +783,7 @@
 
     private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
     private void ToggleTheme() => isDark = !isDark;
+    private void CloseSidebarOnMobile() => sidebarOpen = false;
 
     private string GetInitials(string? name)
     {

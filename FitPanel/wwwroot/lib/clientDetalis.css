@@ -284,3 +284,222 @@
 .fp-pill-muted { background: rgba(255,255,255,0.06); color: var(--fp-text-muted); }
 .fp-month-chevron { color: var(--fp-text-muted); font-size: 13px; flex-shrink: 0; }
 .fp-month-body { padding: 0 16px 16px; background: var(--fp-bg); }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE & TABLET RESPONSIVE — max-width: 768px
+   ⚠️  Does NOT touch or override any desktop styles.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+    /* ── Client Header ── */
+    .fp-client-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .fp-client-header > .fp-btn-outline {
+        width: 100%;
+        justify-content: center;
+    }
+    .fp-client-header-left {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .fp-client-title {
+        font-size: 26px;
+    }
+    .fp-client-meta-row {
+        gap: 10px;
+    }
+    .fp-client-meta-row span {
+        font-size: 12px;
+    }
+    .fp-client-avatar-xl {
+        width: 52px;
+        height: 52px;
+        font-size: 26px;
+    }
+
+    /* ── Links Row ── */
+    .fp-links-row {
+        flex-direction: column;
+    }
+    .fp-link-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ── Subscription Status ── */
+    .fp-sub-status {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 16px;
+    }
+    .fp-sub-info {
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+    }
+    .fp-sub-block {
+        padding: 0 12px;
+        min-width: calc(50% - 24px);
+    }
+    .fp-sub-block:first-child {
+        padding-left: 0;
+    }
+    .fp-sub-divider {
+        display: none;
+    }
+    .fp-sub-status > .fp-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ── Tabs ── */
+    .fp-tabs {
+        gap: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .fp-tab {
+        padding: 10px 16px;
+        font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ── Section Header ── */
+    .fp-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .fp-section-header > .fp-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    .fp-section-title {
+        font-size: 22px;
+    }
+
+    /* ── Plan Card Header actions ── */
+    .fp-plan-card {
+        padding: 16px;
+    }
+    .fp-plan-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .fp-plan-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .fp-icon-btn {
+        font-size: 11px;
+        padding: 5px 10px;
+        height: 30px;
+    }
+
+    /* ── Meals Grid — single column ── */
+    .fp-meals-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Macro row — 2 columns ── */
+    .fp-macro-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* ── Day card header ── */
+    .fp-day-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .fp-day-header > .fp-icon-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ── Exercise Table — horizontal scroll ── */
+    .fp-day-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .fp-exercise-table {
+        min-width: 420px;
+    }
+
+    /* ── Cardio badge ── */
+    .fp-cardio-badge {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* ── Month Accordion ── */
+    .fp-month-header {
+        padding: 12px 14px;
+    }
+    .fp-month-header-left {
+        gap: 8px;
+    }
+    .fp-month-number {
+        font-size: 14px;
+    }
+
+    /* ── Empty card ── */
+    .fp-empty-card {
+        padding: 40px 20px;
+    }
+
+    /* ── Modal ── */
+    .fp-modal-overlay {
+        padding: 12px;
+        align-items: flex-end;
+    }
+    .fp-modal {
+        max-height: 92vh;
+        border-radius: 0;
+    }
+    .fp-modal-body {
+        padding: 16px;
+    }
+    .fp-modal-footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .fp-modal-footer .fp-btn-primary,
+    .fp-modal-footer .fp-btn-outline {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTRA SMALL — max-width: 480px
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .fp-client-title {
+        font-size: 22px;
+    }
+    .fp-sub-block {
+        min-width: 100%;
+        padding: 0;
+    }
+    .fp-macro-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .fp-plan-actions {
+        flex-direction: column;
+    }
+    .fp-plan-actions .fp-icon-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .fp-month-pills {
+        display: none; /* hide pills on very small screens to save space */
+    }
+}

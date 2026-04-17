@@ -12,7 +12,7 @@
 <PageTitle>Clients — FitPanel</PageTitle>
 
 @* ── Header Row ── *@
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+<div class="fp-page-header">
     <div>
         <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
             My Clients
@@ -389,6 +389,74 @@ else
     }
     .fp-empty i { font-size: 48px; opacity: 0.2; }
     .fp-empty p { font-size: 16px; }
+
+    /* ── Page Header ── */
+    .fp-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MOBILE & TABLET — max-width: 768px
+       Only adds overrides; does NOT change desktop layout.
+    ═══════════════════════════════════════════════════ */
+    @@media (max-width: 768px) {
+        .fp-page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .fp-page-header .fp-btn-primary {
+            width: 100%;
+            justify-content: center;
+        }
+        .fp-client-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+        }
+        .fp-client-card-body h3 {
+            font-size: 20px;
+        }
+        .fp-modal-overlay {
+            padding: 12px;
+            align-items: flex-end;
+        }
+        .fp-modal {
+            max-height: 92vh;
+        }
+        .fp-modal-body {
+            padding: 16px;
+        }
+        .fp-modal-footer {
+            padding: 12px 16px;
+            flex-direction: column-reverse;
+            gap: 8px;
+        }
+        .fp-modal-footer .fp-btn-primary,
+        .fp-modal-footer .fp-btn-outline {
+            width: 100%;
+            justify-content: center;
+        }
+        /* Stack the 2-col modal grids to 1 col */
+        .fp-grid-2 {
+            grid-template-columns: 1fr;
+        }
+        .fp-grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .fp-client-grid {
+            grid-template-columns: 1fr;
+        }
+        .fp-client-card-body h3 {
+            font-size: 18px;
+        }
+    }
 </style>
 
 @code {

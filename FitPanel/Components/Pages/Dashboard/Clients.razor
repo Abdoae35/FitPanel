@@ -10,6 +10,11 @@
 @rendermode InteractiveServer
 
 <PageTitle>Clients — FitPanel</PageTitle>
+<head>
+    <link href="/lib/bootstrap/dist/css/style.css" rel="stylesheet" />
+    <link href="/css/dashboard.css" rel="stylesheet" />
+</head>
+
 
 @* ── Header Row ── *@
 <div class="fp-page-header">
@@ -32,6 +37,13 @@
     <div class="fp-loading">
         <div class="fp-spinner-lg"></div>
         <span>Loading clients...</span>
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="fp-empty">
+        <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
+        <p>@errorMessage</p>
     </div>
 }
 else if (!clients.Any())
@@ -462,6 +474,7 @@ else
 @code {
     private List<ClientResponseDto> clients = new();
     private bool isLoading = true;
+    private string errorMessage = "";
     private bool showModal = false;
     private bool isSaving = false;
     private bool showDeleteConfirm = false;
@@ -474,13 +487,33 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(auth.User);
-        if (user == null) return;
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (auth.User.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "User is not authenticated.";
+                isLoading = false;
+                return;
+            }
 
-        coachId = user.Id;
-        clients = await ClientService.GetMyClientsAsync(coachId);
-        isLoading = false;
+            var user = await UserManager.GetUserAsync(auth.User);
+            if (user == null)
+            {
+                errorMessage = "Could not load user profile. User may be invalid or session expired.";
+                isLoading = false;
+                return;
+            }
+
+            coachId = user.Id;
+            clients = await ClientService.GetMyClientsAsync(coachId);
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading clients: {ex.Message}";
+            isLoading = false;
+        }
     }
 
     private void GoToClient(int id) => Nav.NavigateTo($"/dashboard/clients/{id}");

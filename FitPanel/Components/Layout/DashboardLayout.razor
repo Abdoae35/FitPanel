@@ -7,17 +7,32 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject IJSRuntime JS
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap" rel="stylesheet">
+    <link href="/lib/bootstrap/dist/css/style.css" rel="stylesheet" />
 
-<div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    </head>
+<!-- Loader Start -->
+  <div class="preloader" id="fp-preloader">
+    <div class="loader-wrap-heading">
+      <div class="load-text"> <span>L</span> <span>o</span> <span>a</span> <span>d</span> <span>i</span> <span>n</span> <span>g</span> </div>
+    </div>
+  </div>
+  <!-- Loader End -->
+
+<div class="fp-dashboard @(isDark ? "fp-dark" : "fp-light")" id="fp-dashboard">
 
     @* ── Sidebar ── *@
-    <aside class="fp-sidebar @(sidebarOpen ? "open" : "")">
+    <aside class="fp-sidebar @(sidebarOpen ? "open" : "")" id="fp-sidebar">
 
         @* Logo *@
         <div class="fp-sidebar-logo">
             <span class="fp-logo-icon">FP</span>
-            <span class="fp-logo-text @(sidebarOpen ? "" : "hidden")">FIT<span>PANEL</span></span>
-            <button class="fp-close-sidebar-mobile" @onclick="ToggleSidebar">
+            <span class="fp-logo-text">FIT<span>PANEL</span></span>
+            @* JS-driven close button — no Blazor @onclick needed *@
+            <button class="fp-close-sidebar-mobile" onclick="fpCloseSidebar()" type="button">
                 <i class="fa fa-times"></i>
             </button>
         </div>
@@ -25,19 +40,19 @@
         @* Nav *@
         <nav class="fp-nav">
             <div class="fp-nav-group">
-                <span class="fp-nav-label @(sidebarOpen ? "" : "hidden")">MAIN</span>
+                <span class="fp-nav-label">MAIN</span>
 
-                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
+                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" onclick="fpCloseSidebar()">
                     <i class="fa fa-chart-line"></i>
-                    <span class="@(sidebarOpen ? "" : "hidden")">Dashboard</span>
+                    <span>Dashboard</span>
                 </NavLink>
 
                 @* Admin only *@
                 <AuthorizeView Roles="Admin" Context="adminCtx">
                     <Authorized>
-                        <NavLink href="/dashboard/coaches" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
+                        <NavLink href="/dashboard/coaches" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-user-tie"></i>
-                            <span class="@(sidebarOpen ? "" : "hidden")">Coaches</span>
+                            <span>Coaches</span>
                         </NavLink>
                     </Authorized>
                 </AuthorizeView>
@@ -45,9 +60,9 @@
                 @* Coach only *@
                 <AuthorizeView Roles="Coach" Context="coachCtx">
                     <Authorized>
-                        <NavLink href="/dashboard/clients" class="fp-nav-item" @onclick="CloseSidebarOnMobile">
+                        <NavLink href="/dashboard/clients" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-users"></i>
-                            <span class="@(sidebarOpen ? "" : "hidden")">My Clients</span>
+                            <span>My Clients</span>
                         </NavLink>
                     </Authorized>
                 </AuthorizeView>
@@ -58,11 +73,11 @@
         <div class="fp-sidebar-bottom">
             <AuthorizeView Context="userCtx">
                 <Authorized>
-                    <div class="fp-user-card @(sidebarOpen ? "" : "mini")">
+                    <div class="fp-user-card">
                         <div class="fp-user-avatar">
                             @GetInitials(userCtx.User.Identity?.Name)
                         </div>
-                        <div class="fp-user-info @(sidebarOpen ? "" : "hidden")">
+                        <div class="fp-user-info">
                             <span class="fp-user-name">@userCtx.User.Identity?.Name</span>
                             <span class="fp-user-role">
                                 @(userCtx.User.IsInRole(Policies.AdminRole) ? "Administrator" : Policies.CoachRole)
@@ -76,25 +91,23 @@
                 <AntiforgeryToken />
                 <button type="submit" class="fp-logout-btn" title="Logout">
                     <i class="fa fa-sign-out-alt"></i>
-                    <span class="@(sidebarOpen ? "" : "hidden")">Logout</span>
+                    <span>Logout</span>
                 </button>
             </form>
         </div>
     </aside>
 
-    @* ── Mobile Sidebar Backdrop ── *@
-    @if (sidebarOpen)
-    {
-        <div class="fp-sidebar-backdrop" @onclick="ToggleSidebar"></div>
-    }
+    @* ── Mobile Backdrop (JS-driven, no Blazor state needed) ── *@
+    <div class="fp-sidebar-backdrop" id="fp-sidebar-backdrop" onclick="fpCloseSidebar()"></div>
 
     <div class="fp-main">
 
         @* Top Bar *@
         <header class="fp-topbar">
             <div class="fp-topbar-left">
-                <button class="fp-toggle-sidebar" @onclick="ToggleSidebar">
-                    <i class="fa @(sidebarOpen ? "fa-times" : "fa-bars")"></i>
+                @* Burger button — pure JS, always works *@
+                <button class="fp-toggle-sidebar" onclick="fpToggleSidebar()" type="button" id="fp-burger-btn">
+                    <i class="fa fa-bars" id="fp-burger-icon"></i>
                 </button>
                 <div class="fp-breadcrumb">
                     <span class="hide-mobile-breadcrumb">FitPanel</span>
@@ -104,19 +117,92 @@
             </div>
 
             <div class="fp-topbar-right">
-                @* Dark/Light toggle *@
+                @* Dark/Light toggle — still Blazor (needs server state) *@
                 <button class="fp-theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
                     <i class="fa @(isDark ? "fa-sun" : "fa-moon")"></i>
                 </button>
             </div>
         </header>
 
-        @* Page Content *@
-        <main class="fp-content @(sidebarOpen ? "hide-on-mobile" : "")">
+        @* Page Content — hidden on mobile when sidebar is open via CSS class on body *@
+        <main class="fp-content">
             @Body
         </main>
     </div>
 </div>
+
+@* ── JS Helpers ── *@
+<script>
+    // Add 'open' class immediately on desktop so sidebar starts expanded
+    (function() {
+        if (window.innerWidth > 768) {
+            var s = document.getElementById('fp-sidebar');
+            if (s) s.classList.add('open');
+        }
+    })();
+
+    function fpToggleSidebar() {
+        var sidebar = document.getElementById('fp-sidebar');
+        var icon = document.getElementById('fp-burger-icon');
+        if (window.innerWidth <= 768) {
+            var isOpen = document.body.classList.toggle('fp-sidebar-open');
+            if (icon) icon.className = isOpen ? 'fa fa-times' : 'fa fa-bars';
+        } else {
+            if (sidebar) sidebar.classList.toggle('open');
+        }
+    }
+    function fpCloseSidebar() {
+        document.body.classList.remove('fp-sidebar-open');
+        var icon = document.getElementById('fp-burger-icon');
+        if (icon) icon.className = 'fa fa-bars';
+    }
+
+    // ── Preloader: DOM-based URL polling ──────────────────────────────────
+    // Works for ALL Blazor render modes (including InteractiveServer/SignalR)
+    // because it only watches window.location.href via setInterval — no
+    // Blazor events, lifecycle hooks, or JS interop needed.
+    (function () {
+        var _lastUrl = '';
+        var _hideTimer = null;
+        var _transition = '0.7s cubic-bezier(0.86, 0, 0.09, 1)';
+
+        function getEl() {
+            return document.getElementById('fp-preloader');
+        }
+
+        function hidePreloader() {
+            var el = getEl();
+            if (!el) return;
+            el.style.transition = 'top ' + _transition;
+            el.style.top = '-100%';
+        }
+
+        function showAndScheduleHide() {
+            var el = getEl();
+            if (el) {
+                // Show immediately (no transition on the way in)
+                el.style.transition = 'none';
+                el.style.top = '0';
+            }
+            if (_hideTimer) clearTimeout(_hideTimer);
+            // Hide after 2 seconds
+            _hideTimer = setTimeout(hidePreloader, 2000);
+        }
+
+        // First load: hide after 2s
+        _lastUrl = window.location.href;
+        showAndScheduleHide();
+
+        // Poll every 100ms for URL changes (catches Blazor SignalR navigation)
+        setInterval(function () {
+            var url = window.location.href;
+            if (url !== _lastUrl) {
+                _lastUrl = url;
+                showAndScheduleHide();
+            }
+        }, 100);
+    })();
+</script>
 
 @* ── Styles ── *@
 <style>
@@ -175,6 +261,15 @@
         flex-shrink: 0;
     }
     .fp-sidebar.open { width: var(--fp-sidebar-w); }
+
+    /* ── Collapsed state text hiding (replaces old Blazor .hidden class) ── */
+    .fp-sidebar:not(.open) .fp-logo-text { opacity: 0; width: 0; overflow: hidden; }
+    .fp-sidebar:not(.open) .fp-nav-label { opacity: 0; }
+    .fp-sidebar:not(.open) .fp-nav-item span { opacity: 0; width: 0; overflow: hidden; }
+    .fp-sidebar:not(.open) .fp-user-info { opacity: 0; width: 0; overflow: hidden; }
+    .fp-sidebar:not(.open) .fp-logout-btn span { opacity: 0; width: 0; overflow: hidden; }
+    .fp-sidebar:not(.open) .fp-user-card { justify-content: center; }
+    .fp-sidebar:not(.open) .fp-user-card .fp-user-avatar { margin: 0 auto; }
 
     /* Logo */
     .fp-sidebar-logo {
@@ -602,14 +697,12 @@
             position: relative;
         }
 
-        /* fp-main must always be accessible on mobile */
         .fp-main {
             position: relative;
             z-index: 1;
             pointer-events: auto;
         }
 
-        /* Topbar always on top, fully clickable */
         .fp-topbar {
             padding: 0 15px;
             position: sticky;
@@ -618,7 +711,7 @@
             pointer-events: auto;
         }
 
-        /* Sidebar slides in as full-width overlay ABOVE everything */
+        /* ── Sidebar: hidden by default, slides in when body.fp-sidebar-open ── */
         .fp-sidebar {
             position: fixed;
             left: 0;
@@ -630,12 +723,13 @@
             z-index: 2000;
             pointer-events: none;
         }
-        .fp-sidebar.open {
+        /* JS adds fp-sidebar-open to body → sidebar slides in */
+        body.fp-sidebar-open .fp-sidebar {
             transform: translateX(0);
             pointer-events: auto;
         }
 
-        /* Every interactive element inside sidebar must be tappable */
+        /* All sidebar interactive elements must be tappable */
         .fp-sidebar a,
         .fp-sidebar button,
         .fp-sidebar .fp-nav-item,
@@ -647,7 +741,7 @@
             -webkit-tap-highlight-color: rgba(234, 33, 39, 0.2);
         }
 
-        /* Mobile Close button in sidebar */
+        /* Mobile X close button (always shown on mobile) */
         .fp-close-sidebar-mobile {
             display: flex !important;
             align-items: center;
@@ -661,38 +755,28 @@
             min-width: 44px;
             min-height: 44px;
             transition: all 0.2s;
+            cursor: pointer;
         }
-        .fp-close-sidebar-mobile:hover,
         .fp-close-sidebar-mobile:active {
             color: var(--fp-accent);
             border-color: var(--fp-accent);
         }
 
-        /* Force show texts inside sidebar when open on mobile */
-        .fp-logo-text.hidden,
-        .fp-nav-label.hidden,
-        .fp-nav-item span.hidden,
-        .fp-user-info.hidden,
-        .fp-logout-btn span.hidden { 
-            opacity: 1 !important; 
-            width: auto !important; 
-            display: inline-block !important;
-        }
-
         .hide-mobile-breadcrumb { display: none !important; }
 
-        /* Hide the content (slider) completely when sidebar is open */
-        .hide-on-mobile {
-            display: none !important;
-        }
-
-        /* Burger menu button — always tappable */
+        /* ── Burger button ── */
         .fp-toggle-sidebar {
             pointer-events: auto;
             touch-action: manipulation;
             min-width: 44px;
             min-height: 44px;
+            cursor: pointer;
             -webkit-tap-highlight-color: rgba(234, 33, 39, 0.2);
+        }
+
+        /* ── Hide page content when sidebar is open ── */
+        body.fp-sidebar-open .fp-content {
+            display: none !important;
         }
 
         .fp-content {
@@ -701,25 +785,25 @@
             overflow-x: hidden;
             box-sizing: border-box;
         }
+
+        /* ── Backdrop: hidden by default, shows when body.fp-sidebar-open ── */
+        .fp-sidebar-backdrop {
+            display: none;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1500;  /* BELOW sidebar (2000) so sidebar buttons are always clickable */
+            cursor: pointer;
+        }
+        body.fp-sidebar-open .fp-sidebar-backdrop {
+            display: block;
+        }
     }
     @@media (max-width: 640px) {
         .fp-grid-4, .fp-grid-3, .fp-grid-2 { grid-template-columns: 1fr; }
-    }
-
-    /* Sidebar backdrop (mobile only) */
-    .fp-sidebar-backdrop {
-        display: none;
-    }
-    @@media (max-width: 768px) {
-        .fp-sidebar-backdrop {
-            display: block;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 1999; /* just below sidebar z-index: 2000 */
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-        }
     }
 </style>
 
@@ -783,7 +867,7 @@
 
     private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
     private void ToggleTheme() => isDark = !isDark;
-    private void CloseSidebarOnMobile() => sidebarOpen = false;
+    private void CloseSidebarOnMobile() { sidebarOpen = false; StateHasChanged(); }
 
     private string GetInitials(string? name)
     {

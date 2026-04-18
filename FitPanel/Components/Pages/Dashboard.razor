@@ -15,6 +15,11 @@
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard — FitPanel</PageTitle>
+<head>
+    <link href="/lib/bootstrap/dist/css/style.css" rel="stylesheet">
+    
+</head>
+
 
 @* ── Stats Row ── *@
 <div class="fp-grid-4" style="margin-bottom: 28px;">
@@ -51,6 +56,13 @@
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
             <span>Loading clients...</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="fp-empty">
+            <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
+            <p>@errorMessage</p>
         </div>
     }
     else if (!clients.Any())
@@ -396,27 +408,48 @@
 @code {
     private List<ClientResponseDto> clients = new();
     private bool isLoading = true;
+    private string errorMessage = "";
     private int activeClients = 0;
     private int avgSub = 0;
     private int newThisMonth = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(auth.User);
-        if (user == null) return;
+        try 
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (auth.User.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "User is not authenticated.";
+                isLoading = false;
+                return;
+            }
 
-        clients = await ClientService.GetMyClientsAsync(user.Id);
-        isLoading = false;
+            var user = await UserManager.GetUserAsync(auth.User);
+            if (user == null) 
+            {
+                errorMessage = "Could not load user profile. User may be invalid or session expired.";
+                isLoading = false;
+                return;
+            }
 
-        activeClients = clients.Count(c => c.SubscriptionDurationPerMonth > 0);
+            clients = await ClientService.GetMyClientsAsync(user.Id);
+            isLoading = false;
 
-        avgSub = clients.Any()
-            ? (int)clients.Average(c => c.SubscriptionDurationPerMonth)
-            : 0;
+            activeClients = clients.Count(c => c.SubscriptionDurationPerMonth > 0);
 
-        newThisMonth = clients.Count(c =>
-            c.CreatedAt.Month == DateTime.UtcNow.Month &&
-            c.CreatedAt.Year  == DateTime.UtcNow.Year);
+            avgSub = clients.Any()
+                ? (int)clients.Average(c => c.SubscriptionDurationPerMonth)
+                : 0;
+
+            newThisMonth = clients.Count(c =>
+                c.CreatedAt.Month == DateTime.UtcNow.Month &&
+                c.CreatedAt.Year  == DateTime.UtcNow.Year);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading dashboard: {ex.Message}";
+            isLoading = false;
+        }
     }
 }

@@ -1631,19 +1631,7 @@ span.counter {
 }
 /* 7. Featured Slider One End */
 
-/* 8. Client Slider One Start*/.
-.client-style-one .client-slider .owl-stage {
-    display: flex !important;
-    align-items: center !important;
-}
-.client-style-one .owl-carousel .owl-stage {
-    position: relative;
-    -ms-touch-action: pan-Y;
-    touch-action: manipulation;
-    -moz-backface-visibility: hidden;
-    display: flex;
-    align-items: center;
-}
+
 /* 8. Client Slider One End*/
 
 /* 9. Core Features Start */ 

@@ -94,7 +94,7 @@
                             <td>
                                 <div class="fp-client-name-cell">
                                     <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
-                                    <span style="font-weight:600;">@client.Name</span>
+                                    <span>@client.Name</span>
                                 </div>
                             </td>
                             <td>
@@ -240,14 +240,37 @@
     /* ───────────────────────────────────────────
        Table helpers
     ─────────────────────────────────────────── */
-    .fp-unit {
+
+    /* Table header cells */
+    .fp-table thead th {
+        font-family: 'Teko', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
         color: var(--fp-text-muted);
-        font-size: 12px;
+        padding: 14px 16px;
     }
 
-    .fp-muted-cell {
+    /* Table body cells */
+    .fp-table tbody td {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        color: var(--fp-text);
+        padding: 14px 16px;
+    }
+
+    .fp-unit {
         color: var(--fp-text-muted);
         font-size: 13px;
+        margin-left: 2px;
+    }
+
+    /* Date / secondary data cells */
+    .fp-muted-cell {
+        color: var(--fp-text-secondary);
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
     }
 
     .fp-btn-sm {
@@ -259,6 +282,15 @@
         display: flex;
         align-items: center;
         gap: 12px;
+    }
+
+    /* Client name text */
+    .fp-client-name-cell span {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--fp-text);
+        letter-spacing: 0.3px;
     }
 
     /* ───────────────────────────────────────────

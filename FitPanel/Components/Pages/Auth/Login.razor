@@ -254,9 +254,60 @@
         border-top: 1px solid #1e1e1e; text-align: center;
     }
     .fp-form-footer p { font-size: 13px; color: #444; font-family: 'DM Sans', sans-serif; }
+    /* ── Mobile: ≤ 900px — brand panel hidden, form fills screen ── */
     @@media (max-width: 900px) {
         .fp-brand-panel { display: none; }
-        .fp-form-panel { padding: 40px 24px; }
+        .fp-form-panel {
+            flex: 1;
+            padding: 48px 28px;
+            border-left: none;
+        }
+        .fp-form-inner {
+            max-width: 100%;
+        }
+    }
+
+    /* ── Small phones: ≤ 480px ── */
+    @@media (max-width: 480px) {
+        .fp-form-panel {
+            padding: 36px 20px;
+            align-items: flex-start;
+            padding-top: 60px;
+        }
+        .fp-form-inner {
+            width: 100%;
+        }
+        .fp-form-tag {
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+        .fp-form-header h2 {
+            font-size: 42px;
+        }
+        .fp-form-header {
+            margin-bottom: 28px;
+        }
+        .fp-input {
+            height: 52px;
+            font-size: 16px; /* prevents iOS zoom on focus */
+            padding: 0 16px;
+        }
+        .fp-field label {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+        }
+        .fp-btn {
+            height: 54px;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+        .fp-alert {
+            font-size: 14px;
+            padding: 12px 14px;
+        }
+        .fp-form-footer {
+            margin-top: 28px;
+        }
     }
 </style>
 

@@ -140,6 +140,8 @@ Migrations/
  20260413131448_Databaseupdate.Designer.cs
  20260413132033_UploadDatabase.cs
  20260413132033_UploadDatabase.Designer.cs
+ 20260519155558_AddDictionary.cs
+ 20260519155558_AddDictionary.Designer.cs
  FitPanelDbContextModelSnapshot.cs
 obj/Debug/net9.0/
  .NETCoreApp,Version=v9.0.AssemblyAttributes.cs

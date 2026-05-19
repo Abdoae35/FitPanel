@@ -4,6 +4,7 @@ using FitPanel.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitPanel.Migrations
 {
     [DbContext(typeof(FitPanelDbContext))]
-    partial class FitPanelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519155558_AddDictionary")]
+    partial class AddDictionary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,70 +147,6 @@ namespace FitPanel.Migrations
                     b.HasIndex("CoachId");
 
                     b.ToTable("Clients");
-                });
-
-            modelBuilder.Entity("FitPanel.Data.Models.CoachExerciseDictionary", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CoachId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ExcerciseLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ExerciseName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CoachId");
-
-                    b.ToTable("CoachExerciseDictionaries");
-                });
-
-            modelBuilder.Entity("FitPanel.Data.Models.CoachMealDictionary", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Calories")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Carbs")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CoachId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Fats")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Link")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MealName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Protein")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CoachId");
-
-                    b.ToTable("CoachMealDictionaries");
                 });
 
             modelBuilder.Entity("FitPanel.Data.Models.Diet", b =>
@@ -623,28 +562,6 @@ namespace FitPanel.Migrations
                         .WithMany("Clients")
                         .HasForeignKey("CoachId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Coach");
-                });
-
-            modelBuilder.Entity("FitPanel.Data.Models.CoachExerciseDictionary", b =>
-                {
-                    b.HasOne("FitPanel.Data.PanelUser", "Coach")
-                        .WithMany()
-                        .HasForeignKey("CoachId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Coach");
-                });
-
-            modelBuilder.Entity("FitPanel.Data.Models.CoachMealDictionary", b =>
-                {
-                    b.HasOne("FitPanel.Data.PanelUser", "Coach")
-                        .WithMany()
-                        .HasForeignKey("CoachId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Coach");

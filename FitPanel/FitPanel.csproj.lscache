@@ -142,6 +142,8 @@ Migrations/
  20260413132033_UploadDatabase.Designer.cs
  20260519155558_AddDictionary.cs
  20260519155558_AddDictionary.Designer.cs
+ 20260519155955_AddDictionaryDbSet.cs
+ 20260519155955_AddDictionaryDbSet.Designer.cs
  FitPanelDbContextModelSnapshot.cs
 obj/Debug/net9.0/
  .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
@@ -158,6 +160,9 @@ Services/AuthServices/
 Services/ClientServices/
  ClientService.cs
  IClientService.cs
+Services/DictionaryServices/
+ CoachDictionaryService.cs
+ ICoachDictionaryService.cs
 Services/DietServices/
  DietService.cs
  IDietService.cs
@@ -569,6 +574,7 @@ Components/
    ClientDetail.razor
    Clients.razor
    Coaches.razor
+   MyData.razor
   Home.razor
  Routes.razor
  _Imports.razor
@@ -590,6 +596,7 @@ Components/
    ClientDetail.razor
    Clients.razor
    Coaches.razor
+   MyData.razor
   Home.razor
  Routes.razor
  _Imports.razor

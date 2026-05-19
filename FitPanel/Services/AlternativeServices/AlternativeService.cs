@@ -39,6 +39,25 @@ public class AlternativeService : IAlternativeService
         };
 
         _db.AlternativeItems.Add(alternative);
+
+        // Auto-save to dictionary
+        var existsInDict = await _db.CoachMealDictionaries
+            .AnyAsync(x => x.CoachId == coachId && x.MealName.ToLower() == dto.MealName.ToLower());
+        
+        if (!existsInDict)
+        {
+            _db.CoachMealDictionaries.Add(new CoachMealDictionary
+            {
+                CoachId = coachId,
+                MealName = dto.MealName,
+                Protein = dto.Protein,
+                Carbs = dto.Carbs,
+                Fats = dto.Fats,
+                Calories = dto.Calories,
+                Link = dto.Link
+            });
+        }
+
         await _db.SaveChangesAsync();
 
         return new AlternativeResponeDto(

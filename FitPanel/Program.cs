@@ -10,6 +10,7 @@ builder.Services.AddScoped<IDietService, DietService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IAlternativeService, AlternativeService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<ICoachDictionaryService, CoachDictionaryService>();
 
 // Add this so minimal APIs can read JSON bodies
 builder.Services.AddEndpointsApiExplorer();

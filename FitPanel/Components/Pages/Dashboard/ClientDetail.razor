@@ -18,6 +18,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ICoachDictionaryService DictionaryService
 @rendermode InteractiveServer
 <PageTitle>Client Profile — FitPanel</PageTitle>
 
@@ -658,7 +659,7 @@ else
             </div>
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Meal Name *</label><input @bind="newMeal.MealName" placeholder="Grilled Chicken" /></div>
+                    <div class="fp-input-group"><label>Meal Name *</label><input list="mealDictList" @bind="newMeal.MealName" @bind:after="OnMealNameChanged" placeholder="Grilled Chicken" /></div>
                     <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" placeholder="220" /></div>
                 </div>
                 <div class="fp-input-group"><label>Description</label><input @bind="newMeal.Description" placeholder="Lean protein source..." /></div>
@@ -697,7 +698,7 @@ else
                     An alternative is a substitute meal with similar purpose but different ingredients.
                 </p>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Meal Name *</label><input @bind="newAlternative.MealName" placeholder="Tuna Salad" /></div>
+                    <div class="fp-input-group"><label>Meal Name *</label><input list="mealDictList" @bind="newAlternative.MealName" @bind:after="OnAlternativeNameChanged" placeholder="Tuna Salad" /></div>
                     <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newAlternative.Calories" placeholder="180" /></div>
                 </div>
                 <div class="fp-input-group"><label>Description</label><input @bind="newAlternative.Description" placeholder="Alternative protein source..." /></div>
@@ -811,7 +812,7 @@ else
                 <button class="fp-modal-close" @onclick='() => showExerciseModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Exercise Name *</label><input @bind="newExercise.ExerciseName" placeholder="Bench Press" /></div>
+                <div class="fp-input-group"><label>Exercise Name *</label><input list="exerciseDictList" @bind="newExercise.ExerciseName" @bind:after="OnExerciseNameChanged" placeholder="Bench Press" /></div>
                 <div class="fp-grid-3">
                     <div class="fp-input-group"><label>Sets *</label><input @bind="newExercise.Sets" placeholder="4" /></div>
                     <div class="fp-input-group"><label>Reps *</label><input @bind="newExercise.Reps" placeholder="8-10" /></div>
@@ -968,6 +969,20 @@ else
     </div>
 }
 
+<datalist id="mealDictList">
+    @foreach (var m in mealDict)
+    {
+        <option value="@m.MealName"></option>
+    }
+</datalist>
+
+<datalist id="exerciseDictList">
+    @foreach (var ex in exerciseDict)
+    {
+        <option value="@ex.ExerciseName"></option>
+    }
+</datalist>
+
 @code {
     [Parameter] public int ClientId { get; set; }
     private ClientResponseDto? client;
@@ -1062,6 +1077,9 @@ else
                 ?.WorkoutDays.Select(d => d.Day).ToHashSet()
         ?? new HashSet<Days>();
 
+    private List<CoachMealDictionary> mealDict = new();
+    private List<CoachExerciseDictionary> exerciseDict = new();
+
     // ── Lifecycle ─────────────────────────────────────────────────
 
     protected override async Task OnInitializedAsync()
@@ -1075,6 +1093,8 @@ else
         {
             diets = await DietService.GetDietsAsync(ClientId, coachId);
             workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
+            mealDict = await DictionaryService.GetMealsAsync(coachId);
+            exerciseDict = await DictionaryService.GetExercisesAsync(coachId);
         }
         isLoading = false;
     }
@@ -1610,6 +1630,41 @@ else
             await Task.Delay(1500);
             showRenewModal = false;
             renewMessage = string.Empty;
+        }
+    }
+
+    private void OnMealNameChanged()
+    {
+        var match = mealDict.FirstOrDefault(m => string.Equals(m.MealName, newMeal.MealName, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            newMeal.Calories = match.Calories;
+            newMeal.Protein = match.Protein;
+            newMeal.Carbs = match.Carbs;
+            newMeal.Fats = match.Fats;
+            newMeal.Link = match.Link;
+        }
+    }
+
+    private void OnAlternativeNameChanged()
+    {
+        var match = mealDict.FirstOrDefault(m => string.Equals(m.MealName, newAlternative.MealName, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            newAlternative.Calories = match.Calories;
+            newAlternative.Protein = match.Protein;
+            newAlternative.Carbs = match.Carbs;
+            newAlternative.Fats = match.Fats;
+            newAlternative.Link = match.Link;
+        }
+    }
+
+    private void OnExerciseNameChanged()
+    {
+        var match = exerciseDict.FirstOrDefault(e => string.Equals(e.ExerciseName, newExercise.ExerciseName, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            newExercise.ExerciseLink = match.ExcerciseLink;
         }
     }
 }

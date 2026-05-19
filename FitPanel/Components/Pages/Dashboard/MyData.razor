@@ -1,0 +1,323 @@
+@page "/dashboard/my-data"
+@namespace FitPanel.Components.Pages.Dashboard
+@layout FitPanel.Components.Layout.DashboardLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@using FitPanel.Data.Models
+@using FitPanel.Services
+
+@attribute [Authorize(Roles = "Coach")]
+@inject UserManager<PanelUser> UserManager
+@inject ICoachDictionaryService DictionaryService
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>My Data — FitPanel</PageTitle>
+
+<head>
+    <link href="/css/dashboard.css" rel="stylesheet" />
+    <link href="/lib/clientDetalis.css" rel="stylesheet" />
+</head>
+
+<div class="fp-page-header">
+    <div>
+        <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
+            My Data Dictionary
+        </h1>
+        <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
+            Manage your auto-saved meals and exercises
+        </p>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="fp-loading">
+        <div class="fp-spinner-lg"></div>
+        <span>Loading your data...</span>
+    </div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="fp-empty">
+        <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
+        <p>@errorMessage</p>
+    </div>
+}
+else
+{
+    <div class="fp-tabs" style="margin-bottom: 24px;">
+        <button class="fp-tab @(activeTab == "meals" ? "active" : "")" @onclick='() => activeTab = "meals"'>
+            <i class="fa fa-utensils"></i> Meals (@meals.Count)
+        </button>
+        <button class="fp-tab @(activeTab == "exercises" ? "active" : "")" @onclick='() => activeTab = "exercises"'>
+            <i class="fa fa-dumbbell"></i> Exercises (@exercises.Count)
+        </button>
+    </div>
+
+    @* ── MEALS TAB ── *@
+    @if (activeTab == "meals")
+    {
+        <div class="fp-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h3 class="fp-card-title" style="margin:0;">Meals Dictionary</h3>
+                <button class="fp-btn-primary" @onclick="OpenAddMealModal">
+                    <i class="fa fa-plus"></i> Add Meal
+                </button>
+            </div>
+
+            @if (!meals.Any())
+            {
+                <div class="fp-empty">
+                    <i class="fa fa-utensils"></i>
+                    <p>No meals saved yet.</p>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x:auto;">
+                    <table class="fp-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Macros (P/C/F)</th>
+                                <th>Calories</th>
+                                <th>Link</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in meals)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@m.MealName</td>
+                                    <td>@(m.Protein)g / @(m.Carbs)g / @(m.Fats)g</td>
+                                    <td style="color:var(--fp-accent);font-weight:bold;">@m.Calories kcal</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(m.Link))
+                                        {
+                                            <a href="@m.Link" target="_blank" style="color:var(--fp-accent);"><i class="fa fa-link"></i></a>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="fp-icon-btn" title="Edit" @onclick="() => OpenEditMealModal(m)" style="display:inline-flex;margin-right:8px;">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="fp-icon-btn" title="Delete" @onclick="() => ConfirmDeleteMeal(m)" style="display:inline-flex;color:#ff6b6b;border-color:#ff6b6b;">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+
+    @* ── EXERCISES TAB ── *@
+    @if (activeTab == "exercises")
+    {
+        <div class="fp-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h3 class="fp-card-title" style="margin:0;">Exercises Dictionary</h3>
+                <button class="fp-btn-primary" @onclick="OpenAddExerciseModal">
+                    <i class="fa fa-plus"></i> Add Exercise
+                </button>
+            </div>
+
+            @if (!exercises.Any())
+            {
+                <div class="fp-empty">
+                    <i class="fa fa-dumbbell"></i>
+                    <p>No exercises saved yet.</p>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x:auto;">
+                    <table class="fp-table">
+                        <thead>
+                            <tr>
+                                <th>Exercise Name</th>
+                                <th>Video Link</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ex in exercises)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@ex.ExerciseName</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(ex.ExcerciseLink))
+                                        {
+                                            <a href="@ex.ExcerciseLink" target="_blank" style="color:var(--fp-accent);"><i class="fa fa-external-link-alt"></i> Watch</a>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="fp-icon-btn" title="Edit" @onclick="() => OpenEditExerciseModal(ex)" style="display:inline-flex;margin-right:8px;">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="fp-icon-btn" title="Delete" @onclick="() => ConfirmDeleteExercise(ex)" style="display:inline-flex;color:#ff6b6b;border-color:#ff6b6b;">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+}
+
+@* ── MODALS ── *@
+
+@* Meal Modal *@
+@if (showMealModal)
+{
+    <div class="fp-modal-overlay" @onclick="() => showMealModal = false">
+        <div class="fp-modal" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-utensils"></i> @(editMeal.Id == 0 ? "ADD" : "EDIT") MEAL</span>
+                <button class="fp-modal-close" @onclick="() => showMealModal = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group"><label>Meal Name *</label><input @bind="editMeal.MealName" /></div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="editMeal.Calories" /></div>
+                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="editMeal.Protein" /></div>
+                </div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="editMeal.Carbs" /></div>
+                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="editMeal.Fats" /></div>
+                </div>
+                <div class="fp-input-group"><label>Link</label><input @bind="editMeal.Link" /></div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showMealModal = false">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveMeal"><i class="fa fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Exercise Modal *@
+@if (showExerciseModal)
+{
+    <div class="fp-modal-overlay" @onclick="() => showExerciseModal = false">
+        <div class="fp-modal" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> @(editExercise.Id == 0 ? "ADD" : "EDIT") EXERCISE</span>
+                <button class="fp-modal-close" @onclick="() => showExerciseModal = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group"><label>Exercise Name *</label><input @bind="editExercise.ExerciseName" /></div>
+                <div class="fp-input-group"><label>Video Link</label><input @bind="editExercise.ExcerciseLink" /></div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showExerciseModal = false">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveExercise"><i class="fa fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private string errorMessage = "";
+    private string coachId = "";
+    private string activeTab = "meals";
+
+    private List<CoachMealDictionary> meals = new();
+    private List<CoachExerciseDictionary> exercises = new();
+
+    private bool showMealModal = false;
+    private CoachMealDictionary editMeal = new();
+
+    private bool showExerciseModal = false;
+    private CoachExerciseDictionary editExercise = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (auth.User.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "Not authenticated.";
+                return;
+            }
+            var user = await UserManager.GetUserAsync(auth.User);
+            if (user == null) { errorMessage = "User not found."; return; }
+            
+            coachId = user.Id;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        meals = await DictionaryService.GetMealsAsync(coachId);
+        exercises = await DictionaryService.GetExercisesAsync(coachId);
+    }
+
+    // --- Meals ---
+    private void OpenAddMealModal() { editMeal = new CoachMealDictionary(); showMealModal = true; }
+    private void OpenEditMealModal(CoachMealDictionary m) { 
+        editMeal = new CoachMealDictionary { Id = m.Id, MealName = m.MealName, Calories = m.Calories, Protein = m.Protein, Carbs = m.Carbs, Fats = m.Fats, Link = m.Link }; 
+        showMealModal = true; 
+    }
+    
+    private async Task SaveMeal()
+    {
+        if (string.IsNullOrWhiteSpace(editMeal.MealName)) return;
+        if (editMeal.Id == 0) await DictionaryService.AddMealAsync(coachId, editMeal);
+        else await DictionaryService.UpdateMealAsync(coachId, editMeal);
+        
+        await LoadData();
+        showMealModal = false;
+    }
+
+    private async Task ConfirmDeleteMeal(CoachMealDictionary m)
+    {
+        await DictionaryService.DeleteMealAsync(coachId, m.Id);
+        await LoadData();
+    }
+
+    // --- Exercises ---
+    private void OpenAddExerciseModal() { editExercise = new CoachExerciseDictionary(); showExerciseModal = true; }
+    private void OpenEditExerciseModal(CoachExerciseDictionary e) { 
+        editExercise = new CoachExerciseDictionary { Id = e.Id, ExerciseName = e.ExerciseName, ExcerciseLink = e.ExcerciseLink }; 
+        showExerciseModal = true; 
+    }
+
+    private async Task SaveExercise()
+    {
+        if (string.IsNullOrWhiteSpace(editExercise.ExerciseName)) return;
+        if (editExercise.Id == 0) await DictionaryService.AddExerciseAsync(coachId, editExercise);
+        else await DictionaryService.UpdateExerciseAsync(coachId, editExercise);
+
+        await LoadData();
+        showExerciseModal = false;
+    }
+
+    private async Task ConfirmDeleteExercise(CoachExerciseDictionary e)
+    {
+        await DictionaryService.DeleteExerciseAsync(coachId, e.Id);
+        await LoadData();
+    }
+}

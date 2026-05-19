@@ -152,6 +152,21 @@ public class WorkoutService : IWorkoutService
         };
 
         _db.Excercises.Add(exercise);
+
+        // Auto-save to dictionary
+        var existsInDict = await _db.CoachExerciseDictionaries
+            .AnyAsync(x => x.CoachId == coachId && x.ExerciseName.ToLower() == dto.ExerciseName.ToLower());
+        
+        if (!existsInDict)
+        {
+            _db.CoachExerciseDictionaries.Add(new CoachExerciseDictionary
+            {
+                CoachId = coachId,
+                ExerciseName = dto.ExerciseName,
+                ExcerciseLink = dto.ExerciseLink
+            });
+        }
+
         await _db.SaveChangesAsync();
 
         return new ExerciseResponseDto(

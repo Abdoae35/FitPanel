@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Workout Plan Template</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     * PREMIUM FITNESS COACH — WORKOUT PLAN TEMPLATE
+     * ═══════════════════════════════════════════════════════════════════════
+     * A4 Print-Ready HTML/CSS for PDF Conversion
+     * ═══════════════════════════════════════════════════════════════════════
+     */
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       THEME VARIABLES — Customize Your Brand
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    :root {
+      /* Brand Colors */
+      --coach-primary: #00FF88;
+      --coach-primary-glow: #00FF8840;
+      --coach-secondary: #FF0066;
+      --coach-dark: #0A0A0F;
+      --coach-dark-elevated: #1A1A24;
+      --coach-black: #000000;
+      --coach-white: #FFFFFF;
+      --coach-gray-light: #8A8A9E;
+      --coach-gray-dark: #3A3A4A;
+
+      /* Typography */
+      --coach-font-display: 'Barlow Condensed', sans-serif;
+      --coach-font-body: 'Inter', sans-serif;
+
+      /* Spacing */
+      --spacing-xs: 8px;
+      --spacing-sm: 12px;
+      --spacing-md: 20px;
+      --spacing-lg: 32px;
+      --spacing-xl: 48px;
+
+      /* Page Dimensions */
+      --page-width: 210mm;
+      --page-height: 297mm;
+      --page-padding: 24px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       BASE RESET & PAGE STRUCTURE
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #e5e5e5;
+      font-family: var(--coach-font-body);
+    }
+
+    .a4-page {
+      width: var(--page-width);
+      height: var(--page-height);
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: var(--coach-dark);
+      color: var(--coach-white);
+      font-size: 10px;
+      line-height: 1.5;
+      page-break-after: always;
+      page-break-inside: avoid;
+      margin: 0 auto 20px;
+    }
+
+    .content-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: var(--page-padding);
+      box-sizing: border-box;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       GLOBAL FOOTER
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--coach-black);
+      border-top: 2px solid var(--coach-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--page-padding);
+      gap: var(--spacing-md);
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--coach-gray-light);
+      z-index: 10;
+    }
+
+    .footer > div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       BACKGROUND DECORATIVE ELEMENTS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .diagonal-overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--coach-dark-elevated) 0%, transparent 60%);
+      clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+      opacity: 0.6;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .accent-bar {
+      position: absolute;
+      height: 4px;
+      background: linear-gradient(90deg, var(--coach-primary) 0%, var(--coach-secondary) 100%);
+      box-shadow: 0 0 24px var(--coach-primary-glow);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       COVER PAGE STYLES
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .cover-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      height: calc(100% - 60px);
+    }
+
+    .cover-photo-section {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .coach-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: grayscale(20%) contrast(1.1);
+      border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .cover-info-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--spacing-lg);
+      padding: var(--spacing-md);
+    }
+
+    .display-massive {
+      font-family: var(--coach-font-display);
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .cover-specialty {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--coach-primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .cover-bio {
+      color: var(--coach-gray-light);
+      line-height: 1.7;
+      font-size: 11px;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .cert-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .cert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--coach-black);
+      border: 1px solid var(--coach-primary);
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: var(--coach-primary);
+    }
+
+    .doc-title-label {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--coach-primary), var(--coach-secondary));
+      color: var(--coach-black);
+      font-family: var(--coach-font-display);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      box-shadow: 0 0 24px var(--coach-primary-glow);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .client-meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-md);
+      background: var(--coach-dark-elevated);
+      border-left: 3px solid var(--coach-primary);
+      border-radius: 4px;
+    }
+
+    .client-meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+
+    .client-meta-label {
+      color: var(--coach-gray-light);
+      font-weight: 600;
+    }
+
+    .client-meta-value {
+      color: var(--coach-white);
+      font-weight: 700;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       WORKOUT DAY PAGE STYLES
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 2px solid var(--coach-gray-dark);
+    }
+
+    .header h2 {
+      font-family: var(--coach-font-display);
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 0 0 4px 0;
+      line-height: 1;
+    }
+
+    .header p {
+      font-size: 11px;
+      color: var(--coach-gray-light);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    .skew-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: var(--coach-primary);
+      color: var(--coach-black);
+      font-family: var(--coach-font-display);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transform: skewX(-8deg);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .skew-badge span {
+      display: inline-block;
+      transform: skewX(8deg);
+    }
+
+    /* Exercise Table */
+    .table-container {
+      width: 100%;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .table-container table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--coach-dark-elevated);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-container thead {
+      background: var(--coach-black);
+      border-bottom: 2px solid var(--coach-primary);
+    }
+
+    .table-container th {
+      padding: 12px 16px;
+      text-align: left;
+      font-family: var(--coach-font-display);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--coach-white);
+    }
+
+    .table-container tbody tr {
+      border-bottom: 1px solid var(--coach-gray-dark);
+    }
+
+    .table-container tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .table-container td {
+      padding: 14px 16px;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--coach-white);
+    }
+
+    .exercise-name {
+      font-family: var(--coach-font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      color: var(--coach-white);
+    }
+
+    /* Cardio Section */
+    .cardio-section {
+      background: var(--coach-dark-elevated);
+      border: 1px solid var(--coach-gray-dark);
+      border-radius: 4px;
+      padding: var(--spacing-md);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      margin-top: 40px;
+    }
+
+    .cardio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--coach-gray-dark);
+    }
+
+    .cardio-title {
+      font-family: var(--coach-font-display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--coach-white);
+    }
+
+    .cardio-badge {
+      padding: 4px 12px;
+      background: var(--coach-secondary);
+      color: var(--coach-white);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 3px;
+    }
+
+    .cardio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-md);
+    }
+
+    .cardio-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cardio-metric-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--coach-gray-light);
+    }
+
+    .cardio-metric-val {
+      font-family: var(--coach-font-display);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--coach-white);
+    }
+
+    .text-primary {
+      color: var(--coach-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 1: COACH COVER PAGE
+       ═══════════════════════════════════════════════════════════════════════ -->
+
+  <div class="a4-page">
+    <div class="diagonal-overlay"></div>
+    <div class="accent-bar" style="top: 0; left: 0; width: 60%;"></div>
+
+    <div class="content-wrapper">
+      <div class="cover-grid">
+        <!-- Left Column: Coach Photo -->
+        <div class="cover-photo-section">
+          <img src="/templates/img.jpeg"
+               alt="Coach Photo"
+               class="coach-photo">
+        </div>
+
+        <!-- Right Column: Coach Info -->
+        <div class="cover-info-section">
+          <div>
+            <h1 class="display-massive">ALEX MORGAN</h1>
+            <p class="cover-specialty">Elite Fitness Coach & Nutritionist</p>
+          </div>
+
+          <p class="cover-bio">
+            With over 10 years of experience transforming lives through evidence-based training and nutrition protocols, I specialize in strength development, body recomposition, and sustainable lifestyle design. My approach combines cutting-edge sports science with personalized coaching to help you achieve results that last.
+          </p>
+
+          <div class="cert-row">
+            <span class="cert-badge"><span>✓</span><span>NASM-CPT</span></span>
+            <span class="cert-badge"><span>✓</span><span>Precision Nutrition L2</span></span>
+            <span class="cert-badge"><span>✓</span><span>FMS Level 2</span></span>
+          </div>
+
+          <div>
+            <span class="doc-title-label">PERSONALIZED WORKOUT PLAN</span>
+          </div>
+
+          <div class="client-meta">
+            <div class="client-meta-row">
+              <span class="client-meta-label">CLIENT NAME</span>
+              <span class="client-meta-value">{{CLIENT_NAME}}</span>
+            </div>
+            <div class="client-meta-row">
+              <span class="client-meta-label">PLAN START DATE</span>
+              <span class="client-meta-value">{{START_DATE}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div><span>📷</span><span>{{INSTAGRAM}}</span></div>
+      <div><span>✉</span><span>{{EMAIL}}</span></div>
+      <div><span>📞</span><span>{{PHONE}}</span></div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 2: WORKOUT DAY TEMPLATE
+       
+       INSTRUCTIONS FOR YOUR BACKEND:
+       - Duplicate this page for each workout day
+       - Replace {{PLACEHOLDERS}} with your database values
+       - Add/remove exercise rows as needed
+       - Cardio section is optional (remove div.cardio-section if not needed)
+       ═══════════════════════════════════════════════════════════════════════ -->
+
+  <div class="a4-page">
+    <div class="diagonal-overlay"></div>
+
+    <div class="content-wrapper">
+      <header class="header">
+        <div>
+          <h2>DAY <span class="text-primary">{{DAY_NUMBER}}</span> <span>{{DAY_TITLE}}</span></h2>
+          <p>{{SYSTEM_SUBTITLE}}</p>
+        </div>
+        <div>
+          <span class="skew-badge"><span>{{PHASE_LABEL}}</span></span>
+        </div>
+      </header>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50%;">MOVEMENT & PATTERN</th>
+              <th style="width: 15%; text-align: center;">SETS</th>
+              <th style="width: 20%; text-align: center;">REPS</th>
+              <th style="width: 15%; text-align: center;">REST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- REPEAT THIS ROW FOR EACH EXERCISE -->
+            <tr>
+              <td class="exercise-name">{{EXERCISE_NAME}}</td>
+              <td style="text-align: center; font-weight: 700;">{{SETS}}</td>
+              <td style="text-align: center;">{{REPS}}</td>
+              <td style="text-align: center; color: var(--coach-primary);">{{REST}}</td>
+            </tr>
+            <!-- END ROW TEMPLATE -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- OPTIONAL: Remove this entire div if no cardio for this day -->
+      <div class="cardio-section">
+        <div class="cardio-header">
+          <div class="cardio-title">🏃 CARDIO SPECIFICATION PROTOCOL</div>
+          <div class="cardio-badge">{{CARDIO_INTENSITY}}</div>
+        </div>
+        <div class="cardio-grid">
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">TYPE / METHOD</div>
+            <div class="cardio-metric-val">{{CARDIO_TYPE}}</div>
+          </div>
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">DURATION TIME</div>
+            <div class="cardio-metric-val text-primary">{{CARDIO_DURATION}}</div>
+          </div>
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">TARGET CONSTRAINTS</div>
+            <div class="cardio-metric-val">{{CARDIO_CONSTRAINTS}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div><span>📷</span><span>{{INSTAGRAM}}</span></div>
+      <div><span>✉</span><span>{{EMAIL}}</span></div>
+      <div><span>📞</span><span>{{PHONE}}</span></div>
+    </footer>
+  </div>
+
+</body>
+</html>

@@ -3,6 +3,11 @@ using FitPanel.Data.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Playwright;
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FitPanel.Services;
 
@@ -77,72 +82,87 @@ public class PdfService : IPdfService
     }
 
     // ── WORKOUT HTML BUILDER ──────────────────────────────────────
-    private static string BuildWorkoutHtml(WorkOut workout)
+    private string BuildWorkoutHtml(WorkOut workout)
     {
         var client     = workout.Client;
         var coach      = client.Coach;
         var coachName  = coach?.FullName ?? "الكوتش";
         var coachEmail = coach?.Email ?? "";
         var coachPhone = coach?.PhoneNumber ?? "";
-        var brandName  = $"{coachName} FIT";
-        var days       = workout.WorkOutDays.OrderBy(d => d.Id).ToList();
-        int totalPages = days.Count;
+        var instagram  = coach?.InstagramUsername ?? "";
+        var instagramLink = coach?.InstagramLink ?? "#";
+        
+        var photoBase64 = GetCoachPhotoBase64(coach?.ProfilePicture);
+        var days = workout.WorkOutDays.OrderBy(d => d.Id).ToList();
 
-        var pages = new System.Text.StringBuilder();
+        var pagesBuilder = new StringBuilder();
         for (int i = 0; i < days.Count; i++)
-            pages.Append(WorkoutDayPage(days[i], client.Name, coachEmail, coachPhone, i + 1, totalPages, brandName));
+        {
+            pagesBuilder.Append(WorkoutDayPage(days[i], client.Name, coachEmail, coachPhone, instagram, instagramLink));
+        }
 
         return $"""
         <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
+        <html lang="en">
         <head>
           <meta charset="UTF-8">
-          <link href="https://fonts.bunny.net/css?family=barlow+condensed:700,900&display=swap" rel="stylesheet">
-          <link href="https://fonts.bunny.net/css?family=barlow:400,500&display=swap" rel="stylesheet">
-          <link href="https://fonts.bunny.net/css?family=tajawal:400,700,900&display=swap" rel="stylesheet">
-          <style>{SharedCss()}{WorkoutCss()}</style>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Premium Workout Plan</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+          <style>
+            {SharedCss("#ea2127", "rgba(234, 33, 39, 0.25)", "#ff0066")}
+          </style>
         </head>
         <body>
-          {WorkoutCover(client, workout, coachName, coachPhone, brandName)}
-          {pages}
+          {WorkoutCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64)}
+          {pagesBuilder}
         </body>
         </html>
         """;
     }
 
     // ── DIET HTML BUILDER ─────────────────────────────────────────
-    private static string BuildDietHtml(Diet diet)
+    private string BuildDietHtml(Diet diet)
     {
-        var client       = diet.Client;
-        var coach        = client.Coach;
-        var coachEmail   = coach?.Email ?? "";
-        var coachPhone   = coach?.PhoneNumber ?? "";
-        var coachName    = coach?.FullName ?? "الكوتش";
-        var brandName    = $"{coachName} FIT";
-        var meals        = diet.DietMeals.SelectMany(dm => dm.MealItems).ToList();
-        int totalPages   = meals.Count;
+        var client     = diet.Client;
+        var coach      = client.Coach;
+        var coachName  = coach?.FullName ?? "الكوتش";
+        var coachEmail = coach?.Email ?? "";
+        var coachPhone = coach?.PhoneNumber ?? "";
+        var instagram  = coach?.InstagramUsername ?? "";
+        var instagramLink = coach?.InstagramLink ?? "#";
+
+        var photoBase64 = GetCoachPhotoBase64(coach?.ProfilePicture);
+        var meals = diet.DietMeals.SelectMany(dm => dm.MealItems).ToList();
         int totalCal     = meals.Sum(m => m.Calories);
         int totalProtein = meals.Sum(m => m.Protein);
         int totalCarbs   = meals.Sum(m => m.Carbs);
         int totalFats    = meals.Sum(m => m.Fats);
 
-        var pages = new System.Text.StringBuilder();
-        for (int i = 0; i < meals.Count; i++)
-            pages.Append(MealPage(meals[i], i + 1, totalPages, client.Name, coachEmail, coachPhone, brandName));
+        int totalGrams = totalProtein + totalCarbs + totalFats;
+        int pPct = totalGrams > 0 ? (int)Math.Round((double)totalProtein / totalGrams * 100) : 0;
+        int cPct = totalGrams > 0 ? (int)Math.Round((double)totalCarbs / totalGrams * 100) : 0;
+        int fPct = totalGrams > 0 ? (int)Math.Round((double)totalFats / totalGrams * 100) : 0;
 
         return $"""
         <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
+        <html lang="en">
         <head>
           <meta charset="UTF-8">
-          <link href="https://fonts.bunny.net/css?family=barlow+condensed:700,900&display=swap" rel="stylesheet">
-          <link href="https://fonts.bunny.net/css?family=barlow:400,500&display=swap" rel="stylesheet">
-          <link href="https://fonts.bunny.net/css?family=tajawal:400,700,900&display=swap" rel="stylesheet">
-          <style>{SharedCss()}{DietCss()}</style>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Premium Diet Plan</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+          <style>
+            {SharedCss("#00FF88", "rgba(0, 255, 136, 0.25)", "#FF0066")}
+          </style>
         </head>
         <body>
-          {DietCover(client, diet, coachPhone, totalCal, totalProtein, totalCarbs, totalFats, brandName)}
-          {pages}
+          {DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64)}
+          {DietContentPage(diet, client.Name, coachEmail, coachPhone, instagram, instagramLink, totalCal, totalProtein, totalCarbs, totalFats, pPct, cPct, fPct)}
         </body>
         </html>
         """;
@@ -150,364 +170,865 @@ public class PdfService : IPdfService
 
     // ── COVER PAGES ───────────────────────────────────────────────
     private static string WorkoutCover(
-        Client client, WorkOut workout,
-        string coachName, string coachPhone,
-        string brandName) => $"""
-        <div class="cover-page">
-          <div class="cover-glow"></div>
-          <div class="cover-logo-text">{brandName}</div>
-          <div class="cover-tagline">قوة · تحول · إرادة</div>
-          <div class="cover-line"></div>
-          <div class="cover-plan-type">برنامج التمارين الأسبوعي</div>
-          <div class="cover-client">
-            <div class="cover-client-label">مُعد لـ</div>
-            <div class="cover-client-name">{client.Name}</div>
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64) => $"""
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="accent-bar" style="top: 0; left: 0; width: 60%;"></div>
+
+          <div class="content-wrapper">
+            <div class="cover-grid">
+              <!-- Left Column: Coach Photo -->
+              <div class="cover-photo-section">
+                <img src="{photoBase64}" alt="Coach Photo" class="coach-photo">
+              </div>
+
+              <!-- Right Column: Coach Info -->
+              <div class="cover-info-section">
+                <div>
+                  <h1 class="display-massive" style="font-size: 38px; line-height: 1.1; margin-bottom: 20px; color: var(--coach-white);">
+                    EVERY WORKOUT IS STEP FORWARD TO YOUR GOAL
+                  </h1>
+                  <p class="cover-specialty" style="margin-bottom: 20px;">
+                    <a href="{instagramLink}" target="_blank" style="color: var(--coach-primary); text-decoration: none; font-size: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                      Dr. {coachName}
+                      <svg style="width: 18px; height: 18px; fill: var(--coach-primary);" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  </p>
+                </div>
+
+                <div class="cover-keys-list" style="margin-bottom: 28px;">
+                  <div style="font-family: var(--coach-font-display); font-size: 16px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> NUTRITION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> CARDIO</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> SUPPLEMENTATION</li>
+                  </ul>
+                  <div style="margin-top: 14px; font-style: italic; font-size: 12px; color: var(--coach-white); font-weight: 600;">
+                    "All are keys to reach our goal"
+                  </div>
+                </div>
+
+                <div style="margin-top: auto;">
+                  <span class="doc-title-label">PERSONALIZED WORKOUT PLAN</span>
+                </div>
+
+                <div class="client-meta" style="margin-top: 16px;">
+                  <div class="client-meta-row">
+                    <span class="client-meta-label">CLIENT NAME</span>
+                    <span class="client-meta-value">{client.Name}</span>
+                  </div>
+                  <div class="client-meta-row">
+                    <span class="client-meta-label">PLAN START DATE</span>
+                    <span class="client-meta-value">{client.StartDate:MMMM dd, yyyy}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="cover-details">
-            <div class="cover-detail">
-              <div class="cover-detail-val">{workout.NumberOfWorkOutDays}</div>
-              <div class="cover-detail-lbl">أيام</div>
+
+          <footer class="footer">
+            <div>
+              <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <span>@{instagram}</span>
+              </a>
             </div>
-            <div class="cover-detail">
-              <div class="cover-detail-val">4</div>
-              <div class="cover-detail-lbl">أسبوع</div>
-            </div>
-            <div class="cover-detail">
-              <div class="cover-detail-val">{client.StartDate:yyyy}</div>
-              <div class="cover-detail-lbl">بداية</div>
-            </div>
-          </div>
-          <div class="cover-coach">{brandName} · {coachName} · {coachPhone}</div>
+            <div><span>✉</span><span>{coachEmail}</span></div>
+            <div><span>📞</span><span>{coachPhone}</span></div>
+          </footer>
         </div>
         """;
 
     private static string DietCover(
-        Client client, Diet diet, string coachPhone,
-        int cal, int protein, int carbs, int fats,
-        string brandName) => $"""
-        <div class="cover-page diet-cover">
-          <div class="cover-glow diet-glow"></div>
-          <div class="cover-logo-text diet-green">{brandName}</div>
-          <div class="cover-tagline">صحة · توازن · نتائج</div>
-          <div class="cover-line diet-line"></div>
-          <div class="cover-plan-type diet-plan-type">برنامج التغذية اليومي</div>
-          <div class="cover-client">
-            <div class="cover-client-label">مُعد لـ</div>
-            <div class="cover-client-name">{client.Name}</div>
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64) => $"""
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="accent-bar" style="top: 0; left: 0; width: 60%;"></div>
+
+          <div class="content-wrapper">
+            <div class="cover-grid">
+              <!-- Left Column: Coach Photo -->
+              <div class="cover-photo-section">
+                <img src="{photoBase64}" alt="Coach Photo" class="coach-photo">
+              </div>
+
+              <!-- Right Column: Coach Info -->
+              <div class="cover-info-section">
+                <div>
+                  <h1 class="display-massive" style="font-size: 38px; line-height: 1.1; margin-bottom: 20px; color: var(--coach-white);">
+                    EVERY WORKOUT IS STEP FORWARD TO YOUR GOAL
+                  </h1>
+                  <p class="cover-specialty" style="margin-bottom: 20px;">
+                    <a href="{instagramLink}" target="_blank" style="color: var(--coach-primary); text-decoration: none; font-size: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                      Dr. {coachName}
+                      <svg style="width: 18px; height: 18px; fill: var(--coach-primary);" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  </p>
+                </div>
+
+                <div class="cover-keys-list" style="margin-bottom: 28px;">
+                  <div style="font-family: var(--coach-font-display); font-size: 16px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> NUTRITION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> CARDIO</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> SUPPLEMENTATION</li>
+                  </ul>
+                  <div style="margin-top: 14px; font-style: italic; font-size: 12px; color: var(--coach-white); font-weight: 600;">
+                    "All are keys to reach our goal"
+                  </div>
+                </div>
+
+                <div style="margin-top: auto;">
+                  <span class="doc-title-label">PERSONALIZED DIET PLAN</span>
+                </div>
+
+                <div class="client-meta" style="margin-top: 16px;">
+                  <div class="client-meta-row">
+                    <span class="client-meta-label">CLIENT NAME</span>
+                    <span class="client-meta-value">{client.Name}</span>
+                  </div>
+                  <div class="client-meta-row">
+                    <span class="client-meta-label">PLAN START DATE</span>
+                    <span class="client-meta-value">{client.StartDate:MMMM dd, yyyy}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="cover-details">
-            <div class="cover-detail">
-              <div class="cover-detail-val diet-green">{diet.NumberOfMeals}</div>
-              <div class="cover-detail-lbl">وجبات</div>
+
+          <footer class="footer">
+            <div>
+              <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <span>@{instagram}</span>
+              </a>
             </div>
-            <div class="cover-detail">
-              <div class="cover-detail-val diet-green">{cal}</div>
-              <div class="cover-detail-lbl">سعرة/يوم</div>
-            </div>
-            <div class="cover-detail">
-              <div class="cover-detail-val diet-green">{protein}g</div>
-              <div class="cover-detail-lbl">بروتين</div>
-            </div>
-          </div>
-          <div class="cover-coach">{brandName} · {coachPhone}</div>
+            <div><span>✉</span><span>{coachEmail}</span></div>
+            <div><span>📞</span><span>{coachPhone}</span></div>
+          </footer>
         </div>
         """;
 
     // ── WORKOUT DAY PAGE ──────────────────────────────────────────
     private static string WorkoutDayPage(
-        WorkOutDay day, string clientName,
-        string email, string phone,
-        int pageNum, int totalPages,
-        string brandName)
+        WorkOutDay day, string clientName, string email, string phone, string instagram, string instagramLink)
     {
-        var rows = new System.Text.StringBuilder();
+        var rows = new StringBuilder();
         foreach (var ex in day.ExcerciseItems)
+        {
+            var exerciseNameHtml = string.IsNullOrEmpty(ex.ExcerciseLink) 
+                ? ex.ExerciseName 
+                : $"<a href='{ex.ExcerciseLink}' style='color: var(--coach-primary); text-decoration: none; font-weight: 700;'>{ex.ExerciseName} <i style='font-size: 9px; margin-left: 2px;'>🔗</i></a>";
+
             rows.Append($"""
                 <tr>
-                  <td>{(string.IsNullOrEmpty(ex.ExcerciseLink) ? ex.ExerciseName : $"<a href='{ex.ExcerciseLink}' style='color:#e31c1c;text-decoration:none;'>{ex.ExerciseName}</a>")}</td>
-                  <td class="num-cell">{ex.Sets}</td>
-                  <td class="num-cell">{ex.Reps}</td>
-                  <td>{ex.RestTime}</td>
+                  <td class="exercise-name">{exerciseNameHtml}</td>
+                  <td style="text-align: center; font-weight: 700;">{ex.Sets}</td>
+                  <td style="text-align: center;">{ex.Reps}</td>
+                  <td style="text-align: center; color: var(--coach-primary); font-weight: 700;">{ex.RestTime}</td>
                 </tr>
                 """);
+        }
 
         var cardioSection = "";
         if (day.Cardio != null)
         {
             var c = day.Cardio;
             cardioSection = $"""
-                <div class="cardio-section">
+                <div class="cardio-section" style="margin-top: auto;">
                   <div class="cardio-header">
-                    <div class="cardio-icon">▶</div>
-                    <div class="cardio-title">كارديو — {c.CardioType}</div>
+                    <div class="cardio-title">🏃 CARDIO SPECIFICATION PROTOCOL</div>
+                    <div class="cardio-badge">{c.Intensity}</div>
                   </div>
-                  <table class="plan-table cardio-table">
-                    <thead>
-                      <tr style="background:#1a0505;">
-                        <th>النوع</th><th>المدة</th><th>الشدة</th><th>ملاحظات</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{c.CardioType}</td>
-                        <td class="num-cell">{c.DurationMinutes} د</td>
-                        <td class="num-cell">{c.Intensity}</td>
-                        <td>{c.Notes ?? "—"}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div class="cardio-grid">
+                    <div class="cardio-metric">
+                      <div class="cardio-metric-label">TYPE / METHOD</div>
+                      <div class="cardio-metric-val">{c.CardioType}</div>
+                    </div>
+                    <div class="cardio-metric">
+                      <div class="cardio-metric-label">DURATION TIME</div>
+                      <div class="cardio-metric-val text-primary">{c.DurationMinutes} minutes</div>
+                    </div>
+                    <div class="cardio-metric">
+                      <div class="cardio-metric-label">TARGET CONSTRAINTS</div>
+                      <div class="cardio-metric-val">{c.Notes ?? "No constraints"}</div>
+                    </div>
+                  </div>
                 </div>
                 """;
         }
 
         return $"""
-        <div class="pdf-page">
-          <div class="page-header">
-            <div class="header-left">
-              <div class="page-logo-icon">
-                <svg viewBox="0 0 60 60" fill="none" width="28" height="28">
-                  <ellipse cx="30" cy="42" rx="12" ry="13" fill="white"/>
-                  <circle cx="30" cy="20" r="9" fill="white"/>
-                  <path d="M18 38 C6 30 8 18 16 16 C20 15 22 20 18 25 C22 28 20 34 20 38Z" fill="white"/>
-                  <ellipse cx="11" cy="20" rx="5" ry="7" fill="white" transform="rotate(-20 11 20)"/>
-                  <path d="M42 38 C54 30 52 18 44 16 C40 15 38 20 42 25 C38 28 40 34 40 38Z" fill="white"/>
-                  <ellipse cx="49" cy="20" rx="5" ry="7" fill="white" transform="rotate(20 49 20)"/>
-                </svg>
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="content-wrapper">
+            <header class="header">
+              <div>
+                <h2>DAY <span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
+                <p>FitPanel Elite Coaching Protocols</p>
               </div>
               <div>
-                <div class="brand-name">{brandName}</div>
-                <div class="brand-sub">Weekly Training Program</div>
+                <span class="skew-badge"><span>STRENGTH PHASE</span></span>
               </div>
+            </header>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 50%;">MOVEMENT & PATTERN</th>
+                    <th style="width: 15%; text-align: center;">SETS</th>
+                    <th style="width: 20%; text-align: center;">REPS</th>
+                    <th style="width: 15%; text-align: center;">REST</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows}
+                </tbody>
+              </table>
             </div>
-            <div class="page-meta">
-              <div class="plan-label">WORKOUT PLAN</div>
-              <div class="client-name">{clientName}</div>
-              <div class="page-num">صفحة {pageNum} / {totalPages}</div>
-            </div>
-          </div>
-          <div class="day-section">
-            <div class="day-header">
-              <div class="day-badge">{day.Day}</div>
-              <div class="day-title">{day.DayName}</div>
-            </div>
-            <table class="plan-table">
-              <thead>
-                <tr><th>التمرين</th><th>المجموعات</th><th>العدد</th><th>الراحة</th></tr>
-              </thead>
-              <tbody>{rows}</tbody>
-            </table>
+
             {cardioSection}
           </div>
-          <div class="page-footer">
-            <div class="footer-brand">{brandName}</div>
-            <div class="footer-divider"></div>
-            <div class="footer-contact">{email} · {phone}</div>
-          </div>
+
+          <footer class="footer">
+            <div>
+              <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <span>@{instagram}</span>
+              </a>
+            </div>
+            <div><span>✉</span><span>{email}</span></div>
+            <div><span>📞</span><span>{phone}</span></div>
+          </footer>
         </div>
         """;
     }
 
-    // ── MEAL PAGE ─────────────────────────────────────────────────
-    private static string MealPage(
-        MealItem meal, int pageNum, int totalPages,
-        string clientName, string email, string phone,
-        string brandName)
+    // ── DIET PLAN PAGE ────────────────────────────────────────────
+    private static string DietContentPage(
+        Diet diet, string clientName, string email, string phone, string instagram, string instagramLink,
+        int totalCal, int totalProtein, int totalCarbs, int totalFats,
+        int pPct, int cPct, int fPct)
     {
-        var rows = new System.Text.StringBuilder();
-        rows.Append($"""
-            <tr>
-              <td class="meal-name">{(string.IsNullOrEmpty(meal.DietMeal?.Link) ? meal.MealName : $"<a href='{meal.DietMeal.Link}' style='color:#1a8c3c;text-decoration:none;'>{meal.MealName}</a>")}</td>
-              <td>{meal.Quantity} {meal.Unit}</td>
-              <td>{meal.Protein}g</td>
-              <td>{meal.Carbs}g</td>
-              <td>{meal.Fats}g</td>
-              <td class="cal-cell">{meal.Calories}</td>
-            </tr>
-            """);
+        var mealCards = new StringBuilder();
+        foreach (var m in diet.DietMeals)
+        {
+            // Pick a dynamic meal icon
+            string icon = "🍽️";
+            var mealNameLower = m.Name.ToLower();
+            if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning") || mealNameLower.Contains("🍳")) icon = "🍳";
+            else if (mealNameLower.Contains("lunch") || mealNameLower.Contains("dinner") || mealNameLower.Contains("afternoon") || mealNameLower.Contains("night")) icon = "🍗";
+            else if (mealNameLower.Contains("snack") || mealNameLower.Contains("shake") || mealNameLower.Contains("smoothie") || mealNameLower.Contains("drink")) icon = "🥤";
+            else if (mealNameLower.Contains("pre") || mealNameLower.Contains("intra") || mealNameLower.Contains("workout")) icon = "⚡";
+            
+            var foodItems = new StringBuilder();
+            foreach (var item in m.MealItems)
+            {
+                var portionText = $"{item.Quantity} {item.Unit}";
+                var altItemsHtml = new StringBuilder();
+                if (item.AlternativeItems != null && item.AlternativeItems.Any())
+                {
+                    altItemsHtml.Append("<div class='food-alternatives' style='margin-top: 4px; padding-left: 12px; border-left: 2px solid var(--coach-secondary); font-size: 9px; color: var(--coach-gray-light);'>");
+                    foreach (var alt in item.AlternativeItems)
+                    {
+                        altItemsHtml.Append($"<div class='alt-item'>↳ Alternative: <strong>{alt.MealName}</strong> — {alt.Quantity} {alt.Unit} <span style='color: #00D9FF; margin-left: 6px;'>P: {alt.Protein}g</span> <span style='color: #FFD700; margin-left: 4px;'>C: {alt.Carbs}g</span> <span style='color: #FF6B00; margin-left: 4px;'>F: {alt.Fats}g</span></div>");
+                    }
+                    altItemsHtml.Append("</div>");
+                }
 
-        foreach (var alt in meal.AlternativeItems ?? [])
-            rows.Append($"""
-                <tr class="alt-row">
-                  <td class="meal-name alt-name">↳ {alt.MealName}</td>
-                  <td class="alt-desc">{alt.Quantity} {alt.Unit}</td>
-                  <td>{alt.Protein}g</td>
-                  <td>{alt.Carbs}g</td>
-                  <td>{alt.Fats}g</td>
-                  <td class="cal-cell">{alt.Calories}</td>
-                </tr>
+                foodItems.Append($"""
+                    <div class="food-item" style="padding: 10px 0; border-bottom: 1px solid var(--coach-gray-dark);">
+                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div class="food-name">{item.MealName}</div>
+                        <div class="food-portion" style="color: var(--coach-gray-light); margin-left: auto; padding-right: 20px;">{portionText}</div>
+                        <div class="food-macros" style="display: flex; gap: 8px;">
+                          <span class="macro-chip protein">P: {item.Protein}g</span>
+                          <span class="macro-chip carbs">C: {item.Carbs}g</span>
+                          <span class="macro-chip fats">F: {item.Fats}g</span>
+                        </div>
+                      </div>
+                      {altItemsHtml}
+                    </div>
+                    """);
+            }
+
+            var mealTimeText = !string.IsNullOrEmpty(m.Instruction) ? m.Instruction : "Nutrition Focus";
+
+            mealCards.Append($"""
+                <div class="meal-card" style="background: var(--coach-dark-elevated); border: 1px solid var(--coach-gray-dark); border-radius: 4px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-bottom: 16px;">
+                  <div class="meal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--coach-black); border-bottom: 2px solid var(--coach-primary);">
+                    <div class="meal-title" style="font-family: var(--coach-font-display); font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--coach-white);">{icon} {m.Name}</div>
+                    <div class="meal-time" style="font-size: 9px; font-weight: 600; color: var(--coach-primary); letter-spacing: 0.5px;">{mealTimeText}</div>
+                  </div>
+                  <div class="meal-body" style="padding: 12px 16px;">
+                    {foodItems}
+                  </div>
+                </div>
                 """);
+        }
 
-        rows.Append($"""
-            <tr class="total-row">
-              <td colspan="5" class="total-label">إجمالي الوجبة</td>
-              <td class="cal-cell">{meal.Calories}</td>
-            </tr>
-            """);
+        var notesSection = "";
+        if (!string.IsNullOrEmpty(diet.Instructions))
+        {
+            notesSection = $"""
+                <div class="notes-section" style="margin-top: auto; padding: 12px 16px; background: var(--coach-black); border-left: 3px solid var(--coach-secondary); border-radius: 4px;">
+                  <div class="notes-title" style="font-family: var(--coach-font-display); font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 6px;">📝 SPECIAL COACHING INSTRUCTIONS & NOTES</div>
+                  <div class="notes-text" style="font-size: 10px; line-height: 1.5; color: var(--coach-gray-light);">{diet.Instructions}</div>
+                </div>
+                """;
+        }
 
         return $"""
-        <div class="pdf-page">
-          <div class="page-header" style="background:#0d1f0d;border-bottom:3px solid #1a8c3c;">
-            <div class="header-left">
-              <div class="page-logo-icon" style="background:#1a8c3c;">
-                <svg viewBox="0 0 60 60" fill="none" width="28" height="28">
-                  <ellipse cx="30" cy="42" rx="12" ry="13" fill="white"/>
-                  <circle cx="30" cy="20" r="9" fill="white"/>
-                  <path d="M18 38 C6 30 8 18 16 16 C20 15 22 20 18 25 C22 28 20 34 20 38Z" fill="white"/>
-                  <ellipse cx="11" cy="20" rx="5" ry="7" fill="white" transform="rotate(-20 11 20)"/>
-                  <path d="M42 38 C54 30 52 18 44 16 C40 15 38 20 42 25 C38 28 40 34 40 38Z" fill="white"/>
-                  <ellipse cx="49" cy="20" rx="5" ry="7" fill="white" transform="rotate(20 49 20)"/>
-                </svg>
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="content-wrapper">
+            <header class="header">
+              <div>
+                <h2>DIET & NUTRITION PLAN</h2>
+                <p>Precision macronutrient coaching blueprint</p>
               </div>
               <div>
-                <div class="brand-name" style="color:#4dcc80;">{brandName}</div>
-                <div class="brand-sub">Daily Nutrition Program</div>
+                <span class="skew-badge"><span>NUTRITION</span></span>
+              </div>
+            </header>
+
+            <!-- Daily Macros Summary -->
+            <div class="macro-summary">
+              <div class="macro-card">
+                <div class="macro-label">CALORIES</div>
+                <div class="macro-value">{totalCal}</div>
+                <div class="macro-unit">kcal</div>
+              </div>
+              <div class="macro-card">
+                <div class="macro-label">PROTEIN</div>
+                <div class="macro-value">{totalProtein}g</div>
+                <div class="macro-unit">{pPct}%</div>
+              </div>
+              <div class="macro-card">
+                <div class="macro-label">CARBS</div>
+                <div class="macro-value">{totalCarbs}g</div>
+                <div class="macro-unit">{cPct}%</div>
+              </div>
+              <div class="macro-card">
+                <div class="macro-label">FATS</div>
+                <div class="macro-value">{totalFats}g</div>
+                <div class="macro-unit">{fPct}%</div>
               </div>
             </div>
-            <div class="page-meta">
-              <div class="plan-label" style="color:#4dcc80;">DIET PLAN</div>
-              <div class="client-name">{clientName}</div>
-              <div class="page-num">صفحة {pageNum} / {totalPages}</div>
+
+            <!-- Meals Container -->
+            <div class="meals-container" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+              {mealCards}
             </div>
+
+            {notesSection}
           </div>
-          <div class="day-section">
-            <div class="day-header">
-              <div class="day-badge" style="background:#1a8c3c;">وجبة {pageNum}</div>
-              <div class="day-title">{meal.MealName}</div>
+
+          <footer class="footer">
+            <div>
+              <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <span>@{instagram}</span>
+              </a>
             </div>
-            <table class="plan-table">
-              <thead>
-                <tr style="background:#0d1f0d;">
-                  <th>الوجبة / المكون</th><th>الكمية</th>
-                  <th>البروتين</th><th>الكارب</th><th>الدهون</th><th>السعرات</th>
-                </tr>
-              </thead>
-              <tbody>{rows}</tbody>
-            </table>
-          </div>
-          <div class="page-footer" style="border-top:2px solid #1a8c3c;">
-            <div class="footer-brand" style="color:#4dcc80;">{brandName}</div>
-            <div class="footer-divider"></div>
-            <div class="footer-contact">{email} · {phone}</div>
-          </div>
+            <div><span>✉</span><span>{email}</span></div>
+            <div><span>📞</span><span>{phone}</span></div>
+          </footer>
         </div>
         """;
     }
 
-    // ── CSS ───────────────────────────────────────────────────────
-    private static string SharedCss() => """
-        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Tajawal',sans-serif;background:#111;color:#111}
+    // ── CSS & STYLING ─────────────────────────────────────────────
+    private static string SharedCss(string primaryColor, string primaryGlow, string secondaryColor) => $$"""
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
 
-        /* ── COVER PAGE (matches inner page theme) ── */
-        .cover-page{
-            background:linear-gradient(160deg,#0d0505 0%,#1a0505 50%,#0d0505 100%);
-            width:794px;min-height:1123px;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            position:relative;overflow:hidden;page-break-after:always;
-        }
-        .cover-glow{
-            position:absolute;width:500px;height:500px;
-            background:radial-gradient(circle,rgba(227,28,28,0.2) 0%,transparent 70%);
-            border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);
-        }
-        .cover-logo-text{font-size:64px;font-weight:900;color:#e31c1c;letter-spacing:6px;text-align:center}
-        .cover-tagline{font-size:14px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-top:8px}
-        .cover-line{width:60px;height:4px;background:linear-gradient(90deg,#a01010,#e31c1c);border-radius:2px;margin:20px auto}
-        .cover-plan-type{
-            margin-top:40px;padding:10px 32px;
-            border:1.5px solid rgba(227,28,28,0.35);border-radius:4px;
-            font-size:13px;font-weight:700;color:#e31c1c;letter-spacing:2px;text-transform:uppercase
-        }
-        .cover-client{margin-top:60px;text-align:center}
-        .cover-client-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
-        .cover-client-name{font-size:28px;font-weight:700;color:#fff}
-        .cover-details{display:flex;gap:40px;margin-top:32px;justify-content:center}
-        .cover-detail{text-align:center}
-        .cover-detail-val{font-size:20px;font-weight:900;color:#e31c1c}
-        .cover-detail-lbl{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
-        .cover-coach{position:absolute;bottom:40px;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:1px}
+        :root {
+          /* Brand Colors */
+          --coach-primary: {{primaryColor}};
+          --coach-primary-glow: {{primaryGlow}};
+          --coach-secondary: {{secondaryColor}};
+          --coach-dark: #0A0A0F;
+          --coach-dark-elevated: #1A1A24;
+          --coach-black: #000000;
+          --coach-white: #FFFFFF;
+          --coach-gray-light: #8A8A9E;
+          --coach-gray-dark: #3A3A4A;
 
-        /* ── INNER PAGES ── */
-        .pdf-page{
-            background:#111;color:#eee;
-            width:794px;min-height:1123px;
-            display:flex;flex-direction:column;
-            page-break-after:always;
-        }
-        .page-header{
-            background:#1a0505;
-            padding:22px 36px;
-            display:flex;align-items:center;justify-content:space-between;
-            border-bottom:3px solid #e31c1c;
-        }
-        .header-left{display:flex;align-items:center;gap:14px}
-        .page-logo-icon{
-            width:42px;height:42px;background:#e31c1c;border-radius:50%;
-            display:flex;align-items:center;justify-content:center;flex-shrink:0;
-        }
-        .brand-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#e31c1c;letter-spacing:3px}
-        .brand-sub{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-        .page-meta{text-align:start;display:flex;flex-direction:column;gap:3px}
-        .plan-label{font-size:10px;color:#e31c1c;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-        .client-name{font-size:17px;font-weight:700;color:#fff}
-        .page-num{font-size:10px;color:rgba(255,255,255,0.35)}
-        .day-section{flex:1;padding:28px 36px;display:flex;flex-direction:column;gap:20px}
-        .day-header{display:flex;align-items:center;gap:14px}
-        .day-badge{
-            background:#e31c1c;color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;
-            padding:6px 14px;border-radius:3px;text-transform:uppercase;flex-shrink:0;
-            font-family:'Barlow Condensed',sans-serif;
-        }
-        .day-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:1px}
-        .plan-table{width:100%;border-collapse:collapse}
-        .plan-table thead tr{background:#1a0505}
-        .plan-table th{
-            color:#e31c1c;font-size:11px;font-weight:700;padding:12px 16px;
-            text-align:center;letter-spacing:1px;text-transform:uppercase;
-            border-bottom:2px solid #e31c1c;
-        }
-        .plan-table th:first-child{text-align:right}
-        .plan-table tbody tr{border-bottom:1px solid #2a2a2a}
-        .plan-table tbody tr:nth-child(even){background:#1a1a1a}
-        .plan-table td{padding:13px 16px;font-size:13px;text-align:center;vertical-align:middle;color:#ccc}
-        .plan-table td:first-child{text-align:right;font-weight:700;color:#fff}
-        .num-cell{color:#e31c1c;font-weight:900;font-size:15px;font-family:'Barlow Condensed',sans-serif}
-        .cardio-section{margin-top:8px}
-        .cardio-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-        .cardio-icon{
-            background:#e31c1c;color:#fff;width:26px;height:26px;border-radius:50%;
-            display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;
-        }
-        .cardio-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#e31c1c;text-transform:uppercase;letter-spacing:1px}
-        .cardio-table thead tr{background:#1a0505 !important}
-        .page-footer{
-            background:#0d0d0d;border-top:2px solid #2a2a2a;
-            padding:12px 36px;display:flex;align-items:center;justify-content:space-between;
-        }
-        .footer-brand{font-size:10px;font-weight:700;color:#e31c1c;letter-spacing:2px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif}
-        .footer-contact{font-size:10px;color:rgba(255,255,255,0.35);direction:ltr}
-        .footer-divider{width:1px;height:18px;background:#2a2a2a}
-    """;
+          /* Typography */
+          --coach-font-display: 'Barlow Condensed', sans-serif;
+          --coach-font-body: 'Inter', sans-serif;
 
-    private static string WorkoutCss() => """
-        /* workout pages use shared dark/red theme */
-    """;
+          /* Spacing */
+          --spacing-xs: 8px;
+          --spacing-sm: 12px;
+          --spacing-md: 20px;
+          --spacing-lg: 32px;
+          --spacing-xl: 48px;
 
-    private static string DietCss() => """
-        /* ── OLD-DESIGN DIET COVER OVERRIDES ── */
-        .diet-cover{background:linear-gradient(160deg,#061a0a 0%,#0a3d18 50%,#061a0a 100%)}
-        .diet-glow{background:radial-gradient(circle,rgba(26,140,60,0.2) 0%,transparent 70%)}
-        .diet-green{color:#4dcc80}
-        .diet-line{background:linear-gradient(90deg,#1a8c3c,#4dcc80)}
-        .diet-plan-type{border-color:rgba(77,204,128,0.35);color:#4dcc80}
+          /* Page Dimensions */
+          --page-width: 210mm;
+          --page-height: 297mm;
+          --page-padding: 24px;
+        }
 
-        /* ── MEAL PAGES ── */
-        .meal-name{font-weight:700;color:#fff}
-        .cal-cell{color:#4dcc80;font-weight:900;font-size:14px;font-family:'Barlow Condensed',sans-serif}
-        .alt-row{background:#111a11}
-        .alt-name{color:#4dcc80}
-        .alt-desc{color:#888;font-size:12px;font-style:italic}
-        .total-row{background:#0d1f0d;font-weight:700}
-        .total-label{text-align:center;color:#4dcc80}
-    """;
+        body {
+          margin: 0;
+          padding: 0;
+          background: #e5e5e5;
+          font-family: var(--coach-font-body);
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .a4-page {
+          width: var(--page-width);
+          height: var(--page-height);
+          box-sizing: border-box;
+          overflow: hidden;
+          position: relative;
+          background: var(--coach-dark);
+          color: var(--coach-white);
+          font-size: 10px;
+          line-height: 1.5;
+          page-break-after: always;
+          page-break-inside: avoid;
+          margin: 0 auto;
+        }
+
+        .content-wrapper {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          padding: var(--page-padding);
+          padding-bottom: 84px;
+          box-sizing: border-box;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* GLOBAL FOOTER */
+        .footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 60px;
+          background: var(--coach-black);
+          border-top: 2px solid var(--coach-primary);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 var(--page-padding);
+          gap: var(--spacing-md);
+          font-size: 9px;
+          font-weight: 500;
+          color: var(--coach-gray-light);
+          z-index: 10;
+        }
+
+        .footer > div {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        /* BACKGROUND DECORATIVE ELEMENTS */
+        .diagonal-overlay {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(115deg, transparent 65%, rgba(26, 26, 36, 0.35) 65%);
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        .accent-bar {
+          position: absolute;
+          height: 4px;
+          background: linear-gradient(90deg, var(--coach-primary) 0%, var(--coach-secondary) 100%);
+        }
+
+        /* COVER PAGE STYLES */
+        .cover-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: var(--spacing-lg);
+          height: calc(100% - 60px);
+        }
+
+        .cover-photo-section {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          height: 100%;
+        }
+
+        .coach-photo {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: 25% center;
+          border-radius: 4px;
+          border: 1px solid var(--coach-gray-dark);
+        }
+
+        .cover-info-section {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 12px;
+          padding: var(--spacing-xs);
+        }
+
+        .display-massive {
+          font-family: var(--coach-font-display);
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .doc-title-label {
+          display: block;
+          width: 100%;
+          padding: 12px 16px;
+          background: rgba(255, 0, 102, 0.12);
+          border: 2px solid var(--coach-secondary);
+          color: var(--coach-secondary);
+          font-family: var(--coach-font-display);
+          font-size: 14px;
+          font-weight: 900;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          border-radius: 4px;
+          text-align: center;
+          box-shadow: 0 0 12px rgba(255, 0, 102, 0.25);
+          box-sizing: border-box;
+        }
+
+        .client-meta {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-xs);
+          padding: 12px var(--spacing-md);
+          background: var(--coach-dark-elevated);
+          border-left: 3px solid var(--coach-primary);
+          border-radius: 4px;
+        }
+
+        .client-meta-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 9px;
+        }
+
+        .client-meta-label {
+          color: var(--coach-gray-light);
+          font-weight: 600;
+        }
+
+        .client-meta-value {
+          color: var(--coach-white);
+          font-weight: 700;
+        }
+
+        /* HEADER OF PAGES */
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: var(--spacing-md);
+          padding-bottom: var(--spacing-sm);
+          border-bottom: 2px solid var(--coach-gray-dark);
+        }
+
+        .header h2 {
+          font-family: var(--coach-font-display);
+          font-size: 26px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          margin: 0 0 2px 0;
+          line-height: 1;
+        }
+
+        .header p {
+          font-size: 10px;
+          color: var(--coach-gray-light);
+          font-weight: 500;
+          letter-spacing: 0.5px;
+          margin: 0;
+        }
+
+        .skew-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          background: var(--coach-primary);
+          color: var(--coach-black);
+          font-family: var(--coach-font-display);
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          transform: skewX(-8deg);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .skew-badge span {
+          display: inline-block;
+          transform: skewX(8deg);
+        }
+
+        /* EXERCISE TABLE STYLES */
+        .table-container {
+          width: 100%;
+          margin-bottom: var(--spacing-sm);
+        }
+
+        .table-container table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          background: var(--coach-dark-elevated);
+          border-radius: 4px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .table-container thead {
+          background: var(--coach-black);
+        }
+
+        .table-container th {
+          padding: 10px 14px;
+          text-align: left;
+          font-family: var(--coach-font-display);
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: var(--coach-white);
+          border-bottom: 2px solid var(--coach-primary);
+        }
+
+        .table-container tbody tr {
+          border-bottom: 1px solid var(--coach-gray-dark);
+        }
+
+        .table-container tbody tr:last-child tr {
+          border-bottom: none;
+        }
+
+        .table-container td {
+          padding: 10px 14px;
+          font-size: 10px;
+          font-weight: 500;
+          color: var(--coach-white);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .exercise-name {
+          font-family: var(--coach-font-body);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          color: var(--coach-white);
+        }
+
+        /* CARDIO SPECIFICATION STYLES */
+        .cardio-section {
+          background: var(--coach-dark-elevated);
+          border: 1px solid var(--coach-gray-dark);
+          border-radius: 4px;
+          padding: var(--spacing-md);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .cardio-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--spacing-sm);
+          padding-bottom: 6px;
+          border-bottom: 1px solid var(--coach-gray-dark);
+        }
+
+        .cardio-title {
+          font-family: var(--coach-font-display);
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: var(--coach-white);
+        }
+
+        .cardio-badge {
+          padding: 3px 10px;
+          background: var(--coach-secondary);
+          color: var(--coach-white);
+          font-size: 8px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          border-radius: 3px;
+        }
+
+        .cardio-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: var(--spacing-md);
+        }
+
+        .cardio-metric {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .cardio-metric-label {
+          font-size: 7px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: var(--coach-gray-light);
+        }
+
+        .cardio-metric-val {
+          font-family: var(--coach-font-display);
+          font-size: 13px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          color: var(--coach-white);
+        }
+
+        /* MACROS SUMMARY STYLES */
+        .macro-summary {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-md);
+          padding: var(--spacing-sm);
+          background: var(--coach-dark-elevated);
+          border-radius: 4px;
+          border: 1px solid var(--coach-gray-dark);
+        }
+
+        .macro-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: var(--spacing-xs);
+          background: var(--coach-black);
+          border-radius: 4px;
+        }
+
+        .macro-label {
+          font-size: 7px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: var(--coach-gray-light);
+        }
+
+        .macro-value {
+          font-family: var(--coach-font-display);
+          font-size: 20px;
+          font-weight: 900;
+          color: var(--coach-primary);
+        }
+
+        .macro-unit {
+          font-size: 8px;
+          color: var(--coach-gray-light);
+          font-weight: 600;
+        }
+
+        .macro-chip {
+          padding: 2px 6px;
+          background: var(--coach-black);
+          border-radius: 3px;
+          white-space: nowrap;
+          font-size: 8px;
+          font-weight: 600;
+        }
+
+        .macro-chip.protein { color: #00D9FF; }
+        .macro-chip.carbs { color: #FFD700; }
+        .macro-chip.fats { color: #FF6B00; }
+
+        .text-primary {
+          color: var(--coach-primary);
+        }
+        """;
+
+    // ── HELPERS ───────────────────────────────────────────────────
+    private string GetCoachPhotoBase64(string? profilePicturePath)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(profilePicturePath))
+            {
+                var cleanPath = profilePicturePath.TrimStart('/');
+                var fullPath = Path.Combine(_webRootPath, cleanPath);
+                if (File.Exists(fullPath))
+                {
+                    var bytes = File.ReadAllBytes(fullPath);
+                    var ext = Path.GetExtension(fullPath).ToLower().TrimStart('.');
+                    var mimeType = ext == "png" ? "image/png" : "image/jpeg";
+                    return $"data:{mimeType};base64,{Convert.ToBase64String(bytes)}";
+                }
+            }
+
+            // Fallback to templates/imgT.jpeg or templates/img.jpeg looking in current and parent directories
+            var path1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg");
+            var path2 = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "imgT.jpeg");
+            var fallbackPath = File.Exists(path1) ? path1 : (File.Exists(path2) ? path2 : "");
+
+            // If imgT.jpeg doesn't exist, fall back to img.jpeg
+            if (string.IsNullOrEmpty(fallbackPath))
+            {
+                var fallbackPathOld1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "img.jpeg");
+                var fallbackPathOld2 = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "img.jpeg");
+                fallbackPath = File.Exists(fallbackPathOld1) ? fallbackPathOld1 : (File.Exists(fallbackPathOld2) ? fallbackPathOld2 : "");
+            }
+            
+            if (!string.IsNullOrEmpty(fallbackPath) && File.Exists(fallbackPath))
+            {
+                var bytes = File.ReadAllBytes(fallbackPath);
+                return $"data:image/jpeg;base64,{Convert.ToBase64String(bytes)}";
+            }
+        }
+        catch
+        {
+            // Fail silently
+        }
+
+        // Final fail-safe visual photo
+        return "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80";
+    }
 }

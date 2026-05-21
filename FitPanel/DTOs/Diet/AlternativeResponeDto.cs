@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace FitPanel.DTOs.Diet;
-    public record AlternativeResponeDto
-    (
-        int Id,
-        string MealName,
-        string Description,
-        int Protein,
-        int Carbs,
-        int Fats,
-        int Calories,
-        string? Link
-    );
+
+// AlternativeItem is an ingredient-level swap — no Link
+public record AlternativeResponeDto
+(
+    int Id,
+    string MealName,
+    string Description,
+    double Quantity,
+    string? Unit,
+    int Protein,
+    int Carbs,
+    int Fats,
+    int Calories
+);

@@ -40,19 +40,38 @@ public static class DietEndpoints
         });
 
         // POST /api/clients/{clientId}/diets/{dietId}/meals
+        // Creates a named DietMeal container (e.g. "Breakfast") — supports Link and pre-populated items
         group.MapPost("/{dietId:int}/meals", async (
             int clientId,
             int dietId,
+            CreateDietMealDto dto,
+            HttpContext http,
+            UserManager<PanelUser> userManager,
+            IDietService dietService) =>
+        {
+            var coachId = userManager.GetUserId(http.User)!;
+            var result = await dietService.AddDietMealAsync(
+                clientId, dietId, dto.Name, dto.Instruction,
+                dto.ParentDietMealId, coachId, dto.Link, dto.InitialItems);
+            return result is null
+                ? Results.NotFound()
+                : Results.Created($"/api/clients/{clientId}/diets/{dietId}/meals", result);
+        });
+
+        // FIX #1: Route corrected — POST /api/clients/{clientId}/diets/{dietId}/meals/{dietMealId}/items
+        // Adds a MealItem (ingredient) into a specific DietMeal.
+        // Previously the route was /{dietId}/meals and it incorrectly passed dietId as dietMealId.
+        group.MapPost("/{dietId:int}/meals/{dietMealId:int}/items", async (
+            int clientId,
+            int dietId,
+            int dietMealId,
             CreateMealItemDto dto,
             HttpContext http,
             UserManager<PanelUser> userManager,
             IDietService dietService) =>
         {
-            
             var coachId = userManager.GetUserId(http.User)!;
-    
-
-            var result = await dietService.AddMealItemAsync(clientId, dietId, dto, coachId);
+            var result = await dietService.AddMealItemAsync(clientId, dietMealId, dto, coachId);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 
@@ -69,7 +88,7 @@ public static class DietEndpoints
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
 
-
+        // FIX #2: DELETE now passes coachId for ownership verification
         // DELETE /api/clients/{clientId}/diets/{dietId}/meals/{mealId}
         group.MapDelete("/{dietId:int}/meals/{mealId:int}", async (
             int clientId,
@@ -80,12 +99,12 @@ public static class DietEndpoints
             IDietService dietService) =>
         {
             var coachId = userManager.GetUserId(http.User)!;
-            var (success, message) = await dietService.DeleteMealItemAsync(mealId);
+            var (success, message) = await dietService.DeleteMealItemAsync(mealId, coachId);
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
 
-
-                // PUT /api/clients/{clientId}/diets/{dietId}/meals/{mealId}
+        // FIX #3: PUT now passes coachId for ownership verification
+        // PUT /api/clients/{clientId}/diets/{dietId}/meals/{mealId}
         group.MapPut("/{dietId:int}/meals/{mealId:int}", async (
             int clientId,
             int dietId,
@@ -96,7 +115,7 @@ public static class DietEndpoints
             IDietService dietService) =>
         {
             var coachId = userManager.GetUserId(http.User)!;
-            var (success, message) = await dietService.UpdateMealItemAsync(mealId, dto);
+            var (success, message) = await dietService.UpdateMealItemAsync(mealId, dto, coachId);
             return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
         });
     }

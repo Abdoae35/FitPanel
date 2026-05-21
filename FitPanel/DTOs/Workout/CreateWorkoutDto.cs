@@ -7,6 +7,8 @@ public class CreateWorkoutDto
 {
     public string SplitName { get; set; } = string.Empty;
     public int NumberOfWorkoutDays { get; set; } = 3;
+    // FIX #5: Instructions was in the model but never set from DTO
+    public string? Instructions { get; set; }
 }
 
 

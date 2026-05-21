@@ -54,7 +54,8 @@
                     <th>Email</th>
                     <th>Specialization</th>
                     <th>Status</th>
-                    <th>Joined</th>
+                    <th>Subscription</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -92,7 +93,15 @@
                             </span>
                         </td>
                         <td style="color:var(--fp-text-muted);font-size:13px;">
-                            @coach.CreatedAt.ToString("MMM dd, yyyy")
+                            @if (coach.SubscriptionEndDate < DateTime.UtcNow) {
+                                <span class="fp-badge fp-badge-red">Expired (@coach.SubscriptionEndDate.ToString("MMM dd, yyyy"))</span>
+                            } else {
+                                <span class="fp-badge fp-badge-green">Valid till @coach.SubscriptionEndDate.ToString("MMM dd, yyyy")</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px;" @onclick="() => OpenEditModal(coach)">Edit</button>
+                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px;" @onclick="() => RenewSubscription(coach)">Renew</button>
                         </td>
                     </tr>
                 }
@@ -142,6 +151,26 @@
                 </div>
                 <div class="fp-grid-2">
                     <div class="fp-input-group">
+                        <label>Phone Number</label>
+                        <input @bind="dto.PhoneNumber" placeholder="+1234567890" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Max Clients</label>
+                        <input type="number" @bind="dto.MaxClients" min="1" />
+                    </div>
+                </div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Instagram Username</label>
+                        <input @bind="dto.InstagramUsername" placeholder="e.g. john_coach" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Instagram Link</label>
+                        <input type="url" @bind="dto.InstagramLink" placeholder="https://instagram.com/..." />
+                    </div>
+                </div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
                         <label>Password *</label>
                         <input type="password" @bind="dto.Password" placeholder="Min 8 chars" />
                     </div>
@@ -168,6 +197,90 @@
                     {
                         <i class="fa fa-check"></i>
                         <span>Create Coach</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ── Edit Coach Modal ── *@
+@if (showEditModal)
+{
+    <div class="fp-modal-overlay" @onclick="CloseEditModal">
+        <div class="fp-modal" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <div class="fp-modal-title">
+                    <i class="fa fa-user-edit" style="color:var(--fp-accent);"></i>
+                    EDIT COACH
+                </div>
+                <button class="fp-modal-close" @onclick="CloseEditModal">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(formError))
+            {
+                <div class="fp-alert fp-alert-danger" style="margin:16px 24px 0;">
+                    <i class="fa fa-exclamation-circle"></i> @formError
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(successMsg))
+            {
+                <div class="fp-alert fp-alert-success" style="margin:16px 24px 0;">
+                    <i class="fa fa-check-circle"></i> @successMsg
+                </div>
+            }
+
+            <div class="fp-modal-body">
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Full Name *</label>
+                        <input @bind="editingCoach.FullName" placeholder="John Coach" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Email *</label>
+                        <input type="email" @bind="editingCoach.Email" disabled />
+                    </div>
+                </div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Phone Number</label>
+                        <input @bind="editingCoach.PhoneNumber" placeholder="+1234567890" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Max Clients</label>
+                        <input type="number" @bind="editingCoach.MaxClients" min="1" />
+                    </div>
+                </div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Instagram Username</label>
+                        <input @bind="editingCoach.InstagramUsername" placeholder="e.g. john_coach" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Instagram Link</label>
+                        <input type="url" @bind="editingCoach.InstagramLink" placeholder="https://instagram.com/..." />
+                    </div>
+                </div>
+                <div class="fp-input-group">
+                    <label>Specialization</label>
+                    <input @bind="editingCoach.Specialization" placeholder="e.g. Strength & Conditioning" />
+                </div>
+            </div>
+
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="CloseEditModal">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveEditCoach" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="fp-spinner-sm"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i>
+                        <span>Save Changes</span>
                     }
                 </button>
             </div>
@@ -260,6 +373,9 @@
     private string successMsg = string.Empty;
 
     private CreateCoachDto dto = new();
+    
+    private bool showEditModal = false;
+    private PanelUser editingCoach = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -304,5 +420,47 @@
         {
             formError = message;
         }
+    }
+
+    private void OpenEditModal(PanelUser coach)
+    {
+        editingCoach = coach;
+        showEditModal = true;
+        formError = string.Empty;
+        successMsg = string.Empty;
+    }
+
+    private async Task CloseEditModal()
+    {
+        showEditModal = false;
+        var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
+        coaches = allCoaches.ToList();
+    }
+
+    private async Task SaveEditCoach()
+    {
+        formError = string.Empty;
+        successMsg = string.Empty;
+        isSaving = true;
+
+        var result = await UserManager.UpdateAsync(editingCoach);
+        isSaving = false;
+
+        if (result.Succeeded)
+        {
+            successMsg = "Coach updated successfully!";
+            await Task.Delay(1500);
+            await CloseEditModal();
+        }
+        else
+        {
+            formError = string.Join(", ", result.Errors.Select(e => e.Description));
+        }
+    }
+
+    private async Task RenewSubscription(PanelUser coach)
+    {
+        coach.SubscriptionEndDate = DateTime.UtcNow.AddYears(1);
+        await UserManager.UpdateAsync(coach);
     }
 }

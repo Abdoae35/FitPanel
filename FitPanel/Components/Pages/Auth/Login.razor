@@ -58,6 +58,12 @@
                     <i class="fa fa-lock"></i> Account locked. Try again in 15 minutes.
                 </div>
             }
+            else if (errorMessage == "expired")
+            {
+                <div class="fp-alert fp-alert-danger">
+                    <i class="fa fa-clock"></i> Your subscription has expired. Please contact the admin.
+                </div>
+            }
 
             <form method="post" action="/account/login" class="fp-form">
                 <AntiforgeryToken />

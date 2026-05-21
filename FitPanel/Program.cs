@@ -11,6 +11,7 @@ builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IAlternativeService, AlternativeService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICoachDictionaryService, CoachDictionaryService>();
+builder.Services.AddHttpClient<INutritionApiService, CalorieNinjasService>();
 
 // Add this so minimal APIs can read JSON bodies
 builder.Services.AddEndpointsApiExplorer();
@@ -98,10 +99,11 @@ app.MapPost("/account/login", async (
 });
 
 // Logout endpoint
-app.MapPost("/logout", async (SignInManager<PanelUser> signInManager) =>
+app.MapPost("/logout", async (HttpContext context, SignInManager<PanelUser> signInManager) =>
 {
     await signInManager.SignOutAsync();
-    return Results.Redirect("/login");
+    var expired = context.Request.Query["expired"].ToString() == "true";
+    return Results.Redirect(expired ? "/login?error=expired" : "/login");
 }).RequireAuthorization();
 
 // ← Seed MUST be before app.Run()

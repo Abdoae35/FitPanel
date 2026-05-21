@@ -228,6 +228,27 @@ else
     </div>
 }
 
+@* Delete Confirmation Modal *@
+@if (showDeleteConfirm)
+{
+    <div class="fp-modal-overlay" @onclick="() => showDeleteConfirm = false">
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header" style="background:#2a0a0a;border-bottom:2px solid #e31c1c;">
+                <span class="fp-modal-title" style="color:#e31c1c;"><i class="fa fa-exclamation-triangle"></i> CONFIRM DELETION</span>
+                <button class="fp-modal-close" @onclick="() => showDeleteConfirm = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <p>@deleteConfirmMessage</p>
+                <p class="fp-hint" style="color:#ff6b6b; margin-top: 10px;">This action cannot be undone.</p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showDeleteConfirm = false">Cancel</button>
+                <button class="fp-btn-primary" style="background:#e31c1c;" @onclick="PerformDelete"><i class="fa fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private bool isLoading = true;
     private string errorMessage = "";
@@ -242,6 +263,10 @@ else
 
     private bool showExerciseModal = false;
     private CoachExerciseDictionary editExercise = new();
+
+    private bool showDeleteConfirm = false;
+    private string deleteConfirmMessage = "";
+    private Func<Task> deleteAction;
 
     protected override async Task OnInitializedAsync()
     {
@@ -292,10 +317,15 @@ else
         showMealModal = false;
     }
 
-    private async Task ConfirmDeleteMeal(CoachMealDictionary m)
+    private void ConfirmDeleteMeal(CoachMealDictionary m)
     {
-        await DictionaryService.DeleteMealAsync(coachId, m.Id);
-        await LoadData();
+        deleteConfirmMessage = $"Are you sure you want to delete the meal '{m.MealName}' from your dictionary?";
+        deleteAction = async () =>
+        {
+            await DictionaryService.DeleteMealAsync(coachId, m.Id);
+            await LoadData();
+        };
+        showDeleteConfirm = true;
     }
 
     // --- Exercises ---
@@ -315,9 +345,20 @@ else
         showExerciseModal = false;
     }
 
-    private async Task ConfirmDeleteExercise(CoachExerciseDictionary e)
+    private void ConfirmDeleteExercise(CoachExerciseDictionary e)
     {
-        await DictionaryService.DeleteExerciseAsync(coachId, e.Id);
-        await LoadData();
+        deleteConfirmMessage = $"Are you sure you want to delete the exercise '{e.ExerciseName}' from your dictionary?";
+        deleteAction = async () =>
+        {
+            await DictionaryService.DeleteExerciseAsync(coachId, e.Id);
+            await LoadData();
+        };
+        showDeleteConfirm = true;
+    }
+
+    private async Task PerformDelete()
+    {
+        if (deleteAction != null) await deleteAction();
+        showDeleteConfirm = false;
     }
 }

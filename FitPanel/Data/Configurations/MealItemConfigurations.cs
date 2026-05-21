@@ -15,8 +15,6 @@ namespace FitPanel.Data.Configurations
                .IsRequired()
                .HasMaxLength(150);
 
-        builder.Property(m => m.Description)
-               .IsRequired();
 
         builder.Property(m => m.Protein).IsRequired();
         builder.Property(m => m.Carbs).IsRequired();

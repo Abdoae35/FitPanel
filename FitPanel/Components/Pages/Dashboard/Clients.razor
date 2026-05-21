@@ -482,8 +482,9 @@ else
     private int deleteClientId = 0;
     private string deleteClientName = string.Empty;
     private string coachId = string.Empty;
+    private int maxClients = 10;
 
- private CreateClientDto newClient = new();
+    private CreateClientDto newClient = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -506,6 +507,7 @@ else
             }
 
             coachId = user.Id;
+            maxClients = user.MaxClients;
             clients = await ClientService.GetMyClientsAsync(coachId);
             isLoading = false;
         }
@@ -525,9 +527,15 @@ else
         newClient = new();
     }
 
-   private async Task CreateClient()
+    private async Task CreateClient()
 {
     formError = string.Empty;
+
+    if (clients.Count >= maxClients)
+    {
+        formError = $"You have reached your limit of {maxClients} clients. Please contact the administrator to increase your limit.";
+        return;
+    }
 
     if (string.IsNullOrWhiteSpace(newClient.Name))
     { formError = "Name is required."; return; }

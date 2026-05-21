@@ -28,6 +28,7 @@ public class WorkoutService : IWorkoutService
             ClientId = clientId,
             SplitName = dto.SplitName,
             NumberOfWorkOutDays = dto.NumberOfWorkoutDays,
+            Instructions = dto.Instructions, // FIX #5: populate Instructions
             CreatedAt = DateTime.UtcNow
         };
 

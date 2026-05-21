@@ -19,10 +19,10 @@ namespace FitPanel.Data.Configurations
 
        
 
-                 // 🔥 RELATIONSHIP WITH MEAL ITEMS
-        builder.HasMany(d => d.MealItems)
-               .WithOne(m => m.Diet)
-               .HasForeignKey(m => m.DietId)
+        // 🔥 RELATIONSHIP WITH DIET MEALS
+        builder.HasMany(d => d.DietMeals)
+               .WithOne(dm => dm.Diet)
+               .HasForeignKey(dm => dm.DietId)
                .OnDelete(DeleteBehavior.Cascade);
         }
     }

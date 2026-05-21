@@ -9,10 +9,12 @@ namespace FitPanel.Services;
 public class AlternativeService : IAlternativeService
 {
     private readonly FitPanelDbContext _db;
+    private readonly INutritionApiService _nutritionApi;
 
-    public AlternativeService(FitPanelDbContext db)
+    public AlternativeService(FitPanelDbContext db, INutritionApiService nutritionApi)
     {
         _db = db;
+        _nutritionApi = nutritionApi;
     }
 
     public async Task<AlternativeResponeDto> AddAlternativeAsync(
@@ -20,55 +22,41 @@ public class AlternativeService : IAlternativeService
     {
         // Verify ownership: coachId → client → diet → mealitem
         var mealItem = await _db.MealItems
-            .Include(m => m.Diet)
-                .ThenInclude(d => d.Client)
+            .Include(m => m.DietMeal)
+                .ThenInclude(dm => dm.Diet)
+                    .ThenInclude(d => d.Client)
             .FirstOrDefaultAsync(m => m.Id == mealItemId
-                && m.Diet.Client.CoachId == coachId)
+                && m.DietMeal.Diet.Client.CoachId == coachId)
             ?? throw new UnauthorizedAccessException("Meal item not found.");
+
+        var apiData = await _nutritionApi.GetNutritionAsync($"{dto.Quantity} {dto.Unit} {dto.MealName}");
 
         var alternative = new AlternativeItem
         {
             MealItemId = mealItemId,
             MealName = dto.MealName,
             Description = dto.Description,
-            Protein = dto.Protein,
-            Carbs = dto.Carbs,
-            Fats = dto.Fats,
-            Calories = dto.Calories,
-            Link = dto.Link
+            Quantity = dto.Quantity,
+            Unit = dto.Unit,
+            Calories = apiData != null ? (int)apiData.Calories : dto.Calories,
+            Protein = apiData != null ? (int)apiData.Protein : dto.Protein,
+            Carbs = apiData != null ? (int)apiData.Carbs : dto.Carbs,
+            Fats = apiData != null ? (int)apiData.Fats : dto.Fats,
         };
 
         _db.AlternativeItems.Add(alternative);
-
-        // Auto-save to dictionary
-        var existsInDict = await _db.CoachMealDictionaries
-            .AnyAsync(x => x.CoachId == coachId && x.MealName.ToLower() == dto.MealName.ToLower());
-        
-        if (!existsInDict)
-        {
-            _db.CoachMealDictionaries.Add(new CoachMealDictionary
-            {
-                CoachId = coachId,
-                MealName = dto.MealName,
-                Protein = dto.Protein,
-                Carbs = dto.Carbs,
-                Fats = dto.Fats,
-                Calories = dto.Calories,
-                Link = dto.Link
-            });
-        }
-
         await _db.SaveChangesAsync();
 
         return new AlternativeResponeDto(
             alternative.Id,
             alternative.MealName,
             alternative.Description,
+            alternative.Quantity,
+            alternative.Unit,
             alternative.Protein,
             alternative.Carbs,
             alternative.Fats,
-            alternative.Calories,
-            alternative.Link);
+            alternative.Calories);
     }
 
     public async Task<(bool Success, string Message)> UpdateAlternativeAsync(
@@ -76,21 +64,25 @@ public class AlternativeService : IAlternativeService
     {
         var alternative = await _db.AlternativeItems
             .Include(a => a.MealItem)
-                .ThenInclude(m => m.Diet)
-                    .ThenInclude(d => d.Client)
+                .ThenInclude(m => m.DietMeal)
+                    .ThenInclude(dm => dm.Diet)
+                        .ThenInclude(d => d.Client)
             .FirstOrDefaultAsync(a => a.Id == alternativeId
-                && a.MealItem.Diet.Client.CoachId == coachId);
+                && a.MealItem.DietMeal.Diet.Client.CoachId == coachId);
 
         if (alternative == null)
             return (false, "Alternative not found.");
 
+        var apiData = await _nutritionApi.GetNutritionAsync($"{dto.Quantity} {dto.Unit} {dto.MealName}");
+
         alternative.MealName = dto.MealName;
         alternative.Description = dto.Description;
-        alternative.Protein = dto.Protein;
-        alternative.Carbs = dto.Carbs;
-        alternative.Fats = dto.Fats;
-        alternative.Calories = dto.Calories;
-        if (dto.Link != null) alternative.Link = dto.Link;
+        alternative.Quantity = dto.Quantity;
+        alternative.Unit = dto.Unit;
+        alternative.Calories = apiData != null ? (int)apiData.Calories : dto.Calories;
+        alternative.Protein = apiData != null ? (int)apiData.Protein : dto.Protein;
+        alternative.Carbs = apiData != null ? (int)apiData.Carbs : dto.Carbs;
+        alternative.Fats = apiData != null ? (int)apiData.Fats : dto.Fats;
 
         await _db.SaveChangesAsync();
         return (true, "Alternative updated.");
@@ -101,10 +93,11 @@ public class AlternativeService : IAlternativeService
     {
         var alternative = await _db.AlternativeItems
             .Include(a => a.MealItem)
-                .ThenInclude(m => m.Diet)
-                    .ThenInclude(d => d.Client)
+                .ThenInclude(m => m.DietMeal)
+                    .ThenInclude(dm => dm.Diet)
+                        .ThenInclude(d => d.Client)
             .FirstOrDefaultAsync(a => a.Id == alternativeId
-                && a.MealItem.Diet.Client.CoachId == coachId);
+                && a.MealItem.DietMeal.Diet.Client.CoachId == coachId);
 
         if (alternative == null)
             return (false, "Alternative not found.");

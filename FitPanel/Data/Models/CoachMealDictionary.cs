@@ -16,6 +16,8 @@ public class CoachMealDictionary
     public string MealName { get; set; }
 
     public string? Link { get; set; }
+    public string? Instruction { get; set; }
+    public string? IngredientsJson { get; set; } // Stores a JSON array of ingredients
 
     public int Protein { get; set; }
     public int Carbs { get; set; }

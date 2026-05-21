@@ -4,6 +4,7 @@ using FitPanel.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitPanel.Migrations
 {
     [DbContext(typeof(FitPanelDbContext))]
-    partial class FitPanelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520131118_SeprateDietMeals")]
+    partial class SeprateDietMeals
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,6 +46,9 @@ namespace FitPanel.Migrations
                     b.Property<int>("Fats")
                         .HasColumnType("int");
 
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MealItemId")
                         .HasColumnType("int");
 
@@ -52,12 +58,6 @@ namespace FitPanel.Migrations
 
                     b.Property<int>("Protein")
                         .HasColumnType("int");
-
-                    b.Property<double>("Quantity")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Unit")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -196,12 +196,6 @@ namespace FitPanel.Migrations
                     b.Property<int>("Fats")
                         .HasColumnType("int");
 
-                    b.Property<string>("IngredientsJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Instruction")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Link")
                         .HasColumnType("nvarchar(max)");
 
@@ -257,24 +251,13 @@ namespace FitPanel.Migrations
                     b.Property<int>("DietId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Instruction")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Link")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ParentDietMealId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DietId");
-
-                    b.HasIndex("ParentDietMealId");
 
                     b.ToTable("DietMeals");
                 });
@@ -334,11 +317,18 @@ namespace FitPanel.Migrations
                     b.Property<int>("Carbs")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DietMealId")
                         .HasColumnType("int");
 
                     b.Property<int>("Fats")
                         .HasColumnType("int");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MealName")
                         .IsRequired()
@@ -448,12 +438,6 @@ namespace FitPanel.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("InstagramLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("InstagramUsername")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -462,9 +446,6 @@ namespace FitPanel.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("MaxClients")
-                        .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -491,9 +472,6 @@ namespace FitPanel.Migrations
 
                     b.Property<string>("Specialization")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SubscriptionEndDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -722,13 +700,7 @@ namespace FitPanel.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FitPanel.Data.Models.DietMeal", "ParentDietMeal")
-                        .WithMany("AlternativeMeals")
-                        .HasForeignKey("ParentDietMealId");
-
                     b.Navigation("Diet");
-
-                    b.Navigation("ParentDietMeal");
                 });
 
             modelBuilder.Entity("FitPanel.Data.Models.Excercise", b =>
@@ -840,8 +812,6 @@ namespace FitPanel.Migrations
 
             modelBuilder.Entity("FitPanel.Data.Models.DietMeal", b =>
                 {
-                    b.Navigation("AlternativeMeals");
-
                     b.Navigation("MealItems");
                 });
 

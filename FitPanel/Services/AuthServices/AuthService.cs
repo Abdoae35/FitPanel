@@ -28,7 +28,12 @@ public class AuthService : IAuthService
             Specialization = dto.Specialization,
             Bio = dto.Bio,
             EmailConfirmed = true,
-            IsActive = true
+            IsActive = true,
+            PhoneNumber = dto.PhoneNumber,
+            InstagramUsername = dto.InstagramUsername,
+            InstagramLink = dto.InstagramLink,
+            MaxClients = dto.MaxClients,
+            SubscriptionEndDate = DateTime.UtcNow.AddYears(1)
         };
 
         var result = await _userManager.CreateAsync(coach, dto.Password);

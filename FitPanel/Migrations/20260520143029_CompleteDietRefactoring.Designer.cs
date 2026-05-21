@@ -4,6 +4,7 @@ using FitPanel.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitPanel.Migrations
 {
     [DbContext(typeof(FitPanelDbContext))]
-    partial class FitPanelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520143029_CompleteDietRefactoring")]
+    partial class CompleteDietRefactoring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,9 @@ namespace FitPanel.Migrations
 
                     b.Property<int>("Fats")
                         .HasColumnType("int");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MealItemId")
                         .HasColumnType("int");
@@ -260,9 +266,6 @@ namespace FitPanel.Migrations
                     b.Property<string>("Instruction")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Link")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -339,6 +342,9 @@ namespace FitPanel.Migrations
 
                     b.Property<int>("Fats")
                         .HasColumnType("int");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MealName")
                         .IsRequired()
@@ -448,12 +454,6 @@ namespace FitPanel.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("InstagramLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("InstagramUsername")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -462,9 +462,6 @@ namespace FitPanel.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("MaxClients")
-                        .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -491,9 +488,6 @@ namespace FitPanel.Migrations
 
                     b.Property<string>("Specialization")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SubscriptionEndDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");

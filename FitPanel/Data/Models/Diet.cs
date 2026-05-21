@@ -18,8 +18,6 @@ namespace FitPanel.Data.Models;
         public int ClientId { get; set; }   // FK
         public Client Client { get; set; }  // Navigation
 
-        //Apply one to many relationship with Meal
-        public ICollection<MealItem> MealItems { get; set; } = new List<MealItem>();
-
-        
+        //Apply one to many relationship with DietMeal
+        public ICollection<DietMeal> DietMeals { get; set; } = new List<DietMeal>();
     }

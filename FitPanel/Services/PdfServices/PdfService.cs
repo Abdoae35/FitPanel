@@ -44,8 +44,9 @@ public class PdfService : IPdfService
         var diet = await _db.Diets
             .Include(d => d.Client)
                 .ThenInclude(c => c.Coach)
-            .Include(d => d.MealItems)
-                .ThenInclude(m => m.AlternativeItems)
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.MealItems)
+                    .ThenInclude(m => m.AlternativeItems)
             .FirstOrDefaultAsync(d =>
                 d.Id == dietId &&
                 d.ClientId == clientId &&
@@ -118,7 +119,7 @@ public class PdfService : IPdfService
         var coachPhone   = coach?.PhoneNumber ?? "";
         var coachName    = coach?.FullName ?? "الكوتش";
         var brandName    = $"{coachName} FIT";
-        var meals        = diet.MealItems.ToList();
+        var meals        = diet.DietMeals.SelectMany(dm => dm.MealItems).ToList();
         int totalPages   = meals.Count;
         int totalCal     = meals.Sum(m => m.Calories);
         int totalProtein = meals.Sum(m => m.Protein);
@@ -315,8 +316,8 @@ public class PdfService : IPdfService
         var rows = new System.Text.StringBuilder();
         rows.Append($"""
             <tr>
-              <td class="meal-name">{(string.IsNullOrEmpty(meal.Link) ? meal.MealName : $"<a href='{meal.Link}' style='color:#1a8c3c;text-decoration:none;'>{meal.MealName}</a>")}</td>
-              <td>{meal.Description}</td>
+              <td class="meal-name">{(string.IsNullOrEmpty(meal.DietMeal?.Link) ? meal.MealName : $"<a href='{meal.DietMeal.Link}' style='color:#1a8c3c;text-decoration:none;'>{meal.MealName}</a>")}</td>
+              <td>{meal.Quantity} {meal.Unit}</td>
               <td>{meal.Protein}g</td>
               <td>{meal.Carbs}g</td>
               <td>{meal.Fats}g</td>
@@ -328,7 +329,7 @@ public class PdfService : IPdfService
             rows.Append($"""
                 <tr class="alt-row">
                   <td class="meal-name alt-name">↳ {alt.MealName}</td>
-                  <td class="alt-desc">{alt.Description}</td>
+                  <td class="alt-desc">{alt.Quantity} {alt.Unit}</td>
                   <td>{alt.Protein}g</td>
                   <td>{alt.Carbs}g</td>
                   <td>{alt.Fats}g</td>

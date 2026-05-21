@@ -130,7 +130,21 @@
 
         @* Page Content — hidden on mobile when sidebar is open via CSS class on body *@
         <main class="fp-content">
-            @Body
+            <div class="fp-page-body">
+                @Body
+            </div>
+            
+            <footer class="fp-footer">
+                <div class="fp-footer-left">
+                    &copy; @DateTime.Now.Year <span class="fp-logo-text-footer">FIT<span class="fp-text-accent">PANEL</span></span>. All rights reserved.
+                </div>
+                <div class="fp-footer-right">
+                    <a href="#" class="fp-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="fp-social-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="fp-social-icon" title="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" class="fp-social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </footer>
         </main>
     </div>
 </div>
@@ -242,12 +256,19 @@
     }
 
     /* ── Layout ── */
+    body, html {
+        margin: 0;
+        padding: 0;
+    }
+
     .fp-dashboard {
         display: flex;
-        min-height: 100vh;
+        height: 100vh;
+        height: 100dvh;
         background: var(--fp-bg);
         font-family: 'DM Sans', sans-serif;
         transition: background 0.3s;
+        overflow: hidden;
     }
 
     /* ── Sidebar ── */
@@ -517,9 +538,63 @@
     /* ── Content ── */
     .fp-content {
         flex: 1;
-        padding: 30px;
         background: var(--fp-bg);
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .fp-page-body {
+        padding: 30px;
+        flex: 1;
+    }
+
+    /* ── Footer ── */
+    .fp-footer {
+        padding: 20px 30px;
+        border-top: 1px solid var(--fp-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: transparent;
+        margin-top: auto;
+    }
+    .fp-footer-left {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--fp-text);
+    }
+    .fp-logo-text-footer {
+        font-family: 'Teko', sans-serif;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: var(--fp-text);
+        font-size: 16px;
+    }
+    .fp-text-accent {
+        color: var(--fp-accent);
+    }
+    .fp-footer-right {
+        display: flex;
+        gap: 12px;
+    }
+    .fp-social-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        background: var(--fp-surface2);
+        border: 1px solid var(--fp-border);
+        color: var(--fp-text);
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 15px;
+    }
+    .fp-social-icon:hover {
+        background: var(--fp-accent);
+        border-color: var(--fp-accent);
+        color: #fff;
     }
 
     /* ── Global reusable card ── */
@@ -841,6 +916,23 @@
     {
         if (firstRender)
         {
+            if (AuthState != null)
+            {
+                var auth = await AuthState;
+                if (auth.User.Identity?.IsAuthenticated == true)
+                {
+                    var user = await SignInManager.UserManager.GetUserAsync(auth.User);
+                    if (user != null && await SignInManager.UserManager.IsInRoleAsync(user, "Coach"))
+                    {
+                        if (user.SubscriptionEndDate < DateTime.UtcNow)
+                        {
+                            await JS.InvokeVoidAsync("eval", "document.querySelector('.fp-logout-form').action = '/logout?expired=true'; document.querySelector('.fp-logout-form').submit();");
+                            return;
+                        }
+                    }
+                }
+            }
+
             // On mobile, sidebar should start closed
             var width = await JS.InvokeAsync<int>("eval", "window.innerWidth");
             if (width <= 768)

@@ -3,17 +3,22 @@ using FitPanel.Data;
 using FitPanel.Data.Models;
 using FitPanel.DTOs.Diet;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace FitPanel.Services;
 
 public class DietService : IDietService
 {
     private readonly FitPanelDbContext _db;
+    private readonly INutritionApiService _nutritionApi;
 
-    public DietService(FitPanelDbContext db)
+    public DietService(FitPanelDbContext db, INutritionApiService nutritionApi)
     {
         _db = db;
+        _nutritionApi = nutritionApi;
     }
+
+    // ── Create Diet ─────────────────────────────────────────────────────────
 
     public async Task<DietResponseDto> CreateDietAsync(
         int clientId, CreateDietDto dto, string coachId)
@@ -26,14 +31,17 @@ public class DietService : IDietService
         {
             ClientId = clientId,
             NumberOfMeals = dto.NumberOfMeals,
+            Instructions = dto.Instructions,
             CreatedAt = DateTime.UtcNow
         };
 
         _db.Diets.Add(diet);
         await _db.SaveChangesAsync();
 
-        return MapDietToDto(diet, new List<MealItem>());
+        return MapDietToDto(diet, new List<DietMeal>());
     }
+
+    // ── Get Diets ────────────────────────────────────────────────────────────
 
     public async Task<List<DietResponseDto>> GetDietsAsync(int clientId, string coachId)
     {
@@ -41,91 +49,119 @@ public class DietService : IDietService
             .FirstOrDefaultAsync(c => c.Id == clientId && c.CoachId == coachId)
             ?? throw new UnauthorizedAccessException("Client not found.");
 
-        return await _db.Diets
+        var diets = await _db.Diets
             .Where(d => d.ClientId == clientId)
-            .Include(d => d.MealItems)
-                .ThenInclude(m => m.AlternativeItems)
-            .Select(d => new DietResponseDto(
-                d.Id,
-                d.NumberOfMeals,
-                d.CreatedAt,
-                d.MealItems.Select(m => new MealItemResponseDto(
-                    m.Id,
-                    m.MealName,
-                    m.Description,
-                    m.Protein,
-                    m.Carbs,
-                    m.Fats,
-                    m.Calories,
-                    m.Link,
-                    m.AlternativeItems.Select(a => new AlternativeResponeDto(
-                        a.Id,
-                        a.MealName,
-                        a.Description,
-                        a.Protein,
-                        a.Carbs,
-                        a.Fats,
-                        a.Calories,
-                        a.Link
-                    )).ToList()
-                )).ToList()
-            ))
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.AlternativeMeals)
+                    .ThenInclude(am => am.MealItems)
+                        .ThenInclude(m => m.AlternativeItems)
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.MealItems)
+                    .ThenInclude(m => m.AlternativeItems)
             .ToListAsync();
+
+        return diets.Select(d => MapDietToDto(d, d.DietMeals.ToList())).ToList();
     }
 
-public async Task<DietResponseDto?> AddMealItemAsync(
-    int clientId, int dietId, CreateMealItemDto dto, string coachId)
-{
-    var diet = await _db.Diets
-        .Include(d => d.MealItems)
-            .ThenInclude(m => m.AlternativeItems)
-        .Include(d => d.Client)
-        .FirstOrDefaultAsync(d => d.Id == dietId
-            && d.ClientId == clientId
-            && d.Client.CoachId == coachId);
+    // ── Add DietMeal ─────────────────────────────────────────────────────────
+    // Creates a named meal container (e.g. "Breakfast") with Link and optional InitialItems
+    // from dictionary auto-fill. Also upserts the CoachMealDictionary.
 
-    if (diet == null) return null;
-
-    var meal = new MealItem
+    public async Task<DietResponseDto?> AddDietMealAsync(
+        int clientId, int dietId, string mealName, string? instruction,
+        int? parentDietMealId, string coachId, string? link = null,
+        List<CreateMealItemDto>? initialItems = null)
     {
-        DietId = dietId,
-        MealName = dto.MealName,
-        Description = dto.Description,
-        Protein = dto.Protein,
-        Carbs = dto.Carbs,
-        Fats = dto.Fats,
-        Calories = dto.Calories,
-        Link = dto.Link,
-        AlternativeItems = new List<AlternativeItem>() // ← prevents null crash
-    };
+        var diet = await _db.Diets
+            .Include(d => d.Client)
+            .FirstOrDefaultAsync(d => d.Id == dietId && d.Client.CoachId == coachId);
 
-    _db.MealItems.Add(meal);
+        if (diet == null) return null;
 
-    // Auto-save to dictionary
-    var existsInDict = await _db.CoachMealDictionaries
-        .AnyAsync(x => x.CoachId == coachId && x.MealName.ToLower() == dto.MealName.ToLower());
-    
-    if (!existsInDict)
-    {
-        _db.CoachMealDictionaries.Add(new CoachMealDictionary
+        // Create the DietMeal container
+        var dietMeal = new DietMeal
         {
-            CoachId = coachId,
-            MealName = dto.MealName,
-            Protein = dto.Protein,
-            Carbs = dto.Carbs,
-            Fats = dto.Fats,
-            Calories = dto.Calories,
-            Link = dto.Link
-        });
+            DietId = dietId,
+            Name = mealName,
+            Instruction = instruction,
+            Link = link,
+            ParentDietMealId = parentDietMealId
+        };
+        _db.DietMeals.Add(dietMeal);
+        await _db.SaveChangesAsync();
+
+        // If initial items provided (from dictionary auto-fill), create them all at once
+        if (initialItems != null && initialItems.Count > 0)
+        {
+            foreach (var itemDto in initialItems)
+            {
+                var apiData = await _nutritionApi.GetNutritionAsync(
+                    $"{itemDto.Quantity} {itemDto.Unit} {itemDto.MealName}");
+
+                _db.MealItems.Add(new MealItem
+                {
+                    DietMealId = dietMeal.Id,
+                    MealName = itemDto.MealName,
+                    Quantity = itemDto.Quantity,
+                    Unit = itemDto.Unit,
+                    Calories = apiData != null ? (int)apiData.Calories : itemDto.Calories,
+                    Protein = apiData != null ? (int)apiData.Protein : itemDto.Protein,
+                    Carbs = apiData != null ? (int)apiData.Carbs : itemDto.Carbs,
+                    Fats = apiData != null ? (int)apiData.Fats : itemDto.Fats,
+                    AlternativeItems = new List<AlternativeItem>()
+                });
+            }
+            await _db.SaveChangesAsync();
+        }
+
+        // Upsert dictionary with full meal state
+        await UpsertMealDictionaryAsync(dietMeal.Id, coachId);
+
+        // Return full updated diet
+        var fullDiet = await LoadFullDietAsync(dietId);
+        return fullDiet != null ? MapDietToDto(fullDiet, fullDiet.DietMeals.ToList()) : null;
     }
 
-    await _db.SaveChangesAsync();
+    // ── Add MealItem ─────────────────────────────────────────────────────────
 
-    // ← DO NOT call diet.MealItems.Add(meal) here
-    // EF already added it to diet.MealItems automatically via change tracking
+    public async Task<DietResponseDto?> AddMealItemAsync(
+        int clientId, int dietMealId, CreateMealItemDto dto, string coachId)
+    {
+        var dietMeal = await _db.DietMeals
+            .Include(m => m.Diet)
+                .ThenInclude(d => d.Client)
+            .FirstOrDefaultAsync(m => m.Id == dietMealId && m.Diet.Client.CoachId == coachId);
 
-    return MapDietToDto(diet, diet.MealItems.ToList());
-}
+        if (dietMeal == null) return null;
+
+        var apiData = await _nutritionApi.GetNutritionAsync(
+            $"{dto.Quantity} {dto.Unit} {dto.MealName}");
+
+        var meal = new MealItem
+        {
+            DietMealId = dietMealId,
+            MealName = dto.MealName,
+            Quantity = dto.Quantity,
+            Unit = dto.Unit,
+            Calories = apiData != null ? (int)apiData.Calories : dto.Calories,
+            Protein = apiData != null ? (int)apiData.Protein : dto.Protein,
+            Carbs = apiData != null ? (int)apiData.Carbs : dto.Carbs,
+            Fats = apiData != null ? (int)apiData.Fats : dto.Fats,
+            AlternativeItems = new List<AlternativeItem>()
+        };
+
+        _db.MealItems.Add(meal);
+        await _db.SaveChangesAsync();
+
+        // Upsert dictionary — save full DietMeal as a template (unique by CoachId + DietMealName)
+        await UpsertMealDictionaryAsync(dietMealId, coachId);
+
+        var fullDiet = await LoadFullDietAsync(dietMeal.DietId);
+        return fullDiet != null ? MapDietToDto(fullDiet, fullDiet.DietMeals.ToList()) : null;
+    }
+
+    // ── Delete Diet ──────────────────────────────────────────────────────────
+
     public async Task<(bool Success, string Message)> DeleteDietAsync(
         int clientId, int dietId, string coachId)
     {
@@ -142,62 +178,191 @@ public async Task<DietResponseDto?> AddMealItemAsync(
         return (true, "Diet deleted.");
     }
 
-    public async Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId)
-    {
-        var meal = await _db.MealItems.FindAsync(mealId);
-        if (meal == null) return (false, "Meal not found.");
+    // ── Delete MealItem ──────────────────────────────────────────────────────
 
+    public async Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId, string coachId)
+    {
+        var meal = await _db.MealItems
+            .Include(m => m.DietMeal)
+                .ThenInclude(dm => dm.Diet)
+                    .ThenInclude(d => d.Client)
+            .FirstOrDefaultAsync(m => m.Id == mealId
+                && m.DietMeal.Diet.Client.CoachId == coachId);
+
+        if (meal == null) return (false, "Ingredient not found.");
+
+        var dietMealId = meal.DietMealId;
         _db.MealItems.Remove(meal);
         await _db.SaveChangesAsync();
-        return (true, "Meal deleted.");
+
+        // Re-upsert dictionary to reflect the removal
+        await UpsertMealDictionaryAsync(dietMealId, coachId);
+
+        return (true, "Ingredient deleted.");
     }
 
+    // ── Update MealItem ──────────────────────────────────────────────────────
+
     public async Task<(bool Success, string Message)> UpdateMealItemAsync(
-        int mealId, CreateMealItemDto dto)
+        int mealId, CreateMealItemDto dto, string coachId)
     {
-        var meal = await _db.MealItems.FindAsync(mealId);
-        if (meal == null) return (false, "Meal not found.");
+        var meal = await _db.MealItems
+            .Include(m => m.DietMeal)
+                .ThenInclude(dm => dm.Diet)
+                    .ThenInclude(d => d.Client)
+            .FirstOrDefaultAsync(m => m.Id == mealId
+                && m.DietMeal.Diet.Client.CoachId == coachId);
+
+        if (meal == null) return (false, "Ingredient not found.");
 
         meal.MealName = dto.MealName;
-        meal.Description = dto.Description;
+        meal.Quantity = dto.Quantity;
+        meal.Unit = dto.Unit;
         meal.Protein = dto.Protein;
         meal.Carbs = dto.Carbs;
         meal.Fats = dto.Fats;
         meal.Calories = dto.Calories;
-        if (dto.Link != null) meal.Link = dto.Link;
 
         await _db.SaveChangesAsync();
-        return (true, "Meal updated.");
+
+        // Re-upsert dictionary to reflect the updated ingredient
+        await UpsertMealDictionaryAsync(meal.DietMealId, coachId);
+
+        return (true, "Ingredient updated.");
     }
 
-    // ── Private Mapper ──────────────────────────────────────
-    private DietResponseDto MapDietToDto(Diet diet, List<MealItem> meals) =>
+    // ── Dictionary Upsert ────────────────────────────────────────────────────
+    // Called after every add/update/delete on a DietMeal's ingredients.
+    // Saves the full DietMeal as a unique template in the CoachMealDictionary.
+    // Unique key: (CoachId, MealName) — case-insensitive.
+
+    private async Task UpsertMealDictionaryAsync(int dietMealId, string coachId)
+    {
+        // Load the DietMeal with all its current items
+        var dietMeal = await _db.DietMeals
+            .Include(dm => dm.MealItems)
+            .FirstOrDefaultAsync(dm => dm.Id == dietMealId);
+
+        if (dietMeal == null) return;
+
+        // Skip alternative whole-meals (ParentDietMealId != null) from the dictionary
+        // — we only save root meals as templates
+        if (dietMeal.ParentDietMealId != null) return;
+
+        var items = dietMeal.MealItems.ToList();
+
+        // Serialize current ingredients snapshot
+        var ingredientsJson = JsonSerializer.Serialize(
+            items.Select(m => new
+            {
+                m.MealName,
+                m.Quantity,
+                m.Unit,
+                m.Protein,
+                m.Carbs,
+                m.Fats,
+                m.Calories
+            }));
+
+        var totalProtein  = items.Sum(m => m.Protein);
+        var totalCarbs    = items.Sum(m => m.Carbs);
+        var totalFats     = items.Sum(m => m.Fats);
+        var totalCalories = items.Sum(m => m.Calories);
+
+        // Find existing entry — unique by (CoachId, MealName) case-insensitive
+        var existing = await _db.CoachMealDictionaries
+            .FirstOrDefaultAsync(x =>
+                x.CoachId == coachId &&
+                x.MealName.ToLower() == dietMeal.Name.ToLower());
+
+        if (existing != null)
+        {
+            // Update existing template
+            existing.IngredientsJson = ingredientsJson;
+            existing.Link = dietMeal.Link;
+            existing.Instruction = dietMeal.Instruction;
+            existing.Protein = totalProtein;
+            existing.Carbs = totalCarbs;
+            existing.Fats = totalFats;
+            existing.Calories = totalCalories;
+        }
+        else
+        {
+            // Insert new unique template
+            _db.CoachMealDictionaries.Add(new CoachMealDictionary
+            {
+                CoachId = coachId,
+                MealName = dietMeal.Name,
+                Link = dietMeal.Link,
+                Instruction = dietMeal.Instruction,
+                IngredientsJson = ingredientsJson,
+                Protein = totalProtein,
+                Carbs = totalCarbs,
+                Fats = totalFats,
+                Calories = totalCalories
+            });
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private async Task<Diet?> LoadFullDietAsync(int dietId) =>
+        await _db.Diets
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.AlternativeMeals)
+                    .ThenInclude(am => am.MealItems)
+                        .ThenInclude(m => m.AlternativeItems)
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.MealItems)
+                    .ThenInclude(m => m.AlternativeItems)
+            .FirstOrDefaultAsync(d => d.Id == dietId);
+
+    // ── Private Mapper ───────────────────────────────────────────────────────
+
+    private DietResponseDto MapDietToDto(Diet diet, List<DietMeal> dietMeals) =>
         new(
             diet.Id,
             diet.NumberOfMeals,
             diet.CreatedAt,
-            meals
-            .OrderBy(m => m.Id)
-            .Select(m => new MealItemResponseDto(
-                m.Id,
-                m.MealName,
-                m.Description,
-                m.Protein,
-                m.Carbs,
-                m.Fats,
-                m.Calories,
-                m.Link,
-                m.AlternativeItems.OrderBy(a => a.Id)
-                .Select(a => new AlternativeResponeDto(
+            dietMeals
+            .Where(dm => dm.ParentDietMealId == null) // Only root meals at top level
+            .OrderBy(dm => dm.Id)
+            .Select(dm => new DietMealResponseDto(
+                dm.Id,
+                dm.Name,
+                dm.Instruction,
+                dm.Link,
+                dm.MealItems.OrderBy(m => m.Id).Select(m => new MealItemResponseDto(
+                    m.Id,
+                    m.MealName,
+                    m.Quantity,
+                    m.Unit,
+                    m.Protein,
+                    m.Carbs,
+                    m.Fats,
+                    m.Calories,
+                    m.AlternativeItems.OrderBy(a => a.Id).Select(a => new AlternativeResponeDto(
+                        a.Id, a.MealName, a.Description, a.Quantity, a.Unit,
+                        a.Protein, a.Carbs, a.Fats, a.Calories
+                    )).ToList()
+                )).ToList(),
+                dm.AlternativeMeals?.OrderBy(a => a.Id).Select(a => new DietMealResponseDto(
                     a.Id,
-                    a.MealName,
-                    a.Description,
-                    a.Protein,
-                    a.Carbs,
-                    a.Fats,
-                    a.Calories,
-                    a.Link
-                )).ToList()
+                    a.Name,
+                    a.Instruction,
+                    a.Link,
+                    a.MealItems.OrderBy(m => m.Id).Select(m => new MealItemResponseDto(
+                        m.Id, m.MealName, m.Quantity, m.Unit,
+                        m.Protein, m.Carbs, m.Fats, m.Calories,
+                        m.AlternativeItems.OrderBy(alt => alt.Id).Select(alt => new AlternativeResponeDto(
+                            alt.Id, alt.MealName, alt.Description, alt.Quantity, alt.Unit,
+                            alt.Protein, alt.Carbs, alt.Fats, alt.Calories
+                        )).ToList()
+                    )).ToList(),
+                    new List<DietMealResponseDto>() // Prevent infinite recursion
+                )).ToList() ?? new List<DietMealResponseDto>()
             )).ToList()
         );
 }

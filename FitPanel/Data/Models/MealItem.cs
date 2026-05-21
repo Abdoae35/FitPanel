@@ -10,8 +10,7 @@ namespace FitPanel.Data.Models;
         public int Id { get; set; }
 
         public string MealName { get; set; }
-        public string Description { get; set; }
-        public string? Link { get; set; }
+        
         public int Protein { get; set; }
         public int Carbs { get; set; }
 
@@ -20,10 +19,12 @@ namespace FitPanel.Data.Models;
         public int Calories { get; set; }
 
 
-        // Foreign Key to Diet
+        public double Quantity { get; set; } = 1;
+        public string? Unit { get; set; } // e.g., "pieces", "g", "ml"
 
-        public int DietId { get; set; }   // FK
-        public Diet Diet { get; set; }    // Navigation
+        // Foreign Key to DietMeal
+        public int DietMealId { get; set; }   // FK
+        public DietMeal DietMeal { get; set; }    // Navigation
 
         public ICollection<AlternativeItem> AlternativeItems { get; set; }
         

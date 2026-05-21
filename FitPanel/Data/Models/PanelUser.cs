@@ -16,6 +16,12 @@ public class PanelUser : IdentityUser
     public string? Bio { get; set; }
     public string? ProfilePicture { get; set; }
     public string? Specialization { get; set; }
+    
+    public string? InstagramUsername { get; set; }
+    public string? InstagramLink { get; set; }
+    
+    public DateTime SubscriptionEndDate { get; set; } = DateTime.UtcNow.AddYears(1);
+    public int MaxClients { get; set; } = 10;
 
     // One Coach → Many Clients
     public ICollection<Client> Clients { get; set; } = new List<Client>();

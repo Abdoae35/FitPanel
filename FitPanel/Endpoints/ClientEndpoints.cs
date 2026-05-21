@@ -92,19 +92,5 @@ group.MapPost("/{id:int}/renew", async (
         });
 
 
-
-                // PUT /api/clients/{id}
-        group.MapPut("/{id:int}", async (
-            int id,
-            UpdateClientDto dto,
-            HttpContext http,
-            UserManager<PanelUser> userManager,
-            IClientService clientService) =>
-        {
-            var coachId = userManager.GetUserId(http.User)!;
-            var (success, message) = await clientService.UpdateClientAsync(id, dto, coachId);
-            return success ? Results.Ok(new { message }) : Results.NotFound(new { message });
-        })
-        .RequireAuthorization(Policies.CoachOnly);
     }
 }

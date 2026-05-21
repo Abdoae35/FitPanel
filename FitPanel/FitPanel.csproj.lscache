@@ -74,6 +74,7 @@ Data/
   CoachExerciseDictionary.cs
   CoachMealDictionary.cs
   Diet.cs
+  DietMeal.cs
   Excercise.cs
   MealItem.cs
   PanelUser.cs
@@ -144,6 +145,10 @@ Migrations/
  20260519155558_AddDictionary.Designer.cs
  20260519155955_AddDictionaryDbSet.cs
  20260519155955_AddDictionaryDbSet.Designer.cs
+ 20260520131118_SeprateDietMeals.cs
+ 20260520131118_SeprateDietMeals.Designer.cs
+ 20260520143029_CompleteDietRefactoring.cs
+ 20260520143029_CompleteDietRefactoring.Designer.cs
  FitPanelDbContextModelSnapshot.cs
 obj/Debug/net9.0/
  .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
@@ -166,6 +171,9 @@ Services/DictionaryServices/
 Services/DietServices/
  DietService.cs
  IDietService.cs
+Services/NutritionServices/
+ CalorieNinjasService.cs
+ INutritionApiService.cs
 Services/PdfServices/
  IPdfService.cs
  PdfService.cs

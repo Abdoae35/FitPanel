@@ -31,6 +31,7 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
     public DbSet<WorkOutDay> WorkOutDays { get; set; }
     public DbSet<Excercise> Excercises { get; set; }
     public DbSet<Diet> Diets { get; set; }
+    public DbSet<DietMeal> DietMeals { get; set; }
     public DbSet<MealItem> MealItems { get; set; }
     public DbSet<Cardio> Cardios { get; set; }
 

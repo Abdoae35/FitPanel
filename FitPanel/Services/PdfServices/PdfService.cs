@@ -2,10 +2,12 @@ using FitPanel.Data;
 using FitPanel.Data.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Playwright;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,16 +17,17 @@ public class PdfService : IPdfService
 {
     private readonly FitPanelDbContext _db;
     private readonly string _webRootPath;
+    private readonly IConfiguration _config;
 
-    public PdfService(FitPanelDbContext db, IWebHostEnvironment env)
+    public PdfService(FitPanelDbContext db, IWebHostEnvironment env, IConfiguration config)
     {
         _db = db;
         _webRootPath = env.WebRootPath;
+        _config = config;
     }
 
     // ── PUBLIC METHODS ────────────────────────────────────────────
-    public async Task<byte[]?> GenerateWorkoutPdfAsync(
-        int clientId, int workoutId, string coachId)
+    public async Task<byte[]?> GenerateWorkoutPdfAsync(int clientId, int workoutId, string coachId)
     {
         var workout = await _db.WorkOuts
             .Include(w => w.Client)
@@ -43,8 +46,7 @@ public class PdfService : IPdfService
         return await RenderToPdfAsync(html);
     }
 
-    public async Task<byte[]?> GenerateDietPdfAsync(
-        int clientId, int dietId, string coachId)
+    public async Task<byte[]?> GenerateDietPdfAsync(int clientId, int dietId, string coachId)
     {
         var diet = await _db.Diets
             .Include(d => d.Client)
@@ -62,23 +64,38 @@ public class PdfService : IPdfService
         return await RenderToPdfAsync(html);
     }
 
-    // ── PLAYWRIGHT RENDERER ───────────────────────────────────────
-    private static async Task<byte[]> RenderToPdfAsync(string html)
+    // ── PDFSHIFT CLOUD RENDERER ──────────────────────────────────
+    private async Task<byte[]> RenderToPdfAsync(string html)
     {
-        using var playwright = await Playwright.CreateAsync();
-        await using var browser = await playwright.Chromium.LaunchAsync(
-            new BrowserTypeLaunchOptions { Headless = true });
-        var page = await browser.NewPageAsync();
-        await page.SetContentAsync(html, new PageSetContentOptions
+        var apiKey = _config["PdfShift:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_PDFSHIFT_API_KEY_HERE")
         {
-            WaitUntil = WaitUntilState.NetworkIdle
-        });
-        return await page.PdfAsync(new PagePdfOptions
+            throw new InvalidOperationException("PDFShift API key is missing or not configured. Please add your PDFShift ApiKey in appsettings.json.");
+        }
+
+        using var client = new HttpClient();
+        
+        // PDFShift uses the custom X-API-Key HTTP header for authentication
+        client.DefaultRequestHeaders.Add("X-API-Key", apiKey);
+
+        var requestBody = new
         {
-            Format          = "A4",
-            PrintBackground = true,
-            Margin          = new Margin { Top = "0", Bottom = "0", Left = "0", Right = "0" }
-        });
+            source = html,
+            format = "A4",
+            margin = new { top = "0px", right = "0px", bottom = "0px", left = "0px" }
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(requestBody);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("https://api.pdfshift.io/v3/convert/pdf", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            throw new Exception($"PDFShift PDF generation failed: {response.StatusCode} - {errorMsg}");
+        }
+
+        return await response.Content.ReadAsByteArrayAsync();
     }
 
     // ── WORKOUT HTML BUILDER ──────────────────────────────────────
@@ -108,9 +125,6 @@ public class PdfService : IPdfService
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Premium Workout Plan</title>
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
           <style>
             {SharedCss("#ea2127", "rgba(234, 33, 39, 0.25)", "#ff0066")}
           </style>
@@ -153,9 +167,6 @@ public class PdfService : IPdfService
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Premium Diet Plan</title>
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
           <style>
             {SharedCss("#00FF88", "rgba(0, 255, 136, 0.25)", "#FF0066")}
           </style>
@@ -199,7 +210,7 @@ public class PdfService : IPdfService
                 </div>
 
                 <div class="cover-keys-list" style="margin-bottom: 28px;">
-                  <div style="font-family: var(--coach-font-display); font-size: 16px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
+                  <div style="font-family: var(--coach-font-body); font-size: 14px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
                   <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
@@ -275,7 +286,7 @@ public class PdfService : IPdfService
                 </div>
 
                 <div class="cover-keys-list" style="margin-bottom: 28px;">
-                  <div style="font-family: var(--coach-font-display); font-size: 16px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
+                  <div style="font-family: var(--coach-font-body); font-size: 14px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
                   <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
@@ -428,7 +439,6 @@ public class PdfService : IPdfService
         var mealCards = new StringBuilder();
         foreach (var m in diet.DietMeals)
         {
-            // Pick a dynamic meal icon
             string icon = "🍽️";
             var mealNameLower = m.Name.ToLower();
             if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning") || mealNameLower.Contains("🍳")) icon = "🍳";
@@ -472,7 +482,7 @@ public class PdfService : IPdfService
             mealCards.Append($"""
                 <div class="meal-card" style="background: var(--coach-dark-elevated); border: 1px solid var(--coach-gray-dark); border-radius: 4px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-bottom: 16px;">
                   <div class="meal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--coach-black); border-bottom: 2px solid var(--coach-primary);">
-                    <div class="meal-title" style="font-family: var(--coach-font-display); font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--coach-white);">{icon} {m.Name}</div>
+                    <div class="meal-title" style="font-family: var(--coach-font-body); font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--coach-white);">{icon} {m.Name}</div>
                     <div class="meal-time" style="font-size: 9px; font-weight: 600; color: var(--coach-primary); letter-spacing: 0.5px;">{mealTimeText}</div>
                   </div>
                   <div class="meal-body" style="padding: 12px 16px;">
@@ -487,7 +497,7 @@ public class PdfService : IPdfService
         {
             notesSection = $"""
                 <div class="notes-section" style="margin-top: auto; padding: 12px 16px; background: var(--coach-black); border-left: 3px solid var(--coach-secondary); border-radius: 4px;">
-                  <div class="notes-title" style="font-family: var(--coach-font-display); font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 6px;">📝 SPECIAL COACHING INSTRUCTIONS & NOTES</div>
+                  <div class="notes-title" style="font-family: var(--coach-font-body); font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 6px;">📝 SPECIAL COACHING INSTRUCTIONS & NOTES</div>
                   <div class="notes-text" style="font-size: 10px; line-height: 1.5; color: var(--coach-gray-light);">{diet.Instructions}</div>
                 </div>
                 """;
@@ -555,7 +565,7 @@ public class PdfService : IPdfService
         """;
     }
 
-    // ── CSS & STYLING ─────────────────────────────────────────────
+    // ── CSS & STYLING (تم تعديل الخطوط لتصبح مدمجة وسريعة جداً) ──
     private static string SharedCss(string primaryColor, string primaryGlow, string secondaryColor) => $$"""
         * {
           margin: 0;
@@ -575,9 +585,8 @@ public class PdfService : IPdfService
           --coach-gray-light: #8A8A9E;
           --coach-gray-dark: #3A3A4A;
 
-          /* Typography */
-          --coach-font-display: 'Barlow Condensed', sans-serif;
-          --coach-font-body: 'Inter', sans-serif;
+          /* Typography (تم استبدالها بخطوط النظام فائقة السرعة التي تدعم اللغتين بكفاءة) */
+          --coach-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
           /* Spacing */
           --spacing-xs: 8px;
@@ -707,7 +716,6 @@ public class PdfService : IPdfService
         }
 
         .display-massive {
-          font-family: var(--coach-font-display);
           font-weight: 900;
           text-transform: uppercase;
         }
@@ -719,7 +727,6 @@ public class PdfService : IPdfService
           background: rgba(255, 0, 102, 0.12);
           border: 2px solid var(--coach-secondary);
           color: var(--coach-secondary);
-          font-family: var(--coach-font-display);
           font-size: 14px;
           font-weight: 900;
           letter-spacing: 1.5px;
@@ -767,7 +774,6 @@ public class PdfService : IPdfService
         }
 
         .header h2 {
-          font-family: var(--coach-font-display);
           font-size: 26px;
           font-weight: 900;
           letter-spacing: 1px;
@@ -789,7 +795,6 @@ public class PdfService : IPdfService
           padding: 4px 12px;
           background: var(--coach-primary);
           color: var(--coach-black);
-          font-family: var(--coach-font-display);
           font-size: 10px;
           font-weight: 800;
           letter-spacing: 0.5px;
@@ -826,7 +831,6 @@ public class PdfService : IPdfService
         .table-container th {
           padding: 10px 14px;
           text-align: left;
-          font-family: var(--coach-font-display);
           font-size: 10px;
           font-weight: 800;
           letter-spacing: 1px;
@@ -852,7 +856,6 @@ public class PdfService : IPdfService
         }
 
         .exercise-name {
-          font-family: var(--coach-font-body);
           font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.3px;
@@ -878,7 +881,6 @@ public class PdfService : IPdfService
         }
 
         .cardio-title {
-          font-family: var(--coach-font-display);
           font-size: 12px;
           font-weight: 800;
           letter-spacing: 1px;
@@ -918,7 +920,6 @@ public class PdfService : IPdfService
         }
 
         .cardio-metric-val {
-          font-family: var(--coach-font-display);
           font-size: 13px;
           font-weight: 800;
           letter-spacing: 0.5px;
@@ -956,7 +957,6 @@ public class PdfService : IPdfService
         }
 
         .macro-value {
-          font-family: var(--coach-font-display);
           font-size: 20px;
           font-weight: 900;
           color: var(--coach-primary);
@@ -1004,12 +1004,10 @@ public class PdfService : IPdfService
                 }
             }
 
-            // Fallback to templates/imgT.jpeg or templates/img.jpeg looking in current and parent directories
             var path1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg");
             var path2 = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "imgT.jpeg");
             var fallbackPath = File.Exists(path1) ? path1 : (File.Exists(path2) ? path2 : "");
 
-            // If imgT.jpeg doesn't exist, fall back to img.jpeg
             if (string.IsNullOrEmpty(fallbackPath))
             {
                 var fallbackPathOld1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "img.jpeg");
@@ -1028,7 +1026,6 @@ public class PdfService : IPdfService
             // Fail silently
         }
 
-        // Final fail-safe visual photo
         return "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80";
     }
 }

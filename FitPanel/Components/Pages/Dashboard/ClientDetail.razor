@@ -1131,12 +1131,12 @@ else
 }
 
 @* PDF Error Toast *@
-@if (showPdfError)
+@if (!string.IsNullOrEmpty(pdfErrorMessage))
 {
     <div class="fp-toast fp-toast-error">
         <i class="fa fa-exclamation-circle"></i>
-        <span>Failed to generate PDF. Please try again.</span>
-        <button @onclick='() => showPdfError = false'><i class="fa fa-times"></i></button>
+        <span>@pdfErrorMessage</span>
+        <button @onclick='() => pdfErrorMessage = null'><i class="fa fa-times"></i></button>
     </div>
 }
 
@@ -1220,7 +1220,7 @@ else
     // ── PDF state ─────────────────────────────────────────────────
     private int generatingPdfDietId = 0;
     private int generatingPdfWorkoutId = 0;
-    private bool showPdfError = false;
+    private string? pdfErrorMessage = null;
 
     // ── Form models ───────────────────────────────────────────────
     private CreateDietDto newDiet = new();
@@ -1288,37 +1288,43 @@ else
 
     private async Task DownloadDietPdf(int dietId)
     {
-        showPdfError = false;
+        pdfErrorMessage = null;
         generatingPdfDietId = dietId;
         StateHasChanged();
         try
         {
             var bytes = await PdfService.GenerateDietPdfAsync(ClientId, dietId, coachId);
-            if (bytes is null) { showPdfError = true; return; }
+            if (bytes is null) { pdfErrorMessage = "Diet plan was not found in the database."; return; }
             var diet = diets.FirstOrDefault(d => d.Id == dietId);
             var base64 = Convert.ToBase64String(bytes);
             await JS.InvokeVoidAsync("fitpanel.downloadPdf",
                 base64, $"{client!.Name}_diet_{diet!.CreatedAt:yyyy-MM-dd}.pdf");
         }
-        catch { showPdfError = true; }
+        catch (Exception ex)
+        {
+            pdfErrorMessage = $"Failed to generate PDF: {ex.Message}";
+        }
         finally { generatingPdfDietId = 0; }
     }
 
     private async Task DownloadWorkoutPdf(int workoutId)
     {
-        showPdfError = false;
+        pdfErrorMessage = null;
         generatingPdfWorkoutId = workoutId;
         StateHasChanged();
         try
         {
             var bytes = await PdfService.GenerateWorkoutPdfAsync(ClientId, workoutId, coachId);
-            if (bytes is null) { showPdfError = true; return; }
+            if (bytes is null) { pdfErrorMessage = "Workout plan was not found in the database."; return; }
             var workout = workouts.FirstOrDefault(w => w.Id == workoutId);
             var base64 = Convert.ToBase64String(bytes);
             await JS.InvokeVoidAsync("fitpanel.downloadPdf",
                 base64, $"{client!.Name}_workout_{workout!.CreatedAt:yyyy-MM-dd}.pdf");
         }
-        catch { showPdfError = true; }
+        catch (Exception ex)
+        {
+            pdfErrorMessage = $"Failed to generate PDF: {ex.Message}";
+        }
         finally { generatingPdfWorkoutId = 0; }
     }
 

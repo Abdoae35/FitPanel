@@ -250,8 +250,22 @@ public class PdfService : IPdfService
                 <span>@{instagram}</span>
               </a>
             </div>
-            <div><span>✉</span><span>{coachEmail}</span></div>
-            <div><span>📞</span><span>{coachPhone}</span></div>
+            <div>
+              <a href="mailto:{coachEmail}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>{coachEmail}</span>
+              </a>
+            </div>
+            <div>
+              <a href="tel:{coachPhone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+                <span>{coachPhone}</span>
+              </a>
+            </div>
           </footer>
         </div>
         """;
@@ -326,8 +340,22 @@ public class PdfService : IPdfService
                 <span>@{instagram}</span>
               </a>
             </div>
-            <div><span>✉</span><span>{coachEmail}</span></div>
-            <div><span>📞</span><span>{coachPhone}</span></div>
+            <div>
+              <a href="mailto:{coachEmail}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>{coachEmail}</span>
+              </a>
+            </div>
+            <div>
+              <a href="tel:{coachPhone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+                <span>{coachPhone}</span>
+              </a>
+            </div>
           </footer>
         </div>
         """;
@@ -423,8 +451,22 @@ public class PdfService : IPdfService
                 <span>@{instagram}</span>
               </a>
             </div>
-            <div><span>✉</span><span>{email}</span></div>
-            <div><span>📞</span><span>{phone}</span></div>
+            <div>
+              <a href="mailto:{email}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>{email}</span>
+              </a>
+            </div>
+            <div>
+              <a href="tel:{phone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+                <span>{phone}</span>
+              </a>
+            </div>
           </footer>
         </div>
         """;
@@ -558,8 +600,22 @@ public class PdfService : IPdfService
                 <span>@{instagram}</span>
               </a>
             </div>
-            <div><span>✉</span><span>{email}</span></div>
-            <div><span>📞</span><span>{phone}</span></div>
+            <div>
+              <a href="mailto:{email}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>{email}</span>
+              </a>
+            </div>
+            <div>
+              <a href="tel:{phone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+                <span>{phone}</span>
+              </a>
+            </div>
           </footer>
         </div>
         """;
@@ -670,7 +726,7 @@ public class PdfService : IPdfService
           right: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(115deg, transparent 65%, rgba(26, 26, 36, 0.35) 65%);
+          background: transparent;
           z-index: 1;
           pointer-events: none;
         }
@@ -678,7 +734,7 @@ public class PdfService : IPdfService
         .accent-bar {
           position: absolute;
           height: 4px;
-          background: linear-gradient(90deg, var(--coach-primary) 0%, var(--coach-secondary) 100%);
+          background: var(--coach-primary);
         }
 
         /* COVER PAGE STYLES */
@@ -733,7 +789,6 @@ public class PdfService : IPdfService
           text-transform: uppercase;
           border-radius: 4px;
           text-align: center;
-          box-shadow: 0 0 12px rgba(255, 0, 102, 0.25);
           box-sizing: border-box;
         }
 
@@ -800,7 +855,6 @@ public class PdfService : IPdfService
           letter-spacing: 0.5px;
           text-transform: uppercase;
           transform: skewX(-8deg);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
         .skew-badge span {
@@ -821,7 +875,6 @@ public class PdfService : IPdfService
           background: var(--coach-dark-elevated);
           border-radius: 4px;
           overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .table-container thead {
@@ -868,7 +921,6 @@ public class PdfService : IPdfService
           border: 1px solid var(--coach-gray-dark);
           border-radius: 4px;
           padding: var(--spacing-md);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .cardio-header {

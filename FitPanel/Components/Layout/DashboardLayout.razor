@@ -548,52 +548,54 @@
         flex-direction: column;
     }
     .fp-page-body {
-        padding: 30px;
+        padding: 24px 28px;
         flex: 1;
     }
 
     /* ── Footer ── */
     .fp-footer {
-        padding: 20px 30px;
-        border-top: 1px solid var(--fp-border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: transparent;
-        margin-top: auto;
+        padding: 20px 30px !important;
+        border-top: 2px solid rgba(234,33,39,0.4) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: #252525 !important;
+        margin-top: auto !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
     .fp-footer-left {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--fp-text);
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: #cccccc !important;
     }
     .fp-logo-text-footer {
-        font-family: 'Teko', sans-serif;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: var(--fp-text);
-        font-size: 16px;
+        font-family: 'Teko', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        color: #ffffff !important;
+        font-size: 18px !important;
     }
     .fp-text-accent {
-        color: var(--fp-accent);
+        color: var(--fp-accent) !important;
     }
     .fp-footer-right {
-        display: flex;
-        gap: 12px;
+        display: flex !important;
+        gap: 12px !important;
     }
     .fp-social-icon {
-        width: 34px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-        background: var(--fp-surface2);
-        border: 1px solid var(--fp-border);
-        color: var(--fp-text);
-        text-decoration: none;
-        transition: all 0.2s;
-        font-size: 15px;
+        width: 34px !important;
+        height: 34px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 4px !important;
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.18) !important;
+        color: rgba(255,255,255,0.8) !important;
+        text-decoration: none !important;
+        transition: all 0.2s !important;
+        font-size: 15px !important;
     }
     .fp-social-icon:hover {
         background: var(--fp-accent);
@@ -605,20 +607,20 @@
     .fp-card {
         background: var(--fp-surface);
         border: 1px solid var(--fp-border);
-        padding: 28px;
-        margin-bottom: 24px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
     }
     .fp-card-title {
         font-family: 'Teko', sans-serif;
-        font-size: 28px;
+        font-size: 22px;
         font-weight: 600;
         color: var(--fp-text);
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
     .fp-card-title::after {
         content: '';
@@ -627,30 +629,33 @@
         background: var(--fp-border);
     }
     .fp-card-sub {
-        font-size: 14px;
+        font-size: 13px;
         color: var(--fp-text-muted);
-        margin-bottom: 24px;
+        margin-bottom: 20px;
     }
 
     /* ── Global table ── */
+    /* Tip: to adjust dictionary text size, change --fp-table-cell-size below */
+    :root { --fp-table-cell-size: 17px; }
     .fp-table { width: 100%; border-collapse: collapse; }
     .fp-table th {
         background: var(--fp-surface2);
         color: var(--fp-text-muted);
         font-size: 11px;
         font-weight: 700;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
-        padding: 14px 16px;
+        padding: 10px 14px;
         text-align: left;
         border-bottom: 2px solid var(--fp-accent);
     }
     .fp-table td {
-        padding: 14px 16px;
+        padding: 10px 14px;
         border-bottom: 1px solid var(--fp-border);
-        font-size: 14px;
+        font-size: var(--fp-table-cell-size);
         color: var(--fp-text);
         vertical-align: middle;
+        line-height: 1.4;
     }
     .fp-table tr:hover td { background: var(--fp-surface2); }
 
@@ -659,10 +664,10 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 12px 28px;
+        padding: 10px 25px;
         background: var(--fp-accent);
         color: #fff;
-        border: 2px solid var(--fp-accent);
+        border: 1px solid var(--fp-accent);
         font-family: 'Teko', sans-serif;
         font-size: 18px;
         font-weight: 600;
@@ -696,7 +701,7 @@
     .fp-badge {
         display: inline-block;
         padding: 3px 10px;
-        font-size: 11px;
+        font-size: 15px;
         font-weight: 700;
         letter-spacing: 1px;
         text-transform: uppercase;
@@ -708,8 +713,8 @@
     /* ── Input global ── */
     .fp-input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
     .fp-input-group label {
-        font-size: 11px;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 600;
         color: var(--fp-text-muted);
         text-transform: uppercase;
         letter-spacing: 2px;

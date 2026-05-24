@@ -12,4 +12,5 @@ public class CreateClientDto
 
     public string? ToPicLink { get; set; }
     public string? Goal { get; set; }
+    public string? PhoneNumber { get; set; }
 }

@@ -125,18 +125,29 @@ else
                             <input @bind="newClient.Name" placeholder="John Doe" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Weight (kg) *</label>
-                            <input type="number" @bind="newClient.Weight" placeholder="80" />
+                            <label>Phone Number *</label>
+                            <input @bind="newClient.PhoneNumber" placeholder="e.g. +966500000000" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
+                            <label>Weight (kg) *</label>
+                            <input type="number" @bind="newClient.Weight" placeholder="80" />
+                        </div>
+                        <div class="fp-input-group">
                             <label>BMR (kcal) *</label>
                             <input type="number" @bind="newClient.Bmr" placeholder="1800" />
                         </div>
+                    </div>
+
+                    <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Subscription Duration (months) *</label>
+                            <label>Goal (optional)</label>
+                            <input @bind="newClient.Goal" placeholder="Loss Weight / Gain Muscle" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Subscription (months) *</label>
                             <input type="number" @bind="newClient.SubscriptionDurationPerMonth" placeholder="1" min="1" max="12" />
                         </div>
                     </div>
@@ -152,15 +163,9 @@ else
                         </div>
                     </div>
 
-                    <div class="fp-grid-2">
-                        <div class="fp-input-group">
-                            <label>Goal (optional)</label>
-                            <input @bind="newClient.Goal" placeholder="Loss Weight / Gain Muscle" />
-                        </div>
-                        <div class="fp-input-group">
-                            <label>After Photo Link (optional)</label>
-                            <input @bind="newClient.ToPicLink" placeholder="https://..." />
-                        </div>
+                    <div class="fp-input-group">
+                        <label>After Photo Link (optional)</label>
+                        <input @bind="newClient.ToPicLink" placeholder="https://..." />
                     </div>
                 </div>
 
@@ -551,6 +556,8 @@ else
 
     if (string.IsNullOrWhiteSpace(newClient.Name))
     { formError = "Name is required."; return; }
+    if (string.IsNullOrWhiteSpace(newClient.PhoneNumber))
+    { formError = "Phone number is required."; return; }
     if (newClient.Weight <= 0)
     { formError = "Please enter a valid weight."; return; }
     if (newClient.Bmr <= 0)

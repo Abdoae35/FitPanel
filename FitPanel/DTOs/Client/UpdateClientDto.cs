@@ -11,4 +11,5 @@ public class UpdateClientDto
     public string? FromPicLink { get; set; }
     public string? ToPicLink { get; set; }
     public string? Goal { get; set; }
+    public string? PhoneNumber { get; set; }
 }

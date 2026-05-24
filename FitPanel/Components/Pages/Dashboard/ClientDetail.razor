@@ -25,6 +25,39 @@
    <head>
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
     <link href="/lib/fitpanel-accordion-fix.css" rel="stylesheet" />
+    <style>
+        .fp-sub-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fp-btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #25D366;
+            color: white !important;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.15);
+        }
+        .fp-btn-whatsapp:hover {
+            background-color: #20ba5a;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(37, 211, 102, 0.25);
+        }
+        .fp-btn-whatsapp:active {
+            transform: translateY(0);
+        }
+        .fp-btn-whatsapp i {
+            font-size: 16px;
+        }
+    </style>
 </head>
 
 
@@ -123,12 +156,20 @@ else
                 </span>
             </div>
         </div>
-        @if (IsExpired)
-        {
-            <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
-                <i class="fa fa-refresh"></i> Renew
-            </button>
-        }
+        <div class="fp-sub-actions">
+            @if (IsExpired)
+            {
+                <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
+                    <i class="fa fa-arrows-rotate"></i> Renew
+                </button>
+            }
+            @if (!string.IsNullOrEmpty(client.PhoneNumber) && (IsExpired || IsExpiringSoon))
+            {
+                <button class="fp-btn-whatsapp" @onclick="SendWhatsAppReminder">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Reminder
+                </button>
+            }
+        </div>
     </div>
 
     @* ── Tabs ── *@
@@ -700,9 +741,12 @@ else
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Full Name</label><input @bind="editClient.Name" placeholder="Full name" /></div>
-                    <div class="fp-input-group"><label>Weight (kg)</label><input type="number" @bind="editClient.Weight" placeholder="80" /></div>
+                    <div class="fp-input-group"><label>Phone Number</label><input @bind="editClient.PhoneNumber" placeholder="e.g. +966500000000" /></div>
                 </div>
-                <div class="fp-input-group"><label>BMR (kcal)</label><input type="number" @bind="editClient.Bmr" placeholder="1800" /></div>
+                <div class="fp-grid-2">
+                    <div class="fp-input-group"><label>Weight (kg)</label><input type="number" @bind="editClient.Weight" placeholder="80" /></div>
+                    <div class="fp-input-group"><label>BMR (kcal)</label><input type="number" @bind="editClient.Bmr" placeholder="1800" /></div>
+                </div>
                 <div class="fp-input-group"><label>Inbody Link</label><input @bind="editClient.InbodyLink" placeholder="https://drive.google.com/..." /></div>
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Before Photo Link</label><input @bind="editClient.FromPicLink" placeholder="https://drive.google.com/..." /></div>
@@ -1345,7 +1389,8 @@ else
             InbodyLink = client.InbodyLink,
             FromPicLink = client.FromPicLink,
             ToPicLink = client.ToPicLink,
-            Goal = client.Goal
+            Goal = client.Goal,
+            PhoneNumber = client.PhoneNumber
         };
         editClientMessage = string.Empty;
         showEditClientModal = true;
@@ -1367,6 +1412,27 @@ else
             showEditClientModal = false;
             editClientMessage = string.Empty;
         }
+    }
+
+    private async Task SendWhatsAppReminder()
+    {
+        if (client == null || string.IsNullOrEmpty(client.PhoneNumber)) return;
+
+        string message = "";
+        if (IsExpired)
+        {
+            message = $"Hey {client.Name}! I hope you are doing well. 🎯 Just a reminder that your coaching subscription at FitPanel has expired. Let me know if you are ready to renew so we can keep pushing towards your goals! 💪";
+        }
+        else if (IsExpiringSoon)
+        {
+            message = $"Hey {client.Name}! Great work this month. 🎯 Just a friendly heads-up that your subscription expires in {DaysLeft} days (on {client.EndDate.ToString("MMM dd, yyyy")}). Let me know if we are continuing next month so we can keep the momentum going! 💪";
+        }
+
+        string encodedMessage = Uri.EscapeDataString(message);
+        string cleanedPhone = new string(client.PhoneNumber.Where(c => char.IsDigit(c) || c == '+').ToArray());
+        string whatsappUrl = $"https://wa.me/{cleanedPhone}?text={encodedMessage}";
+        
+        await JS.InvokeVoidAsync("open", whatsappUrl, "_blank");
     }
 
     // ── Delete Confirm System ─────────────────────────────────────

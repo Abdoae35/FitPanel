@@ -41,6 +41,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
             Weight = dto.Weight,
             Bmr = dto.Bmr,
             Goal = dto.Goal,
+            PhoneNumber = dto.PhoneNumber,
             SubscriptionDurationPerMonth = dto.SubscriptionDurationPerMonth,
             InbodyLink = dto.InbodyLink,
             FromPicLink = dto.FromPicLink,
@@ -76,7 +77,8 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
                 c.Coach.FullName,
                 c.StartDate,
                 c.EndDate,
-                c.Goal
+                c.Goal,
+                c.PhoneNumber
             ))
             .ToListAsync();
     }
@@ -99,7 +101,8 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
                 c.Coach.FullName,
                 c.StartDate,
                 c.EndDate,
-                c.Goal
+                c.Goal,
+                c.PhoneNumber
             ))
             .FirstOrDefaultAsync();
     }
@@ -122,6 +125,7 @@ public async Task<(bool Success, string Message)> RenewSubscriptionAsync(
         if (dto.FromPicLink != null) client.FromPicLink = dto.FromPicLink;
         if (dto.ToPicLink != null) client.ToPicLink = dto.ToPicLink;
         if (dto.Goal != null) client.Goal = dto.Goal;
+        if (dto.PhoneNumber != null) client.PhoneNumber = dto.PhoneNumber;
 
         await _db.SaveChangesAsync();
         return (true, "Client updated.");

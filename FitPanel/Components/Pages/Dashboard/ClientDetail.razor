@@ -15,6 +15,7 @@
 @inject IWorkoutService WorkoutService
 @inject IAlternativeService AlternativeService
 @inject IPdfService PdfService
+@inject ITemplateService TemplateService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
@@ -198,9 +199,20 @@ else
 
             @if (!diets.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-utensils"></i>
-                    <p>No diet plans yet.</p>
+                <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
+                    <i class="fa fa-utensils" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
+                    <p style="margin:0; color:var(--fp-text-muted);">No diet plans yet.</p>
+                    <div style="display:flex; gap:12px; margin-top:8px;">
+                        <button class="fp-btn-primary" @onclick='() => showDietModal = true'>
+                            <i class="fa fa-plus"></i> New Diet Plan
+                        </button>
+                        @if (dietTemplates.Any())
+                        {
+                            <button class="fp-btn-outline" style="border-color: #3b82f6; color: #3b82f6;" @onclick="OpenApplyDietTemplateModal">
+                                <i class="fa fa-folder-open"></i> Start from Template
+                            </button>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -257,6 +269,12 @@ else
                                             <button class="fp-icon-btn" title="Edit meal count"
                                                     @onclick="() => OpenEditDietModal(diet)">
                                                 <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-icon-btn" style="background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2);"
+                                                    title="Save as Template"
+                                                    @onclick="() => OpenSaveDietTemplateModal(diet.Id)">
+                                                <i class="fa fa-save"></i>
+                                                <span>Save Template</span>
                                             </button>
                                             <button class="fp-icon-btn @(mealsLeft <= 0 ? "fp-icon-btn-disabled" : "")"
                                                     disabled="@(mealsLeft <= 0)"
@@ -540,9 +558,20 @@ else
 
             @if (!workouts.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-dumbbell"></i>
-                    <p>No workout plans yet.</p>
+                <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
+                    <i class="fa fa-dumbbell" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
+                    <p style="margin:0; color:var(--fp-text-muted);">No workout plans yet.</p>
+                    <div style="display:flex; gap:12px; margin-top:8px;">
+                        <button class="fp-btn-primary" @onclick='() => showWorkoutModal = true'>
+                            <i class="fa fa-plus"></i> New Workout Plan
+                        </button>
+                        @if (workoutTemplates.Any())
+                        {
+                            <button class="fp-btn-outline" style="border-color: #3b82f6; color: #3b82f6;" @onclick="OpenApplyWorkoutTemplateModal">
+                                <i class="fa fa-folder-open"></i> Start from Template
+                            </button>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -599,6 +628,12 @@ else
                                             <button class="fp-icon-btn" title="Edit day count"
                                                     @onclick="() => OpenEditWorkoutModal(workout)">
                                                 <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-icon-btn" style="background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2);"
+                                                    title="Save as Template"
+                                                    @onclick="() => OpenSaveWorkoutTemplateModal(workout.Id)">
+                                                <i class="fa fa-save"></i>
+                                                <span>Save Template</span>
                                             </button>
                                             <button class="fp-icon-btn @(daysLeft <= 0 ? "fp-icon-btn-disabled" : "")"
                                                     disabled="@(daysLeft <= 0)"
@@ -793,6 +828,110 @@ else
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showDietModal = false'>Cancel</button>
                 <button class="fp-btn-primary" @onclick="CreateDiet"><i class="fa fa-check"></i> Create</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Save Diet Template Modal *@
+@if (showSaveDietTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showSaveDietTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE DIET TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showSaveDietTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Template Name *</label>
+                    <input @bind="dietTemplateName" placeholder="e.g. 2000kcal High Protein Fat Loss" style="width: 100%; height: 42px; border: 1px solid var(--fp-border); background: var(--fp-surface2); color: var(--fp-text); border-radius: 6px; padding: 0 12px; font-family: inherit; font-size: 14px;" />
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showSaveDietTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveDietAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Save Workout Template Modal *@
+@if (showSaveWorkoutTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showSaveWorkoutTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE WORKOUT TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showSaveWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Template Name *</label>
+                    <input @bind="workoutTemplateName" placeholder="e.g. 4-Day Push/Pull/Legs Split" style="width: 100%; height: 42px; border: 1px solid var(--fp-border); background: var(--fp-surface2); color: var(--fp-text); border-radius: 6px; padding: 0 12px; font-family: inherit; font-size: 14px;" />
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showSaveWorkoutTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Apply Diet Template Modal *@
+@if (showApplyDietTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showApplyDietTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM DIET TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showApplyDietTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Select Diet Template *</label>
+                    <select @bind="selectedDietTemplateId" style="width: 100%; height: 42px; border: 1px solid var(--fp-border); background: var(--fp-surface2); color: var(--fp-text); border-radius: 6px; padding: 0 12px; font-family: inherit; font-size: 14px;">
+                        <option value="0">-- Choose Template --</option>
+                        @foreach (var temp in dietTemplates)
+                        {
+                            <option value="@temp.Id">@temp.Name (@temp.NumberOfMeals meals)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showApplyDietTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="ApplyDietTemplate" disabled="@(selectedDietTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Apply Workout Template Modal *@
+@if (showApplyWorkoutTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showApplyWorkoutTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM WORKOUT TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showApplyWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Select Workout Template *</label>
+                    <select @bind="selectedWorkoutTemplateId" style="width: 100%; height: 42px; border: 1px solid var(--fp-border); background: var(--fp-surface2); color: var(--fp-text); border-radius: 6px; padding: 0 12px; font-family: inherit; font-size: 14px;">
+                        <option value="0">-- Choose Template --</option>
+                        @foreach (var temp in workoutTemplates)
+                        {
+                            <option value="@temp.Id">@temp.Name (@temp.SplitName)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showApplyWorkoutTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="ApplyWorkoutTemplate" disabled="@(selectedWorkoutTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
             </div>
         </div>
     </div>
@@ -1267,6 +1406,20 @@ else
     private bool showRenewModal = false;
     private bool showDeleteConfirm = false;
 
+    // ── Templates ─────────────────────────────────────────────────
+    private List<DietTemplate> dietTemplates = new();
+    private List<WorkoutTemplate> workoutTemplates = new();
+    private bool showSaveDietTemplateModal = false;
+    private bool showSaveWorkoutTemplateModal = false;
+    private bool showApplyDietTemplateModal = false;
+    private bool showApplyWorkoutTemplateModal = false;
+    private string dietTemplateName = "";
+    private string workoutTemplateName = "";
+    private int selectedDietTemplateId = 0;
+    private int selectedWorkoutTemplateId = 0;
+    private int savingTemplateDietId = 0;
+    private int savingTemplateWorkoutId = 0;
+
     // ── Month accordion state ─────────────────────────────────────
     private HashSet<int> expandedDietMonths = new() { 1 };
     private HashSet<int> expandedWorkoutMonths = new() { 1 };
@@ -1355,6 +1508,8 @@ else
             workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
             mealDict = await DictionaryService.GetMealsAsync(coachId);
             exerciseDict = await DictionaryService.GetExercisesAsync(coachId);
+            dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+            workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
         }
         isLoading = false;
     }
@@ -2171,5 +2326,79 @@ else
         {
             newExercise.ExerciseLink = match.ExcerciseLink;
         }
+    }
+
+    // ── Templates Logic ───────────────────────────────────────────
+
+    private void OpenSaveDietTemplateModal(int dietId)
+    {
+        savingTemplateDietId = dietId;
+        dietTemplateName = "";
+        showSaveDietTemplateModal = true;
+    }
+
+    private async Task SaveDietAsTemplate()
+    {
+        if (string.IsNullOrWhiteSpace(dietTemplateName)) return;
+        var template = await TemplateService.SaveDietAsTemplateAsync(savingTemplateDietId, dietTemplateName, coachId);
+        dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+        showSaveDietTemplateModal = false;
+        await JS.InvokeVoidAsync("alert", $"Diet template '{template.Name}' saved successfully!");
+    }
+
+    private void OpenApplyDietTemplateModal()
+    {
+        selectedDietTemplateId = 0;
+        showApplyDietTemplateModal = true;
+    }
+
+    private async Task ApplyDietTemplate()
+    {
+        if (selectedDietTemplateId == 0) return;
+        isLoading = true;
+        showApplyDietTemplateModal = false;
+        var success = await TemplateService.CloneDietTemplateAsync(selectedDietTemplateId, ClientId, coachId);
+        if (success)
+        {
+            diets = await DietService.GetDietsAsync(ClientId, coachId);
+            expandedDietMonths.Add(diets.Count);
+        }
+        isLoading = false;
+    }
+
+    private void OpenSaveWorkoutTemplateModal(int workoutId)
+    {
+        savingTemplateWorkoutId = workoutId;
+        workoutTemplateName = "";
+        showSaveWorkoutTemplateModal = true;
+    }
+
+    private async Task SaveWorkoutAsTemplate()
+    {
+        if (string.IsNullOrWhiteSpace(workoutTemplateName)) return;
+        var template = await TemplateService.SaveWorkoutAsTemplateAsync(savingTemplateWorkoutId, workoutTemplateName, coachId);
+        workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
+        showSaveWorkoutTemplateModal = false;
+        await JS.InvokeVoidAsync("alert", $"Workout template '{template.Name}' saved successfully!");
+    }
+
+    private void OpenApplyWorkoutTemplateModal()
+    {
+        selectedWorkoutTemplateId = 0;
+        showApplyWorkoutTemplateModal = true;
+    }
+
+    private async Task ApplyWorkoutTemplate()
+    {
+        if (selectedWorkoutTemplateId == 0) return;
+        isLoading = true;
+        showApplyWorkoutTemplateModal = false;
+        var success = await TemplateService.CloneWorkoutTemplateAsync(selectedWorkoutTemplateId, ClientId, coachId);
+        if (success)
+        {
+            workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
+            expandedWorkoutMonths.Add(workouts.Count);
+        }
+        isLoading = false;
     }
 }

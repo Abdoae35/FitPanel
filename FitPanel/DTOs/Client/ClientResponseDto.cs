@@ -13,5 +13,6 @@ public record ClientResponseDto(
     DateTime CreatedAt,
     string CoachName,
     DateTime StartDate,
-    DateTime EndDate
+    DateTime EndDate,
+    string? Goal
 );

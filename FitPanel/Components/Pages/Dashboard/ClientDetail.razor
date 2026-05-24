@@ -55,6 +55,10 @@ else
                 <div class="fp-client-meta-row">
                     <span><i class="fa fa-weight"></i> @client.Weight kg</span>
                     <span><i class="fa fa-fire"></i> @client.Bmr kcal BMR</span>
+                    @if (!string.IsNullOrEmpty(client.Goal))
+                    {
+                        <span><i class="fa fa-bullseye"></i> @client.Goal</span>
+                    }
                     <span><i class="fa fa-calendar"></i> @client.SubscriptionDurationPerMonth month subscription</span>
                     <span><i class="fa fa-clock"></i> Joined @client.CreatedAt.ToString("MMM dd, yyyy")</span>
                 </div>
@@ -704,6 +708,7 @@ else
                     <div class="fp-input-group"><label>Before Photo Link</label><input @bind="editClient.FromPicLink" placeholder="https://drive.google.com/..." /></div>
                     <div class="fp-input-group"><label>After Photo Link</label><input @bind="editClient.ToPicLink" placeholder="https://drive.google.com/..." /></div>
                 </div>
+                <div class="fp-input-group"><label>Client Fitness Goal</label><input @bind="editClient.Goal" placeholder="Loss Weight / Gain Muscle / Recomposition" /></div>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showEditClientModal = false'>Cancel</button>
@@ -1339,7 +1344,8 @@ else
             Bmr = client.Bmr,
             InbodyLink = client.InbodyLink,
             FromPicLink = client.FromPicLink,
-            ToPicLink = client.ToPicLink
+            ToPicLink = client.ToPicLink,
+            Goal = client.Goal
         };
         editClientMessage = string.Empty;
         showEditClientModal = true;

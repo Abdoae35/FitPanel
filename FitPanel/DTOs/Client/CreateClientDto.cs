@@ -11,4 +11,5 @@ public class CreateClientDto
     public string? FromPicLink { get; set; }
 
     public string? ToPicLink { get; set; }
+    public string? Goal { get; set; }
 }

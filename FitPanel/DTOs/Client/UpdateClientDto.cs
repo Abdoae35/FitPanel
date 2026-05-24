@@ -10,4 +10,5 @@ public class UpdateClientDto
     public string? InbodyLink { get; set; }
     public string? FromPicLink { get; set; }
     public string? ToPicLink { get; set; }
+    public string? Goal { get; set; }
 }

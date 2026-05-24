@@ -926,9 +926,15 @@
                 if (auth.User.Identity?.IsAuthenticated == true)
                 {
                     var user = await SignInManager.UserManager.GetUserAsync(auth.User);
-                    if (user != null && await SignInManager.UserManager.IsInRoleAsync(user, "Coach"))
+                    if (user != null)
                     {
-                        if (user.SubscriptionEndDate < DateTime.UtcNow)
+                        if (!user.IsActive)
+                        {
+                            await JS.InvokeVoidAsync("eval", "document.querySelector('.fp-logout-form').action = '/logout?inactive=true'; document.querySelector('.fp-logout-form').submit();");
+                            return;
+                        }
+                        
+                        if (await SignInManager.UserManager.IsInRoleAsync(user, "Coach") && user.SubscriptionEndDate < DateTime.UtcNow)
                         {
                             await JS.InvokeVoidAsync("eval", "document.querySelector('.fp-logout-form').action = '/logout?expired=true'; document.querySelector('.fp-logout-form').submit();");
                             return;

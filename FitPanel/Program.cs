@@ -47,6 +47,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    // Force immediate security stamp cookie check on every interaction so deactivated coaches are logged out in real-time
+    options.ValidationInterval = TimeSpan.Zero;
+});
+
 builder.Services.AddAuthorizationCore(options =>
 {
     options.AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Policies.AdminRole));
@@ -80,6 +86,7 @@ app.MapRazorComponents<App>()
 app.MapPost("/account/login", async (
     HttpContext context,
     SignInManager<PanelUser> signInManager,
+    UserManager<PanelUser> userManager,
     string? returnUrl) =>
 {
     var form = await context.Request.ReadFormAsync();
@@ -87,8 +94,12 @@ app.MapPost("/account/login", async (
     var password = form["password"].ToString();
     var rememberMe = form["rememberMe"].ToString() == "true";
 
+    var user = await userManager.FindByEmailAsync(email);
+    if (user == null || !user.IsActive)
+        return Results.Redirect("/login?error=inactive");
+
     var result = await signInManager.PasswordSignInAsync(
-        email, password, rememberMe, lockoutOnFailure: true);
+        user, password, rememberMe, lockoutOnFailure: true);
 
     if (result.Succeeded)
         return Results.Redirect(returnUrl ?? "/dashboard");
@@ -103,7 +114,10 @@ app.MapPost("/logout", async (HttpContext context, SignInManager<PanelUser> sign
 {
     await signInManager.SignOutAsync();
     var expired = context.Request.Query["expired"].ToString() == "true";
-    return Results.Redirect(expired ? "/login?error=expired" : "/login");
+    var inactive = context.Request.Query["inactive"].ToString() == "true";
+    if (expired) return Results.Redirect("/login?error=expired");
+    if (inactive) return Results.Redirect("/login?error=inactive");
+    return Results.Redirect("/login");
 }).RequireAuthorization();
 
 // ← Seed MUST be before app.Run()

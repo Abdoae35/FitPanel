@@ -64,6 +64,12 @@
                     <i class="fa fa-clock"></i> Your subscription has expired. Please contact the admin.
                 </div>
             }
+            else if (errorMessage == "inactive")
+            {
+                <div class="fp-alert fp-alert-danger">
+                    <i class="fa fa-ban"></i> Your account has been deactivated. Please contact the administrator.
+                </div>
+            }
 
             <form method="post" action="/account/login" class="fp-form">
                 <AntiforgeryToken />

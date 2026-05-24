@@ -273,6 +273,10 @@
                         <input type="password" @bind="newCoachPassword" placeholder="Leave blank to keep current" />
                     </div>
                 </div>
+                <div class="fp-input-group" style="display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 4px 0;">
+                    <input type="checkbox" @bind="editingCoach.IsActive" id="editCoachIsActive" style="width: auto; height: 18px; cursor: pointer;" />
+                    <label for="editCoachIsActive" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--fp-text);">Account Active / Enabled</label>
+                </div>
             </div>
 
             <div class="fp-modal-footer">
@@ -469,6 +473,11 @@
                 isSaving = false;
                 return;
             }
+        }
+
+        if (!editingCoach.IsActive)
+        {
+            await UserManager.UpdateSecurityStampAsync(editingCoach);
         }
 
         var result = await UserManager.UpdateAsync(editingCoach);

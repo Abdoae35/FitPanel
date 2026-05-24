@@ -263,9 +263,15 @@
                         <input type="url" @bind="editingCoach.InstagramLink" placeholder="https://instagram.com/..." />
                     </div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Specialization</label>
-                    <input @bind="editingCoach.Specialization" placeholder="e.g. Strength & Conditioning" />
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Specialization</label>
+                        <input @bind="editingCoach.Specialization" placeholder="e.g. Strength & Conditioning" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>New Password (optional)</label>
+                        <input type="password" @bind="newCoachPassword" placeholder="Leave blank to keep current" />
+                    </div>
                 </div>
             </div>
 
@@ -376,6 +382,7 @@
     
     private bool showEditModal = false;
     private PanelUser editingCoach = new();
+    private string newCoachPassword = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -425,6 +432,7 @@
     private void OpenEditModal(PanelUser coach)
     {
         editingCoach = coach;
+        newCoachPassword = string.Empty;
         showEditModal = true;
         formError = string.Empty;
         successMsg = string.Empty;
@@ -433,6 +441,7 @@
     private async Task CloseEditModal()
     {
         showEditModal = false;
+        newCoachPassword = string.Empty;
         var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
         coaches = allCoaches.ToList();
     }
@@ -442,6 +451,25 @@
         formError = string.Empty;
         successMsg = string.Empty;
         isSaving = true;
+
+        if (!string.IsNullOrWhiteSpace(newCoachPassword))
+        {
+            if (newCoachPassword.Length < 8)
+            {
+                formError = "New password must be at least 8 characters.";
+                isSaving = false;
+                return;
+            }
+
+            var token = await UserManager.GeneratePasswordResetTokenAsync(editingCoach);
+            var resetResult = await UserManager.ResetPasswordAsync(editingCoach, token, newCoachPassword);
+            if (!resetResult.Succeeded)
+            {
+                formError = "Failed to update password: " + string.Join(", ", resetResult.Errors.Select(e => e.Description));
+                isSaving = false;
+                return;
+            }
+        }
 
         var result = await UserManager.UpdateAsync(editingCoach);
         isSaving = false;

@@ -1,0 +1,497 @@
+@page "/dashboard/profile"
+@namespace FitPanel.Components.Pages.Dashboard
+@layout FitPanel.Components.Layout.DashboardLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FitPanel.Data
+@using FitPanel.Data.Models
+@using FitPanel.Services
+
+@attribute [Authorize(Roles = "Coach")]
+@inject UserManager<PanelUser> UserManager
+@inject IClientService ClientService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>My Profile — FitPanel</PageTitle>
+
+<head>
+    <link href="/css/dashboard.css" rel="stylesheet" />
+    <link href="/lib/clientDetalis.css" rel="stylesheet" />
+    <style>
+        .fp-profile-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .fp-profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .fp-profile-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .fp-profile-avatar-lg {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--fp-accent), #8b1014);
+            color: white;
+            font-size: 38px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px auto;
+            border: 3px solid var(--fp-surface);
+            box-shadow: 0 4px 10px rgba(234, 33, 39, 0.25);
+            object-fit: cover;
+        }
+
+        .fp-profile-card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--fp-text);
+            margin: 0 0 6px 0;
+        }
+
+        .fp-profile-card p.fp-prof-specialty {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--fp-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 16px 0;
+        }
+
+        .fp-profile-card p.fp-prof-bio {
+            font-size: 14px;
+            color: var(--fp-text-secondary);
+            line-height: 1.5;
+            margin: 0 0 20px 0;
+            font-style: italic;
+        }
+
+        .fp-info-badge {
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px dashed rgba(234, 33, 39, 0.25);
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .fp-info-badge h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--fp-accent);
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+        }
+
+        .fp-info-badge p {
+            font-size: 12px;
+            color: var(--fp-text-secondary);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .fp-alert-box {
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .fp-alert-box.success {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            color: #25D366;
+        }
+
+        .fp-alert-box.error {
+            background: rgba(234, 33, 39, 0.1);
+            border: 1px solid rgba(234, 33, 39, 0.3);
+            color: var(--fp-accent);
+        }
+
+        @@media (max-width: 992px) {
+            .fp-profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<div class="fp-page-header">
+    <div>
+        <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
+            Coach Profile
+        </h1>
+        <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
+            Manage your personal brand, active client slots, and PDF configurations
+        </p>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="fp-loading">
+        <div class="fp-spinner-lg"></div>
+        <span>Loading your profile details...</span>
+    </div>
+}
+else if (coach == null)
+{
+    <div class="fp-empty">
+        <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
+        <p>Could not load profile. Please refresh or try logging in again.</p>
+    </div>
+}
+else
+{
+    <div class="fp-profile-layout">
+        
+        @* ── Sidebar Profile Details ── *@
+        <div class="fp-profile-sidebar">
+            <div class="fp-profile-card">
+                @if (!string.IsNullOrEmpty(profilePicture))
+                {
+                    <img src="@profilePicture" class="fp-profile-avatar-lg" alt="Profile Picture" />
+                }
+                else
+                {
+                    <div class="fp-profile-avatar-lg">
+                        @GetInitials(fullName)
+                    </div>
+                }
+                
+                <h2>@fullName</h2>
+                <p class="fp-prof-specialty">@(string.IsNullOrEmpty(specialization) ? "Professional Fitness Coach" : specialization)</p>
+                <p class="fp-prof-bio">"@(string.IsNullOrEmpty(bio) ? "Crush your limits every day." : bio)"</p>
+                
+                @* Subscription Limits Slot Widget *@
+                <div style="background:var(--fp-surface2); border:1px solid var(--fp-border); border-radius:8px; padding:16px; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:600; font-size:13px; color:var(--fp-text-secondary);">
+                        <span>ACTIVE CLIENTS</span>
+                        <span style="color:var(--fp-accent); font-weight:700;">@clients.Count / @coach.MaxClients</span>
+                    </div>
+                    <div style="height:8px; background:var(--fp-border); border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; background:var(--fp-accent); width: @(Math.Min(100, (double)clients.Count / coach.MaxClients * 100))%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p style="font-size:11px; color:var(--fp-text-muted); margin-top:8px; line-height:1.4;">
+                        You are coaching <strong>@clients.Count</strong> active clients out of <strong>@coach.MaxClients</strong> allowed slots.
+                    </p>
+                </div>
+            </div>
+
+            @* PDF Templates Tip *@
+            <div class="fp-info-badge">
+                <h4>🎨 PDF Templates (Soon)</h4>
+                <p>In the next update, you will be able to customize page structures, colors, and layout templates directly from this section to match your personal fitness brand!</p>
+            </div>
+        </div>
+
+        @* ── Editable Details ── *@
+        <div class="fp-card" style="margin:0;">
+            <h3 class="fp-card-title" style="margin-bottom: 24px; border-bottom: 1px solid var(--fp-border); padding-bottom: 12px;">
+                <i class="fa fa-sliders-h" style="color:var(--fp-accent); margin-right:8px;"></i> Brand Settings
+            </h3>
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="fp-alert-box success">
+                    <i class="fa fa-check-circle"></i> @successMessage
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="fp-alert-box error">
+                    <i class="fa fa-exclamation-circle"></i> @errorMessage
+                </div>
+            }
+
+            <div class="fp-grid-2">
+                <div class="fp-input-group">
+                    <label>Coach / Brand Name *</label>
+                    <input @bind="fullName" placeholder="Coach John Doe" />
+                </div>
+                <div class="fp-input-group">
+                    <label>Specialization (e.g. Body Recomposition)</label>
+                    <input @bind="specialization" placeholder="Weight Loss & Strength Coach" />
+                </div>
+            </div>
+
+            <div class="fp-grid-2">
+                <div class="fp-input-group">
+                    <label>Email *</label>
+                    <input @bind="email" placeholder="coach@example.com" />
+                </div>
+                <div class="fp-input-group">
+                    <label>Phone Number *</label>
+                    <input @bind="phoneNumber" placeholder="+966500000000" />
+                </div>
+            </div>
+
+            <div class="fp-grid-2">
+                <div class="fp-input-group">
+                    <label>Instagram Username</label>
+                    <input @bind="instagramUsername" placeholder="@@coach_john" />
+                </div>
+                <div class="fp-input-group">
+                    <label>Instagram Profile Link</label>
+                    <input @bind="instagramLink" placeholder="https://instagram.com/coach_john" />
+                </div>
+            </div>
+
+            <div class="fp-input-group">
+                <label>Profile Picture URL</label>
+                <input @bind="profilePicture" placeholder="https://drive.google.com/..." />
+            </div>
+
+            <div class="fp-input-group">
+                <label>Biography / Coaching Philosophy</label>
+                <textarea @bind="bio" rows="4" style="width:100%; border:1px solid var(--fp-border); background:var(--fp-surface2); border-radius:6px; padding:12px; color:var(--fp-text); font-family:inherit; resize:vertical;" placeholder="Write a short bio about yourself and your approach to coaching..."></textarea>
+            </div>
+
+            <div style="text-align: right; margin-top: 24px; border-top: 1px solid var(--fp-border); padding-top: 20px;">
+                <button class="fp-btn-primary" style="padding: 12px 24px;" @onclick="SaveChanges">
+                    <i class="fa fa-check"></i> Save Brand Details
+                </button>
+            </div>
+        </div>
+
+        @* ── Change Password card ── *@
+        <div class="fp-card" style="margin-top:24px;">
+            <h3 class="fp-card-title" style="margin-bottom: 24px; border-bottom: 1px solid var(--fp-border); padding-bottom: 12px;">
+                <i class="fa fa-key" style="color:var(--fp-accent); margin-right:8px;"></i> Change Password
+            </h3>
+
+            @if (!string.IsNullOrEmpty(pwdSuccessMessage))
+            {
+                <div class="fp-alert-box success">
+                    <i class="fa fa-check-circle"></i> @pwdSuccessMessage
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(pwdErrorMessage))
+            {
+                <div class="fp-alert-box error">
+                    <i class="fa fa-exclamation-circle"></i> @pwdErrorMessage
+                </div>
+            }
+
+            <div class="fp-input-group">
+                <label>Current Password *</label>
+                <input type="password" @bind="currentPassword" placeholder="Enter your current password" />
+            </div>
+
+            <div class="fp-input-group" style="margin-top: 16px;">
+                <label>New Password *</label>
+                <input type="password" @bind="newPassword" placeholder="Min 8 characters" />
+            </div>
+
+            <div class="fp-input-group" style="margin-top: 16px;">
+                <label>Confirm New Password *</label>
+                <input type="password" @bind="confirmNewPassword" placeholder="Confirm your new password" />
+            </div>
+
+            <div style="text-align: right; margin-top: 24px; border-top: 1px solid var(--fp-border); padding-top: 20px;">
+                <button class="fp-btn-primary" style="padding: 12px 24px;" @onclick="ChangePassword">
+                    <i class="fa fa-lock"></i> Change Password
+                </button>
+            </div>
+        </div>
+
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private string pwdSuccessMessage = string.Empty;
+    private string pwdErrorMessage = string.Empty;
+    private string currentPassword = string.Empty;
+    private string newPassword = string.Empty;
+    private string confirmNewPassword = string.Empty;
+
+    private async Task ChangePassword()
+    {
+        pwdSuccessMessage = string.Empty;
+        pwdErrorMessage = string.Empty;
+
+        if (coach == null) return;
+
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            pwdErrorMessage = "Current Password is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+        {
+            pwdErrorMessage = "New Password must be at least 8 characters.";
+            return;
+        }
+
+        if (newPassword != confirmNewPassword)
+        {
+            pwdErrorMessage = "New Password and Confirmation Password do not match.";
+            return;
+        }
+
+        try
+        {
+            var result = await UserManager.ChangePasswordAsync(coach, currentPassword, newPassword);
+            if (result.Succeeded)
+            {
+                pwdSuccessMessage = "Password changed successfully!";
+                currentPassword = string.Empty;
+                newPassword = string.Empty;
+                confirmNewPassword = string.Empty;
+            }
+            else
+            {
+                pwdErrorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            pwdErrorMessage = $"Failed to change password: {ex.Message}";
+        }
+    }
+
+    private PanelUser? coach;
+    private List<ClientResponseDto> clients = new();
+
+    private string fullName = string.Empty;
+    private string email = string.Empty;
+    private string phoneNumber = string.Empty;
+    private string bio = string.Empty;
+    private string specialization = string.Empty;
+    private string instagramUsername = string.Empty;
+    private string instagramLink = string.Empty;
+    private string profilePicture = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (auth.User.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "You are not authenticated. Please log in.";
+                return;
+            }
+
+            coach = await UserManager.GetUserAsync(auth.User);
+            if (coach == null)
+            {
+                errorMessage = "Could not load user profile.";
+                return;
+            }
+
+            // Populate edit fields
+            fullName = coach.FullName;
+            email = coach.Email ?? string.Empty;
+            phoneNumber = coach.PhoneNumber ?? string.Empty;
+            bio = coach.Bio ?? string.Empty;
+            specialization = coach.Specialization ?? string.Empty;
+            instagramUsername = coach.InstagramUsername ?? string.Empty;
+            instagramLink = coach.InstagramLink ?? string.Empty;
+            profilePicture = coach.ProfilePicture ?? string.Empty;
+
+            // Load clients to calculate counter
+            clients = await ClientService.GetMyClientsAsync(coach.Id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error initializing profile: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (coach == null) return;
+        successMessage = null;
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            errorMessage = "Full Name / Brand Name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            errorMessage = "Email address is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            errorMessage = "Phone number is required.";
+            return;
+        }
+
+        try
+        {
+            coach.FullName = fullName;
+            coach.Email = email;
+            coach.NormalizedEmail = email.ToUpperInvariant();
+            coach.PhoneNumber = phoneNumber;
+            coach.Bio = bio;
+            coach.Specialization = specialization;
+            coach.InstagramUsername = instagramUsername;
+            coach.InstagramLink = instagramLink;
+            coach.ProfilePicture = profilePicture;
+
+            var result = await UserManager.UpdateAsync(coach);
+            if (result.Succeeded)
+            {
+                successMessage = "Profile updated successfully! All future PDFs will use these new details.";
+                
+                // Trigger UI re-render on the sidebar/profile
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to save changes: {ex.Message}";
+        }
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "CO";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+            : name[..1].ToUpper();
+    }
+}

@@ -122,6 +122,50 @@ public class DietService : IDietService
         return fullDiet != null ? MapDietToDto(fullDiet, fullDiet.DietMeals.ToList()) : null;
     }
 
+    public async Task<DietResponseDto?> UpdateDietMealAsync(
+        int clientId, int dietMealId, string mealName, string? instruction,
+        string? link, string coachId)
+    {
+        var dietMeal = await _db.DietMeals
+            .Include(dm => dm.Diet)
+                .ThenInclude(d => d.Client)
+            .FirstOrDefaultAsync(dm => dm.Id == dietMealId && dm.Diet.Client.CoachId == coachId);
+
+        if (dietMeal == null) return null;
+
+        dietMeal.Name = mealName;
+        dietMeal.Instruction = instruction;
+        dietMeal.Link = link;
+
+        await _db.SaveChangesAsync();
+
+        var fullDiet = await LoadFullDietAsync(dietMeal.DietId);
+        return fullDiet != null ? MapDietToDto(fullDiet, fullDiet.DietMeals.ToList()) : null;
+    }
+
+    public async Task<(bool Success, string Message, DietResponseDto? UpdatedDiet)> DeleteDietMealAsync(
+        int clientId, int dietMealId, string coachId)
+    {
+        var dietMeal = await _db.DietMeals
+            .Include(dm => dm.Diet)
+                .ThenInclude(d => d.Client)
+            .FirstOrDefaultAsync(dm => dm.Id == dietMealId && dm.Diet.Client.CoachId == coachId);
+
+        if (dietMeal == null) return (false, "Meal not found.", null);
+
+        var dietId = dietMeal.DietId;
+
+        // Cascade delete will automatically remove the children elements from DB
+        _db.DietMeals.Remove(dietMeal);
+        await _db.SaveChangesAsync();
+
+        // NOTE: We DO NOT call UpsertMealDictionaryAsync here, preserving the template in the Dictionary!
+
+        var fullDiet = await LoadFullDietAsync(dietId);
+        var dto = fullDiet != null ? MapDietToDto(fullDiet, fullDiet.DietMeals.ToList()) : null;
+        return (true, "Meal deleted.", dto);
+    }
+
     // ── Add MealItem ─────────────────────────────────────────────────────────
 
     public async Task<DietResponseDto?> AddMealItemAsync(
@@ -195,9 +239,6 @@ public class DietService : IDietService
         _db.MealItems.Remove(meal);
         await _db.SaveChangesAsync();
 
-        // Re-upsert dictionary to reflect the removal
-        await UpsertMealDictionaryAsync(dietMealId, coachId);
-
         return (true, "Ingredient deleted.");
     }
 
@@ -224,9 +265,6 @@ public class DietService : IDietService
         meal.Calories = dto.Calories;
 
         await _db.SaveChangesAsync();
-
-        // Re-upsert dictionary to reflect the updated ingredient
-        await UpsertMealDictionaryAsync(meal.DietMealId, coachId);
 
         return (true, "Ingredient updated.");
     }
@@ -277,14 +315,9 @@ public class DietService : IDietService
 
         if (existing != null)
         {
-            // Update existing template
-            existing.IngredientsJson = ingredientsJson;
-            existing.Link = dietMeal.Link;
-            existing.Instruction = dietMeal.Instruction;
-            existing.Protein = totalProtein;
-            existing.Carbs = totalCarbs;
-            existing.Fats = totalFats;
-            existing.Calories = totalCalories;
+            // DO NOT update or overwrite the existing template in the dictionary!
+            // This preserves the original base template when it is modified for other clients.
+            return;
         }
         else
         {

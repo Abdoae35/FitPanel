@@ -14,6 +14,13 @@ public interface IDietService
         int? parentDietMealId, string coachId,
         string? link = null, List<CreateMealItemDto>? initialItems = null);
 
+    Task<DietResponseDto?> UpdateDietMealAsync(
+        int clientId, int dietMealId, string mealName, string? instruction,
+        string? link, string coachId);
+
+    Task<(bool Success, string Message, DietResponseDto? UpdatedDiet)> DeleteDietMealAsync(
+        int clientId, int dietMealId, string coachId);
+
     Task<DietResponseDto?> AddMealItemAsync(int clientId, int dietMealId, CreateMealItemDto dto, string coachId);
     Task<(bool Success, string Message)> DeleteDietAsync(int clientId, int dietId, string coachId);
     Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId, string coachId);

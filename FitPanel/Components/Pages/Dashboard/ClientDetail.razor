@@ -289,7 +289,11 @@ else
                                                         <span class="fp-day-name">@dietMeal.Name</span>
                                                         <span class="fp-pill fp-pill-muted">@dietMeal.Ingredients.Sum(i => i.Calories) kcal total</span>
                                                     </div>
-                                                    <div style="display:flex;gap:8px;">
+                                                    <div style="display:flex;gap:8px;align-items:center;">
+                                                        <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Meal Category" @onclick="() => ConfirmDeleteDietMeal(diet.Id, dietMeal.Id, dietMeal.Name)"><i class="fa fa-trash"></i></button> <button class="fp-icon-btn" title="Edit Meal Settings"
+                                                                @onclick="() => OpenEditDietMealModal(diet.Id, dietMeal)">
+                                                            <i class="fa fa-edit"></i> Edit Info
+                                                        </button>
                                                         <button class="fp-icon-btn" title="Add Food"
                                                                 @onclick="() => OpenAddIngredientModal(diet.Id, dietMeal.Id)">
                                                             <i class="fa fa-plus"></i> Add Food
@@ -425,34 +429,39 @@ else
                                                                     <span class="fp-day-name" style="color:var(--fp-primary);"><i class="fa fa-exchange-alt"></i> Option 2: @altDietMeal.Name</span>
                                                                     <span class="fp-pill fp-pill-muted">@altDietMeal.Ingredients.Sum(i => i.Calories) kcal total</span>
                                                                 </div>
-                                                                <div style="display:flex;gap:8px;">
+                                                                <div style="display:flex;gap:8px;align-items:center;">
+                                                                    <button class="fp-icon-btn fp-icon-btn-danger" title="Delete Alternative Meal Option" @onclick="() => ConfirmDeleteDietMeal(diet.Id, altDietMeal.Id, altDietMeal.Name)"><i class="fa fa-trash"></i></button> <button class="fp-icon-btn" title="Edit Meal Settings"
+                                                                            @onclick="() => OpenEditDietMealModal(diet.Id, altDietMeal)">
+                                                                        <i class="fa fa-edit"></i> Edit Info
+                                                                    </button>
                                                                     <button class="fp-icon-btn" title="Add Food"
                                                                             @onclick="() => OpenAddIngredientModal(diet.Id, altDietMeal.Id)">
                                                                         <i class="fa fa-plus"></i> Add Food
                                                                     </button>
-                                                                    @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction) || !string.IsNullOrWhiteSpace(altDietMeal.Link))
+                                                                </div>
+                                                            </div>
+                                                            @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction) || !string.IsNullOrWhiteSpace(altDietMeal.Link))
+                                                            {
+                                                                <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); margin: 0 16px 12px 16px; border-left: 3px solid var(--fp-primary); font-size: 13px; color: var(--fp-text-muted); border-radius: 0 8px 8px 0;">
+                                                                    @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction))
                                                                     {
-                                                                        <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); margin: 0 16px 12px 16px; border-left: 3px solid var(--fp-primary); font-size: 13px; color: var(--fp-text-muted); border-radius: 0 8px 8px 0;">
-                                                                            @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction))
-                                                                            {
-                                                                                <div style="margin-bottom: 8px;">
-                                                                                    <strong><i class="fa fa-book-open"></i> Recipe/Instructions:</strong><br/>
-                                                                                    @altDietMeal.Instruction
-                                                                                </div>
-                                                                            }
-                                                                            @if (!string.IsNullOrWhiteSpace(altDietMeal.Link))
-                                                                            {
-                                                                                <div>
-                                                                                    <strong><i class="fa fa-video"></i> Video Tutorial:</strong><br/>
-                                                                                    <a href="@altDietMeal.Link" target="_blank" class="fp-meal-link" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--fp-primary); text-decoration: none;">
-                                                                                        <i class="fa fa-play-circle" style="font-size: 16px;"></i> Watch Video
-                                                                                    </a>
-                                                                                </div>
-                                                                            }
+                                                                        <div style="margin-bottom: 8px;">
+                                                                            <strong><i class="fa fa-book-open"></i> Recipe/Instructions:</strong><br/>
+                                                                            @altDietMeal.Instruction
+                                                                        </div>
+                                                                    }
+                                                                    @if (!string.IsNullOrWhiteSpace(altDietMeal.Link))
+                                                                    {
+                                                                        <div>
+                                                                            <strong><i class="fa fa-video"></i> Video Tutorial:</strong><br/>
+                                                                            <a href="@altDietMeal.Link" target="_blank" class="fp-meal-link" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--fp-primary); text-decoration: none;">
+                                                                                <i class="fa fa-play-circle" style="font-size: 16px;"></i> Watch Video
+                                                                            </a>
                                                                         </div>
                                                                     }
                                                                 </div>
-                                                            </div>
+                                                            }
+                                                            
                                                             @if (altDietMeal.Ingredients.Any())
                                                             {
                                                                 <div class="fp-meals-grid">
@@ -860,6 +869,37 @@ else
     </div>
 }
 
+@* Edit Diet Meal Settings *@
+@if (showEditDietMealModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditDietMealModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT MEAL INFO</span>
+                <button class="fp-modal-close" @onclick='() => showEditDietMealModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Meal Category Name *</label>
+                    <input @bind="editDietMealName" placeholder="e.g. Breakfast, Pre-Workout Meal" />
+                </div>
+                <div class="fp-input-group">
+                    <label>Video Tutorial Link (optional)</label>
+                    <input @bind="editDietMealLink" placeholder="https://youtube.com/..." />
+                </div>
+                <div class="fp-input-group">
+                    <label>Recipe Instructions (optional)</label>
+                    <textarea @bind="editDietMealInstruction" rows="4" placeholder="Cook chicken, add rice..."></textarea>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditDietMealModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveEditDietMeal"><i class="fa fa-save"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+}
+
 @* Add / Edit Meal Ingredient *@
 @if (showMealModal)
 {
@@ -876,16 +916,16 @@ else
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Food Name *</label><input list="mealDictList" @bind="newMeal.MealName" @bind:after="OnMealNameChanged" placeholder="Grilled Chicken" /></div>
                     <div class="fp-grid-2" style="gap:10px">
-                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newMeal.Quantity" placeholder="1" /></div>
+                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newMeal.Quantity" @bind:after="OnQuantityChanged" placeholder="1" /></div>
                         <div class="fp-input-group"><label>Unit</label><input @bind="newMeal.Unit" placeholder="cup, gram, piece..." /></div>
                     </div>
                 </div>
 
                 <div class="fp-grid-4" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" placeholder="220" /></div>
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" placeholder="40" /></div>
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" placeholder="0" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" placeholder="5" /></div>
+                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" @bind:after="OnCaloriesChanged" placeholder="220" /></div>
+                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" @bind:after="OnProteinChanged" placeholder="40" /></div>
+                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" @bind:after="OnCarbsChanged" placeholder="0" /></div>
+                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" @bind:after="OnFatsChanged" placeholder="5" /></div>
                 </div>
             </div>
             <div class="fp-modal-footer">
@@ -918,15 +958,15 @@ else
                 <div class="fp-grid-2">
                     <div class="fp-input-group"><label>Food Name *</label><input list="mealDictList" @bind="newAlternative.MealName" @bind:after="OnAlternativeNameChanged" placeholder="Tuna Salad" /></div>
                     <div class="fp-grid-2" style="gap:10px">
-                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newAlternative.Quantity" placeholder="1" /></div>
+                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newAlternative.Quantity" @bind:after="OnAlternativeQuantityChanged" placeholder="1" /></div>
                         <div class="fp-input-group"><label>Unit</label><input @bind="newAlternative.Unit" placeholder="cup, gram, piece..." /></div>
                     </div>
                 </div>
                 <div class="fp-grid-4" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newAlternative.Calories" placeholder="180" /></div>
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newAlternative.Protein" placeholder="35" /></div>
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newAlternative.Carbs" placeholder="2" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newAlternative.Fats" placeholder="3" /></div>
+                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newAlternative.Calories" @bind:after="OnAltCaloriesChanged" placeholder="180" /></div>
+                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newAlternative.Protein" @bind:after="OnAltProteinChanged" placeholder="35" /></div>
+                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newAlternative.Carbs" @bind:after="OnAltCarbsChanged" placeholder="2" /></div>
+                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newAlternative.Fats" @bind:after="OnAltFatsChanged" placeholder="3" /></div>
                 </div>
             </div>
             <div class="fp-modal-footer">
@@ -1418,14 +1458,17 @@ else
     {
         if (client == null || string.IsNullOrEmpty(client.PhoneNumber)) return;
 
+        string startDateStr = client.StartDate.ToString("MMM dd, yyyy");
+        string endDateStr = client.EndDate.ToString("MMM dd, yyyy");
+
         string message = "";
         if (IsExpired)
         {
-            message = $"Hey {client.Name}! I hope you are doing well. 🎯 Just a reminder that your coaching subscription at FitPanel has expired. Let me know if you are ready to renew so we can keep pushing towards your goals! 💪";
+            message = $"Hey {client.Name}! I hope you are doing well.  Just a reminder that your coaching subscription (from {startDateStr} to {endDateStr}) has expired. Let me know if you are ready to renew so we can keep pushing towards your goals! ";
         }
         else if (IsExpiringSoon)
         {
-            message = $"Hey {client.Name}! Great work this month. 🎯 Just a friendly heads-up that your subscription expires in {DaysLeft} days (on {client.EndDate.ToString("MMM dd, yyyy")}). Let me know if we are continuing next month so we can keep the momentum going! 💪";
+            message = $"Hey {client.Name}! Great work this month.  Just a friendly heads-up that your subscription (from {startDateStr} to {endDateStr}) expires in {DaysLeft} days. Let me know if we are continuing next month so we can keep the momentum going! ";
         }
 
         string encodedMessage = Uri.EscapeDataString(message);
@@ -1446,6 +1489,23 @@ else
         {
             var (s, _) = await DietService.DeleteDietAsync(ClientId, dietId, coachId);
             if (s) diets.RemoveAll(d => d.Id == dietId);
+        };
+        showDeleteConfirm = true;
+    }
+
+    private void ConfirmDeleteDietMeal(int dietId, int dietMealId, string mealName)
+    {
+        deleteConfirmType = "Meal Category";
+        deleteConfirmName = mealName;
+        deleteConfirmMessage = "This will permanently delete this entire meal category slot and all its ingredients from this client's plan. The template in your master dictionary library will stay completely safe.";
+        deleteAction = async () =>
+        {
+            var (success, _, updatedDiet) = await DietService.DeleteDietMealAsync(ClientId, dietMealId, coachId);
+            if (success && updatedDiet != null)
+            {
+                var idx = diets.FindIndex(d => d.Id == dietId);
+                if (idx >= 0) diets[idx] = updatedDiet;
+            }
         };
         showDeleteConfirm = true;
     }
@@ -1616,7 +1676,42 @@ else
         showDietMealModal = false;
     }
 
+    private bool showEditDietMealModal = false;
+    private int editDietMealId;
+    private string editDietMealName = "";
+    private string? editDietMealInstruction;
+    private string? editDietMealLink;
+
+    private void OpenEditDietMealModal(int dietId, DietMealResponseDto dietMeal)
+    {
+        activeDietId = dietId;
+        editDietMealId = dietMeal.Id;
+        editDietMealName = dietMeal.Name;
+        editDietMealInstruction = dietMeal.Instruction;
+        editDietMealLink = dietMeal.Link;
+        showEditDietMealModal = true;
+    }
+
+    private async Task SaveEditDietMeal()
+    {
+        if (string.IsNullOrWhiteSpace(editDietMealName)) return;
+        var result = await DietService.UpdateDietMealAsync(
+            ClientId, editDietMealId, editDietMealName, editDietMealInstruction, editDietMealLink, coachId);
+        if (result != null)
+        {
+            var idx = diets.FindIndex(d => d.Id == activeDietId);
+            if (idx >= 0) diets[idx] = result;
+        }
+        showEditDietMealModal = false;
+    }
+
     private int activeDietMealId;
+
+    private double originalQuantity;
+    private int originalProtein;
+    private int originalCarbs;
+    private int originalFats;
+    private int originalCalories;
 
     private void OpenAddIngredientModal(int dietId, int dietMealId)
     {
@@ -1624,6 +1719,14 @@ else
         activeDietMealId = dietMealId;
         editMealId = 0;
         newMeal = new();
+        
+        // Reset baseline
+        originalQuantity = 1;
+        originalProtein = 0;
+        originalCarbs = 0;
+        originalFats = 0;
+        originalCalories = 0;
+        
         showMealModal = true;
     }
 
@@ -1642,6 +1745,14 @@ else
             Fats = meal.Fats,
             Calories = meal.Calories
         };
+
+        // Capture original baseline values
+        originalQuantity = meal.Quantity > 0 ? meal.Quantity : 1;
+        originalProtein = meal.Protein;
+        originalCarbs = meal.Carbs;
+        originalFats = meal.Fats;
+        originalCalories = meal.Calories;
+
         showMealModal = true;
     }
 
@@ -1681,8 +1792,6 @@ else
         showMealModal = false;
     }
 
-    // ── Alternatives ──────────────────────────────────────────────
-
     private void OpenAddAlternativeModal(int mealId, int dietMealId, int dietId)
     {
         activeMealId = mealId;
@@ -1690,6 +1799,14 @@ else
         activeDietId = dietId;
         editAlternativeId = 0;
         newAlternative = new();
+
+        // Reset baseline
+        originalQuantity = 1;
+        originalProtein = 0;
+        originalCarbs = 0;
+        originalFats = 0;
+        originalCalories = 0;
+
         showAlternativeModal = true;
     }
 
@@ -1710,6 +1827,14 @@ else
             Fats = alt.Fats,
             Calories = alt.Calories
         };
+
+        // Capture original baseline values
+        originalQuantity = alt.Quantity > 0 ? alt.Quantity : 1;
+        originalProtein = alt.Protein;
+        originalCarbs = alt.Carbs;
+        originalFats = alt.Fats;
+        originalCalories = alt.Calories;
+
         showAlternativeModal = true;
     }
 
@@ -1747,6 +1872,66 @@ else
         editAlternativeId = 0;
         showAlternativeModal = false;
     }
+
+    // ── Dynamic Macro Scaling Callbacks ────────────────────────────
+
+    private void OnQuantityChanged()
+    {
+        if (originalQuantity > 0 && newMeal.Quantity > 0)
+        {
+            if (originalProtein == 0 && originalCarbs == 0 && originalFats == 0 && originalCalories == 0)
+            {
+                // First-time manual baseline setting
+                originalQuantity = newMeal.Quantity;
+                originalProtein = newMeal.Protein;
+                originalCarbs = newMeal.Carbs;
+                originalFats = newMeal.Fats;
+                originalCalories = newMeal.Calories;
+            }
+            else
+            {
+                double ratio = newMeal.Quantity / originalQuantity;
+                newMeal.Protein = (int)Math.Round(originalProtein * ratio);
+                newMeal.Carbs = (int)Math.Round(originalCarbs * ratio);
+                newMeal.Fats = (int)Math.Round(originalFats * ratio);
+                newMeal.Calories = (int)Math.Round(originalCalories * ratio);
+            }
+        }
+    }
+
+    private void OnAlternativeQuantityChanged()
+    {
+        if (originalQuantity > 0 && newAlternative.Quantity > 0)
+        {
+            if (originalProtein == 0 && originalCarbs == 0 && originalFats == 0 && originalCalories == 0)
+            {
+                // First-time manual baseline setting
+                originalQuantity = newAlternative.Quantity;
+                originalProtein = newAlternative.Protein;
+                originalCarbs = newAlternative.Carbs;
+                originalFats = newAlternative.Fats;
+                originalCalories = newAlternative.Calories;
+            }
+            else
+            {
+                double ratio = newAlternative.Quantity / originalQuantity;
+                newAlternative.Protein = (int)Math.Round(originalProtein * ratio);
+                newAlternative.Carbs = (int)Math.Round(originalCarbs * ratio);
+                newAlternative.Fats = (int)Math.Round(originalFats * ratio);
+                newAlternative.Calories = (int)Math.Round(originalCalories * ratio);
+            }
+        }
+    }
+
+    private void OnProteinChanged() { originalProtein = newMeal.Protein; originalQuantity = newMeal.Quantity > 0 ? newMeal.Quantity : 1; }
+    private void OnCarbsChanged() { originalCarbs = newMeal.Carbs; originalQuantity = newMeal.Quantity > 0 ? newMeal.Quantity : 1; }
+    private void OnFatsChanged() { originalFats = newMeal.Fats; originalQuantity = newMeal.Quantity > 0 ? newMeal.Quantity : 1; }
+    private void OnCaloriesChanged() { originalCalories = newMeal.Calories; originalQuantity = newMeal.Quantity > 0 ? newMeal.Quantity : 1; }
+
+    private void OnAltProteinChanged() { originalProtein = newAlternative.Protein; originalQuantity = newAlternative.Quantity > 0 ? newAlternative.Quantity : 1; }
+    private void OnAltCarbsChanged() { originalCarbs = newAlternative.Carbs; originalQuantity = newAlternative.Quantity > 0 ? newAlternative.Quantity : 1; }
+    private void OnAltFatsChanged() { originalFats = newAlternative.Fats; originalQuantity = newAlternative.Quantity > 0 ? newAlternative.Quantity : 1; }
+    private void OnAltCaloriesChanged() { originalCalories = newAlternative.Calories; originalQuantity = newAlternative.Quantity > 0 ? newAlternative.Quantity : 1; }
 
     // ── Workout ───────────────────────────────────────────────────
 

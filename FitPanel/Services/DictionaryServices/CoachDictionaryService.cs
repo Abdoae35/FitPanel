@@ -40,6 +40,8 @@ public class CoachDictionaryService : ICoachDictionaryService
         existing.Fats = meal.Fats;
         existing.Calories = meal.Calories;
         existing.Link = meal.Link;
+        existing.Instruction = meal.Instruction;
+        existing.IngredientsJson = meal.IngredientsJson;
 
         await _db.SaveChangesAsync();
         return (true, "Meal updated.");

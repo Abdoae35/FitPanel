@@ -16,4 +16,5 @@ public interface IWorkoutService
     Task<(bool Success, string Message)> UpdateExerciseAsync(int exerciseId, CreateExerciseDto dto, string coachId); // ← NEW
     Task<(bool Success, string Message)> UpdateCardioAsync(
     int clientId, int workoutId, int dayId, CreateCardioDto dto, string coachId);
+    Task<WorkoutDayResponseDto?> UpdateWorkoutDayNotesAsync(int clientId, int workoutId, int dayId, string? notes, string coachId);
 }

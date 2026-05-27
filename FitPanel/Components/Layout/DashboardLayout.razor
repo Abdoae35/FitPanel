@@ -555,14 +555,19 @@
     /* ── Footer ── */
     .fp-footer {
         padding: 20px 30px !important;
+        background: transparent !important;
         border-top: 2px solid rgba(234,33,39,0.4) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        background: #252525 !important;
+     
         margin-top: auto !important;
         position: relative !important;
         z-index: 1 !important;
+    }
+    .fp-footer::before, .fp-footer::after {
+        display: none !important;
+        content: none !important;
     }
     .fp-footer-left {
         font-size: 15px !important;
@@ -735,6 +740,17 @@
         border-radius: 0;
     }
     .fp-input-group textarea { height: 100px; padding: 12px 16px; resize: vertical; }
+    .fp-input-group select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cccccc%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 16px center !important;
+        background-size: 14px !important;
+        padding-right: 40px !important;
+        cursor: pointer;
+    }
     .fp-input-group input:focus,
     .fp-input-group select:focus,
     .fp-input-group textarea:focus { border-color: var(--fp-accent); }

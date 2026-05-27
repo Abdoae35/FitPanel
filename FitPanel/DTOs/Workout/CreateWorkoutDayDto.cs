@@ -8,4 +8,5 @@ public class CreateWorkoutDayDto
 {
     public string DayName { get; set; } = string.Empty;
     public Days Day { get; set; } = Days.Day1;
+    public string? Notes { get; set; }
 }

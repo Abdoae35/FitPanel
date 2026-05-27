@@ -102,6 +102,35 @@ public class TemplateService : ITemplateService
             .ToListAsync();
     }
 
+    public async Task<DietTemplate?> GetDietTemplateByIdAsync(int id, string coachId)
+    {
+        return await _db.DietTemplates
+            .FirstOrDefaultAsync(t => t.Id == id && t.CoachId == coachId);
+    }
+
+    public async Task<DietTemplate> CreateDietTemplateAsync(DietTemplate template)
+    {
+        template.CreatedAt = DateTime.UtcNow;
+        _db.DietTemplates.Add(template);
+        await _db.SaveChangesAsync();
+        return template;
+    }
+
+    public async Task<DietTemplate> UpdateDietTemplateAsync(DietTemplate template)
+    {
+        var existing = await _db.DietTemplates
+            .FirstOrDefaultAsync(t => t.Id == template.Id && t.CoachId == template.CoachId)
+            ?? throw new KeyNotFoundException("Diet template not found.");
+
+        existing.Name = template.Name;
+        existing.DietJson = template.DietJson;
+        existing.Instructions = template.Instructions;
+        existing.NumberOfMeals = template.NumberOfMeals;
+
+        await _db.SaveChangesAsync();
+        return existing;
+    }
+
     public async Task<bool> DeleteDietTemplateAsync(int templateId, string coachId)
     {
         var template = await _db.DietTemplates
@@ -243,6 +272,36 @@ public class TemplateService : ITemplateService
             .Where(t => t.CoachId == coachId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<WorkoutTemplate?> GetWorkoutTemplateByIdAsync(int id, string coachId)
+    {
+        return await _db.WorkoutTemplates
+            .FirstOrDefaultAsync(t => t.Id == id && t.CoachId == coachId);
+    }
+
+    public async Task<WorkoutTemplate> CreateWorkoutTemplateAsync(WorkoutTemplate template)
+    {
+        template.CreatedAt = DateTime.UtcNow;
+        _db.WorkoutTemplates.Add(template);
+        await _db.SaveChangesAsync();
+        return template;
+    }
+
+    public async Task<WorkoutTemplate> UpdateWorkoutTemplateAsync(WorkoutTemplate template)
+    {
+        var existing = await _db.WorkoutTemplates
+            .FirstOrDefaultAsync(t => t.Id == template.Id && t.CoachId == template.CoachId)
+            ?? throw new KeyNotFoundException("Workout template not found.");
+
+        existing.Name = template.Name;
+        existing.SplitName = template.SplitName;
+        existing.WorkoutJson = template.WorkoutJson;
+        existing.Instructions = template.Instructions;
+        existing.NumberOfWorkoutDays = template.NumberOfWorkoutDays;
+
+        await _db.SaveChangesAsync();
+        return existing;
     }
 
     public async Task<bool> DeleteWorkoutTemplateAsync(int templateId, string coachId)

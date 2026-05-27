@@ -73,7 +73,8 @@ public class WorkoutService : IWorkoutService
                         d.Cardio.CardioType,
                         d.Cardio.DurationMinutes,
                         d.Cardio.Intensity,
-                        d.Cardio.Notes)
+                        d.Cardio.Notes),
+                    d.Notes
                 )).ToList()
             ))
             .ToListAsync();
@@ -113,7 +114,8 @@ public class WorkoutService : IWorkoutService
         {
             WorkOutId = workoutId,
             DayName = dto.DayName,
-            Day = dto.Day
+            Day = dto.Day,
+            Notes = dto.Notes
         };
 
         _db.WorkOutDays.Add(day);
@@ -124,6 +126,7 @@ public class WorkoutService : IWorkoutService
             day.DayName,
             day.Day,
             new List<ExerciseResponseDto>(),
+            null,
             null);
     }
 
@@ -264,7 +267,8 @@ public class WorkoutService : IWorkoutService
                     d.Cardio.CardioType,
                     d.Cardio.DurationMinutes,
                     d.Cardio.Intensity,
-                    d.Cardio.Notes)
+                    d.Cardio.Notes),
+                d.Notes
             )).ToList()
         );
 
@@ -331,4 +335,43 @@ public class WorkoutService : IWorkoutService
                 return (true, "Cardio updated.");
             }
 
+            public async Task<WorkoutDayResponseDto?> UpdateWorkoutDayNotesAsync(
+                int clientId, int workoutId, int dayId, string? notes, string coachId)
+            {
+                var day = await _db.WorkOutDays
+                    .Include(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                    .Include(d => d.Cardio)
+                    .Include(d => d.ExcerciseItems)
+                    .FirstOrDefaultAsync(d => d.Id == dayId
+                        && d.WorkOutId == workoutId
+                        && d.WorkOut.ClientId == clientId
+                        && d.WorkOut.Client.CoachId == coachId);
+
+                if (day == null) return null;
+
+                day.Notes = notes;
+                await _db.SaveChangesAsync();
+
+                return new WorkoutDayResponseDto(
+                    day.Id,
+                    day.DayName,
+                    day.Day,
+                    day.ExcerciseItems.Select(e => new ExerciseResponseDto(
+                        e.Id,
+                        e.ExerciseName,
+                        e.Sets,
+                        e.Reps,
+                        e.RestTime,
+                        e.ExcerciseLink
+                    )).ToList(),
+                    day.Cardio == null ? null : new CardioResponseDto(
+                        day.Cardio.Id,
+                        day.Cardio.CardioType,
+                        day.Cardio.DurationMinutes,
+                        day.Cardio.Intensity,
+                        day.Cardio.Notes),
+                    day.Notes
+                );
+            }
 }

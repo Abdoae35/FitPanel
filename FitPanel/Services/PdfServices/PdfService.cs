@@ -160,6 +160,11 @@ public class PdfService : IPdfService
         int cPct = totalGrams > 0 ? (int)Math.Round((double)totalCarbs / totalGrams * 100) : 0;
         int fPct = totalGrams > 0 ? (int)Math.Round((double)totalFats / totalGrams * 100) : 0;
 
+        // Notes page appears as page 2 (after cover) only if coach added notes
+        var notesPage = !string.IsNullOrWhiteSpace(diet.Instructions)
+            ? BuildDietNotesPage(diet.Instructions, coachEmail, coachPhone, instagram, instagramLink)
+            : "";
+
         return $"""
         <!DOCTYPE html>
         <html lang="en">
@@ -173,11 +178,39 @@ public class PdfService : IPdfService
         </head>
         <body>
           {DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64)}
+          {notesPage}
           {DietContentPage(diet, client.Name, coachEmail, coachPhone, instagram, instagramLink, totalCal, totalProtein, totalCarbs, totalFats, pPct, cPct, fPct)}
         </body>
         </html>
         """;
     }
+
+    private static string BuildDietNotesPage(string notes, string email, string phone, string instagram, string instagramLink) => $"""
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="content-wrapper">
+            <header class="header">
+              <div>
+                <h2>📋 COACHING NOTES</h2>
+                <p>Special guidelines &amp; instructions from your coach</p>
+              </div>
+              <div><span class="skew-badge"><span>NOTES</span></span></div>
+            </header>
+
+            <div style="padding: 24px 28px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--coach-primary); border-radius: 4px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+              <div style="font-size: 20px; line-height: 1.85; color: #f2f2f2; white-space: pre-wrap; font-weight: 500;">{notes}</div>
+            </div>
+          </div>
+
+          <footer class="footer">
+            <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
+            <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
+            <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+          </footer>
+        </div>
+        """;
+
+
 
     // ── COVER PAGES ───────────────────────────────────────────────
     private static string WorkoutCover(
@@ -201,7 +234,7 @@ public class PdfService : IPdfService
                   </h1>
                   <p class="cover-specialty" style="margin-bottom: 20px;">
                     <a href="{instagramLink}" target="_blank" style="color: var(--coach-primary); text-decoration: none; font-size: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
-                      Dr. {coachName}
+                      {coachName}
                       <svg style="width: 18px; height: 18px; fill: var(--coach-primary);" viewBox="0 0 24 24">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                       </svg>
@@ -291,7 +324,7 @@ public class PdfService : IPdfService
                   </h1>
                   <p class="cover-specialty" style="margin-bottom: 20px;">
                     <a href="{instagramLink}" target="_blank" style="color: var(--coach-primary); text-decoration: none; font-size: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
-                      Dr. {coachName}
+                      {coachName}
                       <svg style="width: 18px; height: 18px; fill: var(--coach-primary);" viewBox="0 0 24 24">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                       </svg>
@@ -300,7 +333,7 @@ public class PdfService : IPdfService
                 </div>
 
                 <div class="cover-keys-list" style="margin-bottom: 28px;">
-                  <div style="font-family: var(--coach-font-body); font-size: 14px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
+                  <div style="font-family: var(--coach-font-body); font-size: 15px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
                   <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
@@ -308,7 +341,7 @@ public class PdfService : IPdfService
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> CARDIO</li>
                     <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> SUPPLEMENTATION</li>
                   </ul>
-                  <div style="margin-top: 14px; font-style: italic; font-size: 12px; color: var(--coach-white); font-weight: 600;">
+                  <div style="margin-top: 14px; font-style: italic; font-size: 14px; color: var(--coach-white); font-weight: 600;">
                     "All are keys to reach our goal"
                   </div>
                 </div>
@@ -367,16 +400,16 @@ public class PdfService : IPdfService
         var rows = new StringBuilder();
         foreach (var ex in day.ExcerciseItems)
         {
-            var exerciseNameHtml = string.IsNullOrEmpty(ex.ExcerciseLink) 
-                ? ex.ExerciseName 
+            var exerciseNameHtml = string.IsNullOrEmpty(ex.ExcerciseLink)
+                ? ex.ExerciseName
                 : $"<a href='{ex.ExcerciseLink}' style='color: var(--coach-primary); text-decoration: none; font-weight: 700;'>{ex.ExerciseName} <i style='font-size: 9px; margin-left: 2px;'>🔗</i></a>";
 
             rows.Append($"""
                 <tr>
                   <td class="exercise-name">{exerciseNameHtml}</td>
-                  <td style="text-align: center; font-weight: 700;">{ex.Sets}</td>
-                  <td style="text-align: center;">{ex.Reps}</td>
-                  <td style="text-align: center; color: var(--coach-primary); font-weight: 700;">{ex.RestTime}</td>
+                  <td style="text-align: center; font-weight: 800; font-size: 15px;">{ex.Sets}</td>
+                  <td style="text-align: center; font-weight: 700; font-size: 15px;">{ex.Reps}</td>
+                  <td style="text-align: center; color: var(--coach-primary); font-weight: 800; font-size: 15px;">{ex.RestTime}</td>
                 </tr>
                 """);
         }
@@ -386,9 +419,9 @@ public class PdfService : IPdfService
         {
             var c = day.Cardio;
             cardioSection = $"""
-                <div class="cardio-section" style="margin-top: auto;">
+                <div class="cardio-section" style="margin-top: 16px;">
                   <div class="cardio-header">
-                    <div class="cardio-title">🏃 CARDIO SPECIFICATION PROTOCOL</div>
+                    <div class="cardio-title">🏃 CARDIO PROTOCOL</div>
                     <div class="cardio-badge">{c.Intensity}</div>
                   </div>
                   <div class="cardio-grid">
@@ -397,14 +430,25 @@ public class PdfService : IPdfService
                       <div class="cardio-metric-val">{c.CardioType}</div>
                     </div>
                     <div class="cardio-metric">
-                      <div class="cardio-metric-label">DURATION TIME</div>
-                      <div class="cardio-metric-val text-primary">{c.DurationMinutes} minutes</div>
+                      <div class="cardio-metric-label">DURATION</div>
+                      <div class="cardio-metric-val text-primary">{c.DurationMinutes} min</div>
                     </div>
                     <div class="cardio-metric">
-                      <div class="cardio-metric-label">TARGET CONSTRAINTS</div>
-                      <div class="cardio-metric-val">{c.Notes ?? "No constraints"}</div>
+                      <div class="cardio-metric-label">NOTES</div>
+                      <div class="cardio-metric-val">{c.Notes ?? "—"}</div>
                     </div>
                   </div>
+                </div>
+                """;
+        }
+
+        var dayNotesSection = "";
+        if (!string.IsNullOrWhiteSpace(day.Notes))
+        {
+            dayNotesSection = $"""
+                <div style="margin-top: 16px; padding: 16px 20px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--coach-primary); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                  <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-primary); margin-bottom: 8px;">📋 DAY NOTES &amp; INSTRUCTIONS</div>
+                  <div style="font-size: 18px; line-height: 1.7; color: #f0f0f0; font-weight: 500; white-space: pre-wrap;">{day.Notes}</div>
                 </div>
                 """;
         }
@@ -427,7 +471,7 @@ public class PdfService : IPdfService
               <table>
                 <thead>
                   <tr>
-                    <th style="width: 50%;">MOVEMENT & PATTERN</th>
+                    <th style="width: 50%;">MOVEMENT &amp; PATTERN</th>
                     <th style="width: 15%; text-align: center;">SETS</th>
                     <th style="width: 20%; text-align: center;">REPS</th>
                     <th style="width: 15%; text-align: center;">REST</th>
@@ -439,31 +483,26 @@ public class PdfService : IPdfService
               </table>
             </div>
 
+            {dayNotesSection}
             {cardioSection}
           </div>
 
           <footer class="footer">
             <div>
               <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                 <span>@{instagram}</span>
               </a>
             </div>
             <div>
               <a href="mailto:{email}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                </svg>
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                 <span>{email}</span>
               </a>
             </div>
             <div>
               <a href="tel:{phone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                </svg>
+                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
                 <span>{phone}</span>
               </a>
             </div>
@@ -473,153 +512,147 @@ public class PdfService : IPdfService
     }
 
     // ── DIET PLAN PAGE ────────────────────────────────────────────
+    // Each DietMeal gets its own A4 page. The first page has the macro summary.
     private static string DietContentPage(
         Diet diet, string clientName, string email, string phone, string instagram, string instagramLink,
         int totalCal, int totalProtein, int totalCarbs, int totalFats,
         int pPct, int cPct, int fPct)
     {
-        var mealCards = new StringBuilder();
+        var pagesSb = new StringBuilder();
+        bool isFirst = true;
+
         foreach (var m in diet.DietMeals)
         {
             string icon = "🍽️";
             var mealNameLower = m.Name.ToLower();
-            if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning") || mealNameLower.Contains("🍳")) icon = "🍳";
-            else if (mealNameLower.Contains("lunch") || mealNameLower.Contains("dinner") || mealNameLower.Contains("afternoon") || mealNameLower.Contains("night")) icon = "🍗";
-            else if (mealNameLower.Contains("snack") || mealNameLower.Contains("shake") || mealNameLower.Contains("smoothie") || mealNameLower.Contains("drink")) icon = "🥤";
+            if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning")) icon = "🍳";
+            else if (mealNameLower.Contains("lunch") || mealNameLower.Contains("dinner") || mealNameLower.Contains("night")) icon = "🍗";
+            else if (mealNameLower.Contains("snack") || mealNameLower.Contains("shake") || mealNameLower.Contains("smoothie")) icon = "🥤";
             else if (mealNameLower.Contains("pre") || mealNameLower.Contains("intra") || mealNameLower.Contains("workout")) icon = "⚡";
-            
+
             var foodItems = new StringBuilder();
             foreach (var item in m.MealItems)
             {
                 var portionText = $"{item.Quantity} {item.Unit}";
-                var altItemsHtml = new StringBuilder();
+                var altHtml = new StringBuilder();
                 if (item.AlternativeItems != null && item.AlternativeItems.Any())
                 {
-                    altItemsHtml.Append("<div class='food-alternatives' style='margin-top: 4px; padding-left: 12px; border-left: 2px solid var(--coach-secondary); font-size: 9px; color: var(--coach-gray-light);'>");
+                    altHtml.Append("<div style='margin-top:6px; padding-left:14px; border-left:2px solid var(--coach-secondary);'>");
                     foreach (var alt in item.AlternativeItems)
-                    {
-                        altItemsHtml.Append($"<div class='alt-item'>↳ Alternative: <strong>{alt.MealName}</strong> — {alt.Quantity} {alt.Unit} <span style='color: #00D9FF; margin-left: 6px;'>P: {alt.Protein}g</span> <span style='color: #FFD700; margin-left: 4px;'>C: {alt.Carbs}g</span> <span style='color: #FF6B00; margin-left: 4px;'>F: {alt.Fats}g</span></div>");
-                    }
-                    altItemsHtml.Append("</div>");
+                        altHtml.Append($"<div style='font-size:11px; color:var(--coach-gray-light); padding:3px 0;'>↳ <strong>{alt.MealName}</strong> — {alt.Quantity} {alt.Unit} &nbsp;<span style='color:#00D9FF;'>P:{alt.Protein}g</span> <span style='color:#FFD700;'>C:{alt.Carbs}g</span> <span style='color:#FF6B00;'>F:{alt.Fats}g</span></div>");
+                    altHtml.Append("</div>");
                 }
 
                 foodItems.Append($"""
-                    <div class="food-item" style="padding: 10px 0; border-bottom: 1px solid var(--coach-gray-dark);">
-                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <div class="food-name">{item.MealName}</div>
-                        <div class="food-portion" style="color: var(--coach-gray-light); margin-left: auto; padding-right: 20px;">{portionText}</div>
-                        <div class="food-macros" style="display: flex; gap: 8px;">
-                          <span class="macro-chip protein">P: {item.Protein}g</span>
-                          <span class="macro-chip carbs">C: {item.Carbs}g</span>
-                          <span class="macro-chip fats">F: {item.Fats}g</span>
+                    <div style="padding: 12px 0; border-bottom: 1px solid var(--coach-gray-dark);">
+                      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <div style="font-size: 14px; font-weight: 700; color: var(--coach-white); flex: 1;">{item.MealName}</div>
+                        <div style="font-size: 13px; color: var(--coach-gray-light); padding-right: 16px;">{portionText}</div>
+                        <div style="display: flex; gap: 8px;">
+                          <span style="padding: 3px 8px; background: var(--coach-black); border-radius: 3px; font-size: 12px; font-weight: 600; color: #00D9FF;">P: {item.Protein}g</span>
+                          <span style="padding: 3px 8px; background: var(--coach-black); border-radius: 3px; font-size: 12px; font-weight: 600; color: #FFD700;">C: {item.Carbs}g</span>
+                          <span style="padding: 3px 8px; background: var(--coach-black); border-radius: 3px; font-size: 12px; font-weight: 600; color: #FF6B00;">F: {item.Fats}g</span>
                         </div>
                       </div>
-                      {altItemsHtml}
+                      {altHtml}
                     </div>
                     """);
             }
 
-            var mealTimeText = !string.IsNullOrEmpty(m.Instruction) ? m.Instruction : "Nutrition Focus";
+            // Instruction / notes for this meal
+            var instrHtml = "";
+            if (!string.IsNullOrWhiteSpace(m.Instruction))
+            {
+                instrHtml = $"""
+                    <div style="margin-top: 20px; padding: 16px 20px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--coach-secondary); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                      <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 8px;">📝 MEAL INSTRUCTIONS</div>
+                      <div style="font-size: 15px; line-height: 1.8; color: #f0f0f0; font-weight: 500; white-space: pre-wrap;">{m.Instruction}</div>
+                    </div>
+                    """;
+            }
 
-            mealCards.Append($"""
-                <div class="meal-card" style="background: var(--coach-dark-elevated); border: 1px solid var(--coach-gray-dark); border-radius: 4px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-bottom: 16px;">
-                  <div class="meal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--coach-black); border-bottom: 2px solid var(--coach-primary);">
-                    <div class="meal-title" style="font-family: var(--coach-font-body); font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--coach-white);">{icon} {m.Name}</div>
-                    <div class="meal-time" style="font-size: 9px; font-weight: 600; color: var(--coach-primary); letter-spacing: 0.5px;">{mealTimeText}</div>
+            // Macro summary row for first page only
+            var macroSummaryHtml = "";
+            if (isFirst)
+            {
+                macroSummaryHtml = $"""
+                    <div style="display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; padding: 12px; background: var(--coach-dark-elevated); border-radius: 4px; border: 1px solid var(--coach-gray-dark);">
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
+                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">CALORIES</div>
+                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalCal}</div>
+                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">kcal</div>
+                      </div>
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
+                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">PROTEIN</div>
+                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalProtein}g</div>
+                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{pPct}%</div>
+                      </div>
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
+                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">CARBS</div>
+                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalCarbs}g</div>
+                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{cPct}%</div>
+                      </div>
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
+                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">FATS</div>
+                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalFats}g</div>
+                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{fPct}%</div>
+                      </div>
+                    </div>
+                    """;
+                isFirst = false;
+            }
+
+            var mealCalTotal = m.MealItems.Sum(i => i.Calories);
+            var mealProtTotal = m.MealItems.Sum(i => i.Protein);
+            var mealCarbTotal = m.MealItems.Sum(i => i.Carbs);
+            var mealFatTotal = m.MealItems.Sum(i => i.Fats);
+
+            pagesSb.Append($"""
+            <div class="a4-page">
+              <div class="diagonal-overlay"></div>
+              <div class="content-wrapper">
+                <header class="header">
+                  <div>
+                    <h2>{icon} {m.Name}</h2>
+                    <p>Personalized diet & nutrition plan</p>
                   </div>
-                  <div class="meal-body" style="padding: 12px 16px;">
-                    {foodItems}
+                  <div>
+                    <span class="skew-badge"><span>NUTRITION</span></span>
                   </div>
+                </header>
+
+                {macroSummaryHtml}
+
+                <div style="background: var(--coach-dark-elevated); border: 1px solid var(--coach-gray-dark); border-radius: 4px; overflow: hidden; padding: 0 16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; border-bottom: 2px solid var(--coach-primary); margin-bottom: 4px;">
+                    <div style="font-size:15px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--coach-white);">Ingredients</div>
+                    <div style="display:flex; gap:10px; font-size:12px; font-weight:700;">
+                      <span style="color:#00D9FF;">P: {mealProtTotal}g</span>
+                      <span style="color:#FFD700;">C: {mealCarbTotal}g</span>
+                      <span style="color:#FF6B00;">F: {mealFatTotal}g</span>
+                      <span style="color:var(--coach-primary);">{mealCalTotal} kcal</span>
+                    </div>
+                  </div>
+                  {foodItems}
                 </div>
-                """);
+
+                {instrHtml}
+              </div>
+
+              <footer class="footer">
+                <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
+                <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
+                <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+              </footer>
+            </div>
+            """);
         }
 
-        var notesSection = "";
-        if (!string.IsNullOrEmpty(diet.Instructions))
-        {
-            notesSection = $"""
-                <div class="notes-section" style="margin-top: auto; padding: 12px 16px; background: var(--coach-black); border-left: 3px solid var(--coach-secondary); border-radius: 4px;">
-                  <div class="notes-title" style="font-family: var(--coach-font-body); font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 6px;">📝 SPECIAL COACHING INSTRUCTIONS & NOTES</div>
-                  <div class="notes-text" style="font-size: 10px; line-height: 1.5; color: var(--coach-gray-light);">{diet.Instructions}</div>
-                </div>
-                """;
-        }
-
-        return $"""
-        <div class="a4-page">
-          <div class="diagonal-overlay"></div>
-          <div class="content-wrapper">
-            <header class="header">
-              <div>
-                <h2>DIET & NUTRITION PLAN</h2>
-                <p>Precision macronutrient coaching blueprint</p>
-              </div>
-              <div>
-                <span class="skew-badge"><span>NUTRITION</span></span>
-              </div>
-            </header>
-
-            <!-- Daily Macros Summary -->
-            <div class="macro-summary">
-              <div class="macro-card">
-                <div class="macro-label">CALORIES</div>
-                <div class="macro-value">{totalCal}</div>
-                <div class="macro-unit">kcal</div>
-              </div>
-              <div class="macro-card">
-                <div class="macro-label">PROTEIN</div>
-                <div class="macro-value">{totalProtein}g</div>
-                <div class="macro-unit">{pPct}%</div>
-              </div>
-              <div class="macro-card">
-                <div class="macro-label">CARBS</div>
-                <div class="macro-value">{totalCarbs}g</div>
-                <div class="macro-unit">{cPct}%</div>
-              </div>
-              <div class="macro-card">
-                <div class="macro-label">FATS</div>
-                <div class="macro-value">{totalFats}g</div>
-                <div class="macro-unit">{fPct}%</div>
-              </div>
-            </div>
-
-            <!-- Meals Container -->
-            <div class="meals-container" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-              {mealCards}
-            </div>
-
-            {notesSection}
-          </div>
-
-          <footer class="footer">
-            <div>
-              <a href="{instagramLink}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                <span>@{instagram}</span>
-              </a>
-            </div>
-            <div>
-              <a href="mailto:{email}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                </svg>
-                <span>{email}</span>
-              </a>
-            </div>
-            <div>
-              <a href="tel:{phone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                </svg>
-                <span>{phone}</span>
-              </a>
-            </div>
-          </footer>
-        </div>
-        """;
+        return pagesSb.ToString();
     }
+
+
+
 
     // ── CSS & STYLING (تم تعديل الخطوط لتصبح مدمجة وسريعة جداً) ──
     private static string SharedCss(string primaryColor, string primaryGlow, string secondaryColor) => $$"""
@@ -707,8 +740,8 @@ public class PdfService : IPdfService
           justify-content: space-between;
           padding: 0 var(--page-padding);
           gap: var(--spacing-md);
-          font-size: 9px;
-          font-weight: 500;
+          font-size: 14px;
+          font-weight: 600;
           color: var(--coach-gray-light);
           z-index: 10;
         }
@@ -716,7 +749,22 @@ public class PdfService : IPdfService
         .footer > div {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
+        }
+
+        .footer a {
+          font-size: 14px !important;
+          color: var(--coach-gray-light) !important;
+          text-decoration: none !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+
+        .footer svg {
+          width: 18px !important;
+          height: 18px !important;
+          fill: var(--coach-gray-light) !important;
         }
 
         /* BACKGROUND DECORATIVE ELEMENTS */
@@ -805,12 +853,14 @@ public class PdfService : IPdfService
         .client-meta-row {
           display: flex;
           justify-content: space-between;
-          font-size: 9px;
+          font-size: 13px;
         }
 
         .client-meta-label {
+          font-size: 13px;
+
           color: var(--coach-gray-light);
-          font-weight: 600;
+          font-weight: 700;
         }
 
         .client-meta-value {
@@ -882,10 +932,10 @@ public class PdfService : IPdfService
         }
 
         .table-container th {
-          padding: 10px 14px;
+          padding: 12px 16px;
           text-align: left;
-          font-size: 10px;
-          font-weight: 800;
+          font-size: 13px;
+          font-weight: 900;
           letter-spacing: 1px;
           text-transform: uppercase;
           color: var(--coach-white);
@@ -901,16 +951,16 @@ public class PdfService : IPdfService
         }
 
         .table-container td {
-          padding: 10px 14px;
-          font-size: 10px;
+          padding: 12px 16px;
+          font-size: 13px;
           font-weight: 500;
           color: var(--coach-white);
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .exercise-name {
-          font-size: 10px;
-          font-weight: 700;
+          font-size: 13px;
+          font-weight: 800;
           letter-spacing: 0.3px;
           color: var(--coach-white);
         }

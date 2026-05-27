@@ -352,6 +352,30 @@ public class DietService : IDietService
                     .ThenInclude(m => m.AlternativeItems)
             .FirstOrDefaultAsync(d => d.Id == dietId);
 
+    // ── Update Diet Instructions ──────────────────────────────────────────────
+
+    public async Task<DietResponseDto?> UpdateDietInstructionsAsync(
+        int clientId, int dietId, string? instructions, string coachId)
+    {
+        var diet = await _db.Diets
+            .Include(d => d.Client)
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.AlternativeMeals)
+                    .ThenInclude(am => am.MealItems)
+                        .ThenInclude(m => m.AlternativeItems)
+            .Include(d => d.DietMeals)
+                .ThenInclude(dm => dm.MealItems)
+                    .ThenInclude(m => m.AlternativeItems)
+            .FirstOrDefaultAsync(d => d.Id == dietId && d.ClientId == clientId && d.Client.CoachId == coachId);
+
+        if (diet == null) return null;
+
+        diet.Instructions = instructions;
+        await _db.SaveChangesAsync();
+
+        return MapDietToDto(diet, diet.DietMeals.ToList());
+    }
+
     // ── Private Mapper ───────────────────────────────────────────────────────
 
     private DietResponseDto MapDietToDto(Diet diet, List<DietMeal> dietMeals) =>
@@ -359,6 +383,7 @@ public class DietService : IDietService
             diet.Id,
             diet.NumberOfMeals,
             diet.CreatedAt,
+            diet.Instructions,
             dietMeals
             .Where(dm => dm.ParentDietMealId == null) // Only root meals at top level
             .OrderBy(dm => dm.Id)

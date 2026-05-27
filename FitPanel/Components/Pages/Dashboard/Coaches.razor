@@ -493,21 +493,10 @@
 
         if (result.Succeeded)
         {
-            // Build custom notification text based on what changed
-            var changesList = new List<string>();
             if (oldMaxClients != null && oldMaxClients != editingCoach.MaxClients)
-                changesList.Add($"Max Clients changed from {oldMaxClients} to {editingCoach.MaxClients}");
-            if (oldIsActive != null && oldIsActive != editingCoach.IsActive)
-                changesList.Add($"Account Status changed to {(editingCoach.IsActive ? "Active" : "Inactive")}");
-            if (oldSpecialization != editingCoach.Specialization)
-                changesList.Add($"Specialization changed to '{editingCoach.Specialization}'");
-            if (oldFullName != editingCoach.FullName)
-                changesList.Add($"Full Name changed from '{oldFullName}' to '{editingCoach.FullName}'");
-
-            if (changesList.Any())
             {
-                var title = "🔒 Profile Updated by Admin";
-                var message = "An administrator has updated your profile settings:\n" + string.Join("\n", changesList.Select(c => $"• {c}"));
+                var title = "🔒 Client Limit Updated";
+                var message = $"An administrator has updated your maximum allowed client limit to {editingCoach.MaxClients}. You can now manage up to {editingCoach.MaxClients} clients.";
                 await NotificationService.CreateNotificationAsync(editingCoach.Id, title, message);
             }
 

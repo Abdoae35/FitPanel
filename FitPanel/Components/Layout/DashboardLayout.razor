@@ -126,10 +126,7 @@
             </div>
 
             <div class="fp-topbar-right">
-                @* Dark/Light toggle — still Blazor (needs server state) *@
-                <button class="fp-theme-toggle" @onclick="ToggleTheme" title="Toggle theme" type="button">
-                    <i class="fa @(isDark ? "fa-sun" : "fa-moon")"></i>
-                </button>
+              
 
                 @* Settings/Profile Redirect button *@
                 <a href="/dashboard/profile" class="fp-theme-toggle" title="My Profile & Settings" style="text-decoration: none; display: flex; align-items: center; justify-content: center; cursor: pointer;">
@@ -1128,22 +1125,29 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Check auth on first load
-        if (AuthState != null)
+        try
         {
-            var auth = await AuthState;
-            if (!(auth.User.Identity?.IsAuthenticated ?? false))
+            // Check auth on first load
+            if (AuthState != null)
             {
-                Nav.NavigateTo("/login", forceLoad: true);
-                return;
-            }
+                var auth = await AuthState;
+                if (!(auth.User.Identity?.IsAuthenticated ?? false))
+                {
+                    Nav.NavigateTo("/login", forceLoad: true);
+                    return;
+                }
 
-            var user = await SignInManager.UserManager.GetUserAsync(auth.User);
-            if (user != null)
-            {
-                currentUserId = user.Id;
-                notifications = await NotificationService.GetNotificationsForUserAsync(user.Id);
+                var userId = auth.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    currentUserId = userId;
+                    notifications = await NotificationService.GetNotificationsForUserAsync(userId);
+                }
             }
+        }
+        catch (Exception)
+        {
+            // Fail silently during pre-render to guarantee interactive state
         }
 
         // Set initial page name and subscribe to future changes
@@ -1156,26 +1160,46 @@
         showNotificationDropdown = !showNotificationDropdown;
         if (showNotificationDropdown)
         {
-            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+            try
+            {
+                notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+            }
+            catch (Exception) {}
         }
+        StateHasChanged();
     }
 
     private async Task MarkAsRead(Notification notif)
     {
-        await NotificationService.MarkAsReadAsync(notif.Id, currentUserId);
-        notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        try
+        {
+            await NotificationService.MarkAsReadAsync(notif.Id, currentUserId);
+            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        }
+        catch (Exception) {}
+        StateHasChanged();
     }
 
     private async Task DeleteNotification(Notification notif)
     {
-        await NotificationService.DeleteNotificationAsync(notif.Id, currentUserId);
-        notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        try
+        {
+            await NotificationService.DeleteNotificationAsync(notif.Id, currentUserId);
+            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        }
+        catch (Exception) {}
+        StateHasChanged();
     }
 
     private async Task MarkAllAsRead()
     {
-        await NotificationService.MarkAllAsReadAsync(currentUserId);
-        notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        try
+        {
+            await NotificationService.MarkAllAsReadAsync(currentUserId);
+            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
+        }
+        catch (Exception) {}
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

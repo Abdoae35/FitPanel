@@ -1141,7 +1141,6 @@
                 if (!string.IsNullOrEmpty(userId))
                 {
                     currentUserId = userId;
-                    notifications = await NotificationService.GetNotificationsForUserAsync(userId);
                 }
             }
         }
@@ -1214,6 +1213,13 @@
                     var user = await SignInManager.UserManager.GetUserAsync(auth.User);
                     if (user != null)
                     {
+                        try
+                        {
+                            notifications = await NotificationService.GetNotificationsForUserAsync(user.Id);
+                            StateHasChanged();
+                        }
+                        catch (Exception) {}
+
                         if (!user.IsActive)
                         {
                             await JS.InvokeVoidAsync("eval", "document.querySelector('.fp-logout-form').action = '/logout?inactive=true'; document.querySelector('.fp-logout-form').submit();");

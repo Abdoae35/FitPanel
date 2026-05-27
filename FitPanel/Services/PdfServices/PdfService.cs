@@ -17,12 +17,14 @@ public class PdfService : IPdfService
 {
     private readonly FitPanelDbContext _db;
     private readonly string _webRootPath;
+    private readonly string _contentRootPath;
     private readonly IConfiguration _config;
 
     public PdfService(FitPanelDbContext db, IWebHostEnvironment env, IConfiguration config)
     {
         _db = db;
         _webRootPath = env.WebRootPath;
+        _contentRootPath = env.ContentRootPath;
         _config = config;
     }
 
@@ -1106,16 +1108,21 @@ public class PdfService : IPdfService
                 }
             }
 
-            var path1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg");
-            var path2 = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "imgT.jpeg");
-            var fallbackPath = File.Exists(path1) ? path1 : (File.Exists(path2) ? path2 : "");
-
-            if (string.IsNullOrEmpty(fallbackPath))
+            var possiblePaths = new string[]
             {
-                var fallbackPathOld1 = Path.Combine(Directory.GetCurrentDirectory(), "templates", "img.jpeg");
-                var fallbackPathOld2 = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "img.jpeg");
-                fallbackPath = File.Exists(fallbackPathOld1) ? fallbackPathOld1 : (File.Exists(fallbackPathOld2) ? fallbackPathOld2 : "");
-            }
+                Path.Combine(_contentRootPath, "templates", "imgT.jpeg"),
+                Path.Combine(_contentRootPath, "templates", "img.jpeg"),
+                Path.Combine(_webRootPath, "templates", "imgT.jpeg"),
+                Path.Combine(_webRootPath, "templates", "img.jpeg"),
+                Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg"),
+                Path.Combine(Directory.GetCurrentDirectory(), "templates", "img.jpeg"),
+                Path.Combine(AppContext.BaseDirectory, "templates", "imgT.jpeg"),
+                Path.Combine(AppContext.BaseDirectory, "templates", "img.jpeg"),
+                Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "imgT.jpeg"),
+                Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "img.jpeg")
+            };
+
+            var fallbackPath = possiblePaths.FirstOrDefault(p => !string.IsNullOrEmpty(p) && File.Exists(p));
             
             if (!string.IsNullOrEmpty(fallbackPath) && File.Exists(fallbackPath))
             {

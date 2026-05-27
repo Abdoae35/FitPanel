@@ -33,6 +33,7 @@ builder.Services.AddIdentity<PanelUser, IdentityRole>(options =>
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
     options.SignIn.RequireConfirmedEmail = false;
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 })
 .AddEntityFrameworkStores<FitPanelDbContext>()
 .AddDefaultTokenProviders();
@@ -92,12 +93,15 @@ app.MapPost("/account/login", async (
     string? returnUrl) =>
 {
     var form = await context.Request.ReadFormAsync();
-    var email = form["email"].ToString();
+    var email = form["email"].ToString().Trim();
     var password = form["password"].ToString();
     var rememberMe = form["rememberMe"].ToString() == "true";
 
     var user = await userManager.FindByEmailAsync(email);
-    if (user == null || !user.IsActive)
+    if (user == null)
+        return Results.Redirect("/login?error=invalid");
+    
+    if (!user.IsActive)
         return Results.Redirect("/login?error=inactive");
 
     var result = await signInManager.PasswordSignInAsync(

@@ -6,6 +6,9 @@
 @inject IAuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject INotificationService NotificationService
+@using FitPanel.Data
+@using FitPanel.Data.Models
+@inject FitPanelDbContext DbContext
 @rendermode InteractiveServer
 
 <PageTitle>Coaches — FitPanel</PageTitle>
@@ -103,6 +106,7 @@
                         <td>
                             <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px;" @onclick="() => OpenEditModal(coach)">Edit</button>
                             <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px;" @onclick="() => RenewSubscription(coach)">Renew</button>
+                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px; border-color: var(--fp-accent); color: var(--fp-accent);" @onclick="() => PromptDeleteCoach(coach)">Delete</button>
                         </td>
                     </tr>
                 }
@@ -299,6 +303,51 @@
     </div>
 }
 
+@if (showDeleteModal && coachToDelete != null)
+{
+    <div class="fp-modal-overlay">
+        <div class="fp-modal" style="max-width: 520px;">
+            <div class="fp-modal-header" style="border-top: 3px solid var(--fp-accent);">
+                <div class="fp-modal-title">
+                    <i class="fa fa-exclamation-triangle" style="color: var(--fp-accent);"></i>
+                    <span>Delete Coach</span>
+                </div>
+                <button class="fp-modal-close" @onclick="CloseDeleteModal">&times;</button>
+            </div>
+            
+            <div class="fp-modal-body" style="color: var(--fp-text); font-size: 15px; line-height: 1.6;">
+                <p>Are you sure you want to permanently delete coach <strong>@coachToDelete.FullName</strong> (@coachToDelete.Email)?</p>
+                <p style="color: var(--fp-accent); font-size: 13px; font-weight: 600; margin-top: 10px;">
+                    ⚠️ This action cannot be undone. All client accounts, meal templates, and workout schedules managed by this coach will be permanently removed.
+                </p>
+                
+                @if (!string.IsNullOrEmpty(deleteError))
+                {
+                    <div class="fp-alert fp-alert-danger" style="margin-top: 15px;">
+                        @deleteError
+                    </div>
+                }
+            </div>
+
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="CloseDeleteModal" disabled="@isDeleting">Cancel</button>
+                <button class="fp-btn-primary" @onclick="DeleteCoach" disabled="@isDeleting" style="background: var(--fp-accent); border-color: var(--fp-accent);">
+                    @if (isDeleting)
+                    {
+                        <span class="fp-spinner-sm"></span>
+                        <span>Deleting...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-trash"></i>
+                        <span>Delete Coach</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <style>
     .fp-loading {
         display: flex; align-items: center; gap: 16px;
@@ -388,6 +437,12 @@
     private bool showEditModal = false;
     private PanelUser editingCoach = new();
     private string newCoachPassword = string.Empty;
+
+    // Delete coach state
+    private bool showDeleteModal = false;
+    private PanelUser? coachToDelete = null;
+    private bool isDeleting = false;
+    private string deleteError = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -514,5 +569,87 @@
     {
         coach.SubscriptionEndDate = DateTime.UtcNow.AddYears(1);
         await UserManager.UpdateAsync(coach);
+    }
+
+    private void PromptDeleteCoach(PanelUser coach)
+    {
+        coachToDelete = coach;
+        deleteError = "";
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        coachToDelete = null;
+        isDeleting = false;
+        deleteError = "";
+    }
+
+    private async Task DeleteCoach()
+    {
+        if (coachToDelete == null) return;
+        isDeleting = true;
+        deleteError = "";
+
+        try
+        {
+            // 1. Delete associated clients first to prevent Restrict foreign key violation
+            var clientsToDelete = DbContext.Clients.Where(c => c.CoachId == coachToDelete.Id).ToList();
+            if (clientsToDelete.Any())
+            {
+                DbContext.Clients.RemoveRange(clientsToDelete);
+            }
+
+            // 2. Delete templates
+            var dietTemplates = DbContext.Set<DietTemplate>().Where(dt => dt.CoachId == coachToDelete.Id).ToList();
+            if (dietTemplates.Any())
+            {
+                DbContext.Set<DietTemplate>().RemoveRange(dietTemplates);
+            }
+
+            var workoutTemplates = DbContext.Set<WorkoutTemplate>().Where(wt => wt.CoachId == coachToDelete.Id).ToList();
+            if (workoutTemplates.Any())
+            {
+                DbContext.Set<WorkoutTemplate>().RemoveRange(workoutTemplates);
+            }
+
+            // 3. Delete dictionaries
+            var exerciseDict = DbContext.Set<CoachExerciseDictionary>().Where(ed => ed.CoachId == coachToDelete.Id).ToList();
+            if (exerciseDict.Any())
+            {
+                DbContext.Set<CoachExerciseDictionary>().RemoveRange(exerciseDict);
+            }
+
+            var mealDict = DbContext.Set<CoachMealDictionary>().Where(md => md.CoachId == coachToDelete.Id).ToList();
+            if (mealDict.Any())
+            {
+                DbContext.Set<CoachMealDictionary>().RemoveRange(mealDict);
+            }
+
+            // Save EF Core changes
+            await DbContext.SaveChangesAsync();
+
+            // 4. Finally delete the Identity user
+            var result = await UserManager.DeleteAsync(coachToDelete);
+            if (result.Succeeded)
+            {
+                var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
+                coaches = allCoaches.ToList();
+                CloseDeleteModal();
+            }
+            else
+            {
+                deleteError = string.Join(", ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            deleteError = "An error occurred while deleting the coach: " + ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
+        }
     }
 }

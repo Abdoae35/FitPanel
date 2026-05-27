@@ -456,6 +456,13 @@
         successMsg = string.Empty;
         isSaving = true;
 
+        // Fetch current DB values without tracking before update
+        var originalCoach = await UserManager.FindByIdAsync(editingCoach.Id);
+        int? oldMaxClients = originalCoach?.MaxClients;
+        bool? oldIsActive = originalCoach?.IsActive;
+        string? oldSpecialization = originalCoach?.Specialization;
+        string? oldFullName = originalCoach?.FullName;
+
         if (!string.IsNullOrWhiteSpace(newCoachPassword))
         {
             if (newCoachPassword.Length < 8)
@@ -485,6 +492,24 @@
 
         if (result.Succeeded)
         {
+            // Build custom notification text based on what changed
+            var changesList = new List<string>();
+            if (oldMaxClients != null && oldMaxClients != editingCoach.MaxClients)
+                changesList.Add($"Max Clients changed from {oldMaxClients} to {editingCoach.MaxClients}");
+            if (oldIsActive != null && oldIsActive != editingCoach.IsActive)
+                changesList.Add($"Account Status changed to {(editingCoach.IsActive ? "Active" : "Inactive")}");
+            if (oldSpecialization != editingCoach.Specialization)
+                changesList.Add($"Specialization changed to '{editingCoach.Specialization}'");
+            if (oldFullName != editingCoach.FullName)
+                changesList.Add($"Full Name changed from '{oldFullName}' to '{editingCoach.FullName}'");
+
+            if (changesList.Any())
+            {
+                var title = "🔒 Profile Updated by Admin";
+                var message = "An administrator has updated your profile settings:\n" + string.Join("\n", changesList.Select(c => $"• {c}"));
+                await NotificationService.CreateNotificationAsync(editingCoach.Id, title, message);
+            }
+
             successMsg = "Coach updated successfully!";
             await Task.Delay(1500);
             await CloseEditModal();

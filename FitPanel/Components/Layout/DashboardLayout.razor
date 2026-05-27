@@ -69,6 +69,10 @@
                             <i class="fa fa-database"></i>
                             <span>My Data</span>
                         </NavLink>
+                        <NavLink href="/dashboard/profile" class="fp-nav-item" onclick="fpCloseSidebar()">
+                            <i class="fa fa-user-cog"></i>
+                            <span>My Profile</span>
+                        </NavLink>
                     </Authorized>
                 </AuthorizeView>
             </div>
@@ -123,18 +127,18 @@
 
             <div class="fp-topbar-right">
                 @* Dark/Light toggle — still Blazor (needs server state) *@
-                <button class="fp-theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                <button class="fp-theme-toggle" @onclick="ToggleTheme" title="Toggle theme" type="button">
                     <i class="fa @(isDark ? "fa-sun" : "fa-moon")"></i>
                 </button>
 
                 @* Settings/Profile Redirect button *@
-                <button class="fp-theme-toggle" @onclick='() => Nav.NavigateTo("/dashboard/profile")' title="My Profile & Settings">
+                <a href="/dashboard/profile" class="fp-theme-toggle" title="My Profile & Settings" style="text-decoration: none; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                     <i class="fa fa-cog"></i>
-                </button>
+                </a>
 
                 @* Notification Bell dropdown *@
                 <div style="position: relative; display: inline-block;">
-                    <button class="fp-theme-toggle" @onclick="ToggleNotificationDropdown" title="Notifications">
+                    <button class="fp-theme-toggle" @onclick="ToggleNotificationDropdown" title="Notifications" type="button">
                         <i class="fa fa-bell"></i>
                         @if (notifications.Any(n => !n.IsRead))
                         {
@@ -149,7 +153,7 @@
                                 <span>NOTIFICATIONS</span>
                                 @if (notifications.Any(n => !n.IsRead))
                                 {
-                                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead">Mark all read</button>
+                                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead" type="button">Mark all read</button>
                                 }
                             </div>
                             <div class="fp-notif-body">
@@ -170,11 +174,11 @@
                                                 <div style="display:flex; gap:4px; flex-shrink:0;">
                                                     @if (!notif.IsRead)
                                                     {
-                                                        <button class="fp-notif-action-btn" title="Mark as read" @onclick="() => MarkAsRead(notif)">
+                                                        <button class="fp-notif-action-btn" title="Mark as read" @onclick="() => MarkAsRead(notif)" type="button">
                                                             <i class="fa fa-check"></i>
                                                         </button>
                                                     }
-                                                    <button class="fp-notif-action-btn delete" title="Delete" @onclick="() => DeleteNotification(notif)">
+                                                    <button class="fp-notif-action-btn delete" title="Delete" @onclick="() => DeleteNotification(notif)" type="button">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </div>

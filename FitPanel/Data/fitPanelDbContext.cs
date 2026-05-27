@@ -50,4 +50,3 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
     public DbSet<Notification> Notifications { get; set; }
 }
-}

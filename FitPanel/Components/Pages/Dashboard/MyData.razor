@@ -7,27 +7,32 @@
 @using FitPanel.Data
 @using FitPanel.Data.Models
 @using FitPanel.Services
+@using FitPanel.DTOs.Diet
+@using FitPanel.DTOs.Workout
+@using FitPanel.Data.Enums
+@using System.Text.Json
 
 @attribute [Authorize(Roles = "Coach")]
 @inject UserManager<PanelUser> UserManager
 @inject ICoachDictionaryService DictionaryService
+@inject ITemplateService TemplateService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject INutritionApiService NutritionApiService
 @rendermode InteractiveServer
 
 <PageTitle>My Data — FitPanel</PageTitle>
 
 <head>
-    <link href="/css/dashboard.css" rel="stylesheet" />
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
 </head>
 
 <div class="fp-page-header">
     <div>
         <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
-            My Data Dictionary
+            My Data & Templates
         </h1>
         <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
-            Manage your auto-saved meals and exercises
+            Manage your auto-saved dictionary data and plan templates
         </p>
     </div>
 </div>
@@ -50,14 +55,20 @@ else
 {
     <div class="fp-tabs" style="margin-bottom: 24px;">
         <button class="fp-tab @(activeTab == "meals" ? "active" : "")" @onclick='() => activeTab = "meals"'>
-            <i class="fa fa-utensils"></i> Meals (@meals.Count)
+            <i class="fa fa-utensils"></i> Meals Dictionary (@meals.Count)
         </button>
         <button class="fp-tab @(activeTab == "exercises" ? "active" : "")" @onclick='() => activeTab = "exercises"'>
-            <i class="fa fa-dumbbell"></i> Exercises (@exercises.Count)
+            <i class="fa fa-dumbbell"></i> Exercises Dictionary (@exercises.Count)
+        </button>
+        <button class="fp-tab @(activeTab == "diet-templates" ? "active" : "")" @onclick='() => activeTab = "diet-templates"'>
+            <i class="fa fa-folder-open"></i> Diet Templates (@dietTemplates.Count)
+        </button>
+        <button class="fp-tab @(activeTab == "workout-templates" ? "active" : "")" @onclick='() => activeTab = "workout-templates"'>
+            <i class="fa fa-dumbbell"></i> Workout Templates (@workoutTemplates.Count)
         </button>
     </div>
 
-    @* ── MEALS TAB ── *@
+    @* ── MEALS DICTIONARY TAB ── *@
     @if (activeTab == "meals")
     {
         <div class="fp-card">
@@ -118,7 +129,7 @@ else
         </div>
     }
 
-    @* ── EXERCISES TAB ── *@
+    @* ── EXERCISES DICTIONARY TAB ── *@
     @if (activeTab == "exercises")
     {
         <div class="fp-card">
@@ -174,46 +185,290 @@ else
             }
         </div>
     }
+
+    @* ── DIET TEMPLATES TAB ── *@
+    @if (activeTab == "diet-templates")
+    {
+        <div class="fp-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h3 class="fp-card-title" style="margin:0;">Diet Plan Templates</h3>
+                <button class="fp-btn-primary" @onclick="OpenAddDietTemplateModal">
+                    <i class="fa fa-plus"></i> Create Diet Template
+                </button>
+            </div>
+
+            @if (!dietTemplates.Any())
+            {
+                <div class="fp-empty">
+                    <i class="fa fa-folder-open"></i>
+                    <p>No diet templates saved yet. Create one directly or save from any client's plan!</p>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x:auto;">
+                    <table class="fp-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Meals Count</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var temp in dietTemplates)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@temp.Name</td>
+                                    <td><span class="fp-badge fp-badge-red">@temp.NumberOfMeals Meals</span></td>
+                                    <td style="color:var(--fp-text-muted);">@temp.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <button class="fp-icon-btn" title="Edit Template" @onclick="() => OpenEditDietTemplateModal(temp)" style="display:inline-flex;margin-right:8px;">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="fp-icon-btn" title="Delete Template" @onclick="() => ConfirmDeleteDietTemplate(temp)" style="display:inline-flex;color:#ff6b6b;border-color:#ff6b6b;">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+
+    @* ── WORKOUT TEMPLATES TAB ── *@
+    @if (activeTab == "workout-templates")
+    {
+        <div class="fp-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h3 class="fp-card-title" style="margin:0;">Workout Split Templates</h3>
+                <button class="fp-btn-primary" @onclick="OpenAddWorkoutTemplateModal">
+                    <i class="fa fa-plus"></i> Create Workout Template
+                </button>
+            </div>
+
+            @if (!workoutTemplates.Any())
+            {
+                <div class="fp-empty">
+                    <i class="fa fa-dumbbell"></i>
+                    <p>No workout split templates saved yet. Create one directly or save from any client's plan!</p>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x:auto;">
+                    <table class="fp-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Split Name</th>
+                                <th>Days</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var temp in workoutTemplates)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@temp.Name</td>
+                                    <td><span class="fp-badge fp-badge-blue">@temp.SplitName</span></td>
+                                    <td><span class="fp-badge fp-badge-muted">@temp.NumberOfWorkoutDays Days</span></td>
+                                    <td style="color:var(--fp-text-muted);">@temp.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <button class="fp-icon-btn" title="Edit Template" @onclick="() => OpenEditWorkoutTemplateModal(temp)" style="display:inline-flex;margin-right:8px;">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="fp-icon-btn" title="Delete Template" @onclick="() => ConfirmDeleteWorkoutTemplate(temp)" style="display:inline-flex;color:#ff6b6b;border-color:#ff6b6b;">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
 }
 
 @* ── MODALS ── *@
 
-@* Meal Modal *@
+@* Meal Dictionary Modal *@
 @if (showMealModal)
 {
     <div class="fp-modal-overlay" @onclick="() => showMealModal = false">
-        <div class="fp-modal" @onclick:stopPropagation="true">
+        <div class="fp-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-utensils"></i> @(editMeal.Id == 0 ? "ADD" : "EDIT") MEAL</span>
+                <span class="fp-modal-title"><i class="fa fa-utensils"></i> @(editMeal.Id == 0 ? "ADD" : "EDIT") DICTIONARY MEAL</span>
                 <button class="fp-modal-close" @onclick="() => showMealModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Meal Name *</label><input @bind="editMeal.MealName" /></div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="editMeal.Calories" /></div>
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="editMeal.Protein" /></div>
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; align-items: start;">
+                    
+                    <!-- Left Column: Meal General Details -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="fp-input-group" style="margin-bottom: 0;">
+                            <label>Meal Name *</label>
+                            <input @bind="editMeal.MealName" placeholder="e.g. Chicken Pasta, Beef Rice..." />
+                        </div>
+                        <div class="fp-input-group" style="margin-bottom: 0;">
+                            <label>Recipe / Instructions</label>
+                            <textarea @bind="editMeal.Instruction" rows="6" placeholder="e.g. Cook the chicken with garlic, add rice and serve hot..." style="height: 140px;"></textarea>
+                        </div>
+                        <div class="fp-input-group" style="margin-bottom: 0;">
+                            <label>Video or Recipe Link (optional)</label>
+                            <input @bind="editMeal.Link" placeholder="https://youtube.com/..." />
+                        </div>
+                        
+                        <!-- Manual Override Panel (allows editing if no ingredients added, or shows calculated sum) -->
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 6px;">
+                            <span style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--fp-text-muted); display: block; margin-bottom: 10px;">
+                                <i class="fa fa-sliders-h"></i> Manual Macro Override
+                            </span>
+                            <div class="fp-grid-2" style="gap: 10px;">
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Calories *</label><input type="number" @bind="editMeal.Calories" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Protein (g)</label><input type="number" @bind="editMeal.Protein" disabled="@editMealIngredients.Any()" /></div>
+                            </div>
+                            <div class="fp-grid-2" style="gap: 10px; margin-top: 10px;">
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Carbs (g)</label><input type="number" @bind="editMeal.Carbs" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Fats (g)</label><input type="number" @bind="editMeal.Fats" disabled="@editMealIngredients.Any()" /></div>
+                            </div>
+                            @if (editMealIngredients.Any())
+                            {
+                                <span style="font-size: 10px; color: var(--fp-accent); display: block; margin-top: 8px;">
+                                    * Macros are calculated automatically from ingredients list.
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Ingredients & Macros -->
+                    <div>
+                        <!-- Macro Summary Badges -->
+                        <span style="font-family: 'Teko', sans-serif; font-size: 18px; color: #888; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Calculated Macro Totals</span>
+                        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 80px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); padding: 8px; border-radius: 6px; text-align: center;">
+                                <span style="display: block; font-size: 11px; text-transform: uppercase; color: #93c5fd; font-weight: 600;">Protein</span>
+                                <span style="font-size: 18px; font-weight: bold; color: #fff;">@editMeal.Protein<small style="font-size: 11px; font-weight: normal; margin-left: 2px;">g</small></span>
+                            </div>
+                            <div style="flex: 1; min-width: 80px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); padding: 8px; border-radius: 6px; text-align: center;">
+                                <span style="display: block; font-size: 11px; text-transform: uppercase; color: #fde047; font-weight: 600;">Carbs</span>
+                                <span style="font-size: 18px; font-weight: bold; color: #fff;">@editMeal.Carbs<small style="font-size: 11px; font-weight: normal; margin-left: 2px;">g</small></span>
+                            </div>
+                            <div style="flex: 1; min-width: 80px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); padding: 8px; border-radius: 6px; text-align: center;">
+                                <span style="display: block; font-size: 11px; text-transform: uppercase; color: #6ee7b7; font-weight: 600;">Fats</span>
+                                <span style="font-size: 18px; font-weight: bold; color: #fff;">@editMeal.Fats<small style="font-size: 11px; font-weight: normal; margin-left: 2px;">g</small></span>
+                            </div>
+                            <div style="flex: 1.2; min-width: 100px; background: rgba(234,33,39,0.1); border: 1px solid rgba(234,33,39,0.2); padding: 8px; border-radius: 6px; text-align: center;">
+                                <span style="display: block; font-size: 11px; text-transform: uppercase; color: #fca5a5; font-weight: 600;">Calories</span>
+                                <span style="font-size: 18px; font-weight: bold; color: var(--fp-accent);">@editMeal.Calories<small style="font-size: 11px; font-weight: normal; margin-left: 2px;">kcal</small></span>
+                            </div>
+                        </div>
+
+                        <!-- Ingredients block -->
+                        <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; max-height: 480px; overflow-y: auto;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: sticky; top: 0; background: #1e1e1e; padding: 13px; z-index: 10;">
+                                <span style="font-family: 'Teko', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase;">Ingredients List</span>
+                                <button type="button" class="fp-btn-primary fp-btn-sm" style="padding: 6px 12px;" @onclick="AddIngredientToDictMeal">
+                                    <i class="fa fa-plus"></i> Add Food Item
+                                </button>
+                            </div>
+                            
+                            @if (!editMealIngredients.Any())
+                            {
+                                <div style="text-align: center; padding: 40px 20px; opacity: 0.4;">
+                                    <i class="fa fa-info-circle" style="font-size: 32px; margin-bottom: 10px; display: block; color: var(--fp-accent);"></i>
+                                    <span style="font-size: 13px;">No ingredients added yet. Click "Add Food Item" to build your meal's recipe details and auto-calculate macros!</span>
+                                </div>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < editMealIngredients.Count; i++)
+                                {
+                                    var idx = i;
+                                    var ing = editMealIngredients[idx];
+                                    
+                                    <div style="background: #262626; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.04);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-weight: 700; font-size: 13px; color: #fff;">Food Item #@(idx + 1)</span>
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <button type="button" class="fp-btn-outline fp-btn-sm" style="color: #6ee7b7; border-color: rgba(110,231,183,0.3); padding: 2px 8px; font-size: 11px;" @onclick="() => FetchIngredientMacrosFromNinja(ing)">
+                                                    <i class="fa fa-bolt"></i> Ninja Fill
+                                                </button>
+                                                <button type="button" class="fp-icon-btn" style="color: #ff6b6b; border-color: rgba(255,107,107,0.3); width: 24px; height: 24px; display: inline-flex;" @onclick="() => RemoveIngredientFromDictMeal(idx)">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                            <div style="flex: 2.2; min-width: 0;">
+                                                <input @bind="ing.MealName" placeholder="Food Name (e.g. Basmati Rice)" style="height: 36px; padding: 0 10px; font-size: 13px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                            <div style="flex: 1; min-width: 0;">
+                                                <input type="number" step="any" @bind="ing.Quantity" @bind:after="RecalculateDictionaryMealMacros" placeholder="Qty" style="height: 36px; padding: 0 10px; font-size: 13px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                            <div style="flex: 1; min-width: 0;">
+                                                <input @bind="ing.Unit" placeholder="Unit (e.g. g)" style="height: 36px; padding: 0 10px; font-size: 13px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                                            <div>
+                                                <label style="font-size: 9px; text-transform: uppercase; color: #aaa; display: block; margin-bottom: 2px; font-weight:600;">Protein (g)</label>
+                                                <input type="number" @bind="ing.Protein" @bind:after="RecalculateDictionaryMealMacros" style="height: 32px; padding: 0 8px; font-size: 12px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                            <div>
+                                                <label style="font-size: 9px; text-transform: uppercase; color: #aaa; display: block; margin-bottom: 2px; font-weight:600;">Carbs (g)</label>
+                                                <input type="number" @bind="ing.Carbs" @bind:after="RecalculateDictionaryMealMacros" style="height: 32px; padding: 0 8px; font-size: 12px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                            <div>
+                                                <label style="font-size: 9px; text-transform: uppercase; color: #aaa; display: block; margin-bottom: 2px; font-weight:600;">Fats (g)</label>
+                                                <input type="number" @bind="ing.Fats" @bind:after="RecalculateDictionaryMealMacros" style="height: 32px; padding: 0 8px; font-size: 12px; background: #1a1a1a; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);" />
+                                            </div>
+                                            <div>
+                                                <label style="font-size: 9px; text-transform: uppercase; color: #aaa; display: block; margin-bottom: 2px; font-weight:600;">Calories</label>
+                                                <input type="number" @bind="ing.Calories" readonly style="height: 32px; padding: 0 8px; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); color: var(--fp-accent); font-weight: bold;" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="editMeal.Carbs" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="editMeal.Fats" /></div>
-                </div>
-                <div class="fp-input-group"><label>Link</label><input @bind="editMeal.Link" /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="() => showMealModal = false">Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveMeal"><i class="fa fa-save"></i> Save</button>
+                <button class="fp-btn-outline" @onclick="() => showMealModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveMeal" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i> <span>Save Meal</span>
+                    }
+                </button>
             </div>
         </div>
     </div>
 }
 
-@* Exercise Modal *@
+@* Exercise Dictionary Modal *@
 @if (showExerciseModal)
 {
     <div class="fp-modal-overlay" @onclick="() => showExerciseModal = false">
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> @(editExercise.Id == 0 ? "ADD" : "EDIT") EXERCISE</span>
+                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> @(editExercise.Id == 0 ? "ADD" : "EDIT") DICTIONARY EXERCISE</span>
                 <button class="fp-modal-close" @onclick="() => showExerciseModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
@@ -221,14 +476,344 @@ else
                 <div class="fp-input-group"><label>Video Link</label><input @bind="editExercise.ExcerciseLink" /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="() => showExerciseModal = false">Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveExercise"><i class="fa fa-save"></i> Save</button>
+                <button class="fp-btn-outline" @onclick="() => showExerciseModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveExercise" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i> <span>Save Exercise</span>
+                    }
+                </button>
             </div>
         </div>
     </div>
 }
 
-@* Delete Confirmation Modal *@
+@* Diet Template Modal Editor *@
+@if (showDietTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick="() => showDietTemplateModal = false">
+        <div class="fp-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> @(editDietTemplate.Id == 0 ? "CREATE" : "EDIT") DIET TEMPLATE</span>
+                <button class="fp-modal-close" @onclick="() => showDietTemplateModal = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Template Name *</label>
+                        <input @bind="editDietTemplate.Name" placeholder="e.g. 2000kcal High Protein Plan" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Expected Number of Meals</label>
+                        <input type="number" readonly value="@editDietTemplateMeals.Count" style="background:rgba(255,255,255,0.05); color:var(--fp-text-muted);" />
+                    </div>
+                </div>
+                
+                <div class="fp-input-group">
+                    <label>Instructions & Recipe Guidelines</label>
+                    <textarea @bind="editDietTemplate.Instructions" rows="3" placeholder="General rules (e.g. Drink 3L water, take multivitamins in the morning)..."></textarea>
+                </div>
+
+                <div style="margin-top:20px; border-top: 1px solid var(--fp-border); padding-top:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                        <h4 style="margin:0; font-family:'Teko',sans-serif; font-size:24px; color:var(--fp-accent); text-transform:uppercase; letter-spacing:1px;">Meals inside Template</h4>
+                        <button type="button" class="fp-btn-outline" @onclick="AddMealToTemplate">
+                            <i class="fa fa-plus"></i> Add Meal
+                        </button>
+                    </div>
+
+                    @if (!editDietTemplateMeals.Any())
+                    {
+                        <p style="color:var(--fp-text-muted); font-size:14px; font-style:italic;">No meals added to this template yet. Click "Add Meal" above.</p>
+                    }
+                    else
+                    {
+                        @for (int i = 0; i < editDietTemplateMeals.Count; i++)
+                        {
+                            var idx = i;
+                            var meal = editDietTemplateMeals[idx];
+                            var primaryIng = meal.Ingredients.FirstOrDefault();
+
+                            <div class="fp-plan-card" style="margin-top:0; margin-bottom:16px; background:#1e1e1e; border-radius:8px; padding: 20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <span style="font-weight:700; color:var(--fp-text); font-size:16px;">Meal #@(idx + 1)</span>
+                                    <button type="button" class="fp-btn-outline fp-btn-sm" style="color:#ff6b6b; border-color:#ff6b6b;" @onclick="() => editDietTemplateMeals.RemoveAt(idx)">
+                                        <i class="fa fa-trash"></i> Remove Meal
+                                    </button>
+                                </div>
+
+                                <div style="display:flex; gap:12px; margin-bottom:12px;">
+                                    <div class="fp-input-group" style="flex:0 0 45%; min-width:0; margin-bottom:0;">
+                                        <label>Import from Dictionary</label>
+                                        <select class="fp-select" style="height: 48px; border-radius: 6px; font-size: 13px;" @onchange="(e) => OnDictionaryMealSelected(meal, e.Value?.ToString())">
+                                            <option value="">-- Select Saved Meal --</option>
+                                            @foreach (var dm in meals)
+                                            {
+                                                <option value="@dm.Id">@dm.MealName (@dm.Calories kcal)</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="fp-input-group" style="flex:1; min-width:0; margin-bottom:0;">
+                                        <label>Meal Name *</label>
+                                        <input value="@meal.Name" @oninput='(e) => UpdateMealName(meal, e.Value?.ToString() ?? "")' placeholder="e.g. Eggs & Whole Wheat Toast" style="height: 48px; border-radius: 6px;" />
+                                    </div>
+                                </div>
+
+                                @if (primaryIng != null)
+                                {
+                                    <div class="fp-grid-4" style="margin-top:12px;">
+                                        <div class="fp-input-group">
+                                            <label>Protein (g)</label>
+                                            <input type="number" value="@primaryIng.Protein" @onchange='(e) => UpdateMealProtein(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
+                                        </div>
+                                        <div class="fp-input-group">
+                                            <label>Carbs (g)</label>
+                                            <input type="number" value="@primaryIng.Carbs" @onchange='(e) => UpdateMealCarbs(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
+                                        </div>
+                                        <div class="fp-input-group">
+                                            <label>Fats (g)</label>
+                                            <input type="number" value="@primaryIng.Fats" @onchange='(e) => UpdateMealFats(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
+                                        </div>
+                                        <div class="fp-input-group">
+                                            <label>Calories (kcal) *</label>
+                                            <input type="number" value="@primaryIng.Calories" @onchange='(e) => UpdateMealCalories(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="fp-grid-2" style="margin-top:12px;">
+                                    <div class="fp-input-group">
+                                        <label>Recipe / Instructions</label>
+                                        <input @bind="meal.Instruction" placeholder="e.g. Scramble egg whites, toast the bread and serve hot" />
+                                    </div>
+                                    <div class="fp-input-group">
+                                        <label>Video Link (optional)</label>
+                                        <input @bind="meal.Link" placeholder="e.g. https://youtube.com/..." />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showDietTemplateModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveDietTemplate" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i> <span>Save Template</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Workout Template Modal Editor *@
+@if (showWorkoutTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick="() => showWorkoutTemplateModal = false">
+        <div class="fp-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> @(editWorkoutTemplate.Id == 0 ? "CREATE" : "EDIT") WORKOUT TEMPLATE</span>
+                <button class="fp-modal-close" @onclick="() => showWorkoutTemplateModal = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-grid-2">
+                    <div class="fp-input-group">
+                        <label>Template Name *</label>
+                        <input @bind="editWorkoutTemplate.Name" placeholder="e.g. Push/Pull/Legs Split Month 1" />
+                    </div>
+                    <div class="fp-input-group">
+                        <label>Split Name *</label>
+                        <input @bind="editWorkoutTemplate.SplitName" placeholder="e.g. 3-Day PPL split" />
+                    </div>
+                </div>
+                
+                <div class="fp-input-group">
+                    <label>Instructions & Tips</label>
+                    <textarea @bind="editWorkoutTemplate.Instructions" rows="3" placeholder="General rules (e.g. Target RPE 8, rest 2 minutes on compound movements)..."></textarea>
+                </div>
+
+                <div style="margin-top:20px; border-top: 1px solid var(--fp-border); padding-top:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                        <h4 style="margin:0; font-family:'Teko',sans-serif; font-size:24px; color:var(--fp-accent); text-transform:uppercase; letter-spacing:1px;">Workout Days</h4>
+                        <button type="button" class="fp-btn-outline" @onclick="AddWorkoutDayToTemplate">
+                            <i class="fa fa-plus"></i> Add Workout Day
+                        </button>
+                    </div>
+
+                    @if (!editWorkoutTemplateDays.Any())
+                    {
+                        <p style="color:var(--fp-text-muted); font-size:14px; font-style:italic;">No days added to this split template yet. Click "Add Workout Day" above.</p>
+                    }
+                    else
+                    {
+                        @for (int dIdx = 0; dIdx < editWorkoutTemplateDays.Count; dIdx++)
+                        {
+                            var currentDayIdx = dIdx;
+                            var dayHolder = editWorkoutTemplateDays[currentDayIdx];
+
+                            <div class="fp-plan-card" style="margin-top:0; margin-bottom:20px; background:#1e1e1e; border-radius:8px; border-top: 2px solid var(--fp-accent); padding: 20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <span style="font-weight:700; color:var(--fp-text); font-size:16px;">Workout Day #@(currentDayIdx + 1)</span>
+                                    <button type="button" class="fp-btn-outline fp-btn-sm" style="color:#ff6b6b; border-color:#ff6b6b;" @onclick="() => editWorkoutTemplateDays.RemoveAt(currentDayIdx)">
+                                        <i class="fa fa-trash"></i> Remove Day
+                                    </button>
+                                </div>
+
+                                <div class="fp-grid-2">
+                                    <div class="fp-input-group">
+                                        <label>Day Title *</label>
+                                        <input @bind="dayHolder.DayName" placeholder="e.g. Day 1 - Chest & Shoulders" />
+                                    </div>
+                                    <div class="fp-input-group">
+                                        <label>Calendar Day Assignment *</label>
+                                        <select @bind="dayHolder.Day">
+                                            @foreach (var dVal in Enum.GetValues<Days>())
+                                            {
+                                                <option value="@dVal">@dVal.ToString()</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                @* Exercises *@
+                                <div style="margin-top:16px; background:rgba(0,0,0,0.15); padding:14px; border-radius:6px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                        <span style="font-family:'Teko',sans-serif; font-size:20px; color:#c0c0c0;">Exercises on this Day</span>
+                                        <button type="button" class="fp-btn-outline fp-btn-sm" @onclick="() => AddExerciseToDay(dayHolder)">
+                                            <i class="fa fa-plus"></i> Add Exercise
+                                        </button>
+                                    </div>
+
+                                    @if (!dayHolder.Exercises.Any())
+                                    {
+                                        <p style="color:var(--fp-text-muted); font-size:13px; font-style:italic; margin:0;">No exercises added to this day yet.</p>
+                                    }
+                                    else
+                                    {
+                                        @for (int eIdx = 0; eIdx < dayHolder.Exercises.Count; eIdx++)
+                                        {
+                                            var currentExIdx = eIdx;
+                                            var exHolder = dayHolder.Exercises[currentExIdx];
+
+                                            <div style="background:#262626; padding:12px; border-radius:6px; margin-bottom:10px; border: 1px solid rgba(255,255,255,0.04);">
+                                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                                    <span style="font-weight:600; font-size:14px; color:#ffffff;">Exercise #@(currentExIdx + 1)</span>
+                                                    <button type="button" class="fp-icon-btn" style="color:#ff6b6b; border-color:#ff6b6b; width:26px; height:26px; display:inline-flex;" @onclick="() => dayHolder.Exercises.RemoveAt(currentExIdx)">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div style="display:flex; gap:12px; margin-bottom:8px;">
+                                                    <div class="fp-input-group" style="flex:0 0 45%; min-width:0; margin-bottom:0;">
+                                                        <label>Import from Dictionary</label>
+                                                        <select class="fp-select" style="height: 48px; border-radius: 6px; font-size: 13px;" @onchange="(e) => OnDictionaryExerciseSelected(exHolder, e.Value?.ToString())">
+                                                            <option value="">-- Select Saved Exercise --</option>
+                                                            @foreach (var dex in exercises)
+                                                            {
+                                                                <option value="@dex.Id">@dex.ExerciseName</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="fp-input-group" style="flex:1; min-width:0; margin-bottom:0;">
+                                                        <label>Exercise Name *</label>
+                                                        <input @bind="exHolder.ExerciseName" placeholder="e.g. Incline Bench Press" style="height: 48px; border-radius: 6px;" />
+                                                    </div>
+                                                </div>
+
+                                                <div class="fp-grid-4" style="margin-top:8px;">
+                                                    <div class="fp-input-group">
+                                                        <label>Sets</label>
+                                                        <input @bind="exHolder.Sets" placeholder="e.g. 4" />
+                                                    </div>
+                                                    <div class="fp-input-group">
+                                                        <label>Reps</label>
+                                                        <input @bind="exHolder.Reps" placeholder="e.g. 8-12" />
+                                                    </div>
+                                                    <div class="fp-input-group">
+                                                        <label>Rest Time</label>
+                                                        <input @bind="exHolder.RestTime" placeholder="e.g. 90s" />
+                                                    </div>
+                                                    <div class="fp-input-group">
+                                                        <label>Video Link</label>
+                                                        <input @bind="exHolder.ExerciseLink" placeholder="e.g. https://..." />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                @* Cardio *@
+                                <div style="margin-top:16px; background:rgba(234,33,39,0.02); padding:14px; border-radius:6px; border: 1px solid rgba(234,33,39,0.08);">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                        <input type="checkbox" id="chkCardioTab_@(currentDayIdx)" @bind="dayHolder.IncludeCardio" style="width:18px; height:18px; cursor:pointer;" />
+                                        <label for="chkCardioTab_@(currentDayIdx)" style="margin:0; font-family:'Teko',sans-serif; font-size:20px; color:#ffffff; cursor:pointer; text-transform:uppercase;">Include Cardio on this Day</label>
+                                    </div>
+
+                                    @if (dayHolder.IncludeCardio)
+                                    {
+                                        <div class="fp-grid-3">
+                                            <div class="fp-input-group">
+                                                <label>Cardio Type</label>
+                                                <input @bind="dayHolder.CardioType" placeholder="e.g. Elliptical" />
+                                            </div>
+                                            <div class="fp-input-group">
+                                                <label>Duration (minutes)</label>
+                                                <input type="number" @bind="dayHolder.CardioDuration" />
+                                            </div>
+                                            <div class="fp-input-group">
+                                                <label>Intensity</label>
+                                                <select @bind="dayHolder.CardioIntensity">
+                                                    @foreach (var ciVal in Enum.GetValues<CardioIntensity>())
+                                                    {
+                                                        <option value="@ciVal">@ciVal.ToString()</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="fp-input-group" style="margin-top:10px;">
+                                            <label>Cardio Guidelines & Notes</label>
+                                            <input @bind="dayHolder.CardioNotes" placeholder="e.g. Steady state at 65% max heart rate" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="() => showWorkoutTemplateModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutTemplate" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i> <span>Save Template</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Unified Deletion Confirmation Modal *@
 @if (showDeleteConfirm)
 {
     <div class="fp-modal-overlay" @onclick="() => showDeleteConfirm = false">
@@ -243,7 +828,7 @@ else
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick="() => showDeleteConfirm = false">Cancel</button>
-                <button class="fp-btn-primary" style="background:#e31c1c;" @onclick="PerformDelete"><i class="fa fa-trash"></i> Delete</button>
+                <button class="fp-btn-primary" style="background:#e31c1c; border-color:#e31c1c;" @onclick="PerformDelete"><i class="fa fa-trash"></i> Delete</button>
             </div>
         </div>
     </div>
@@ -257,13 +842,28 @@ else
 
     private List<CoachMealDictionary> meals = new();
     private List<CoachExerciseDictionary> exercises = new();
+    private List<DietTemplate> dietTemplates = new();
+    private List<WorkoutTemplate> workoutTemplates = new();
 
+    // Dictionary Modals
     private bool showMealModal = false;
     private CoachMealDictionary editMeal = new();
+    private List<CreateMealItemDto> editMealIngredients = new();
 
     private bool showExerciseModal = false;
     private CoachExerciseDictionary editExercise = new();
+    private bool isSaving = false;
 
+    // Template Modals & Editors
+    private bool showDietTemplateModal = false;
+    private DietTemplate editDietTemplate = new();
+    private List<DietMealResponseDto> editDietTemplateMeals = new();
+
+    private bool showWorkoutTemplateModal = false;
+    private WorkoutTemplate editWorkoutTemplate = new();
+    private List<WorkoutDayResponseDtoHolder> editWorkoutTemplateDays = new();
+
+    // Deletion confirmation
     private bool showDeleteConfirm = false;
     private string deleteConfirmMessage = "";
     private Func<Task> deleteAction;
@@ -298,23 +898,130 @@ else
     {
         meals = await DictionaryService.GetMealsAsync(coachId);
         exercises = await DictionaryService.GetExercisesAsync(coachId);
+        dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+        workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
     }
 
-    // --- Meals ---
-    private void OpenAddMealModal() { editMeal = new CoachMealDictionary(); showMealModal = true; }
-    private void OpenEditMealModal(CoachMealDictionary m) { 
-        editMeal = new CoachMealDictionary { Id = m.Id, MealName = m.MealName, Calories = m.Calories, Protein = m.Protein, Carbs = m.Carbs, Fats = m.Fats, Link = m.Link }; 
+    // --- Dictionary: Meals ---
+    private void OpenAddMealModal() 
+    { 
+        editMeal = new CoachMealDictionary(); 
+        editMealIngredients = new();
         showMealModal = true; 
+    }
+
+    private void OpenEditMealModal(CoachMealDictionary m) 
+    { 
+        editMeal = new CoachMealDictionary { 
+            Id = m.Id, 
+            MealName = m.MealName, 
+            Calories = m.Calories, 
+            Protein = m.Protein, 
+            Carbs = m.Carbs, 
+            Fats = m.Fats, 
+            Link = m.Link, 
+            Instruction = m.Instruction,
+            IngredientsJson = m.IngredientsJson
+        }; 
+
+        if (!string.IsNullOrEmpty(m.IngredientsJson))
+        {
+            try 
+            {
+                editMealIngredients = System.Text.Json.JsonSerializer.Deserialize<List<CreateMealItemDto>>(
+                    m.IngredientsJson, 
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            } 
+            catch 
+            {
+                editMealIngredients = new();
+            }
+        }
+        else 
+        {
+            editMealIngredients = new();
+        }
+
+        showMealModal = true; 
+    }
+    
+    private void AddIngredientToDictMeal()
+    {
+        editMealIngredients.Add(new CreateMealItemDto { MealName = "", Quantity = 1, Unit = "g", Protein = 0, Carbs = 0, Fats = 0, Calories = 0 });
+    }
+
+    private void RemoveIngredientFromDictMeal(int index)
+    {
+        editMealIngredients.RemoveAt(index);
+        RecalculateDictionaryMealMacros();
+    }
+
+    private async Task FetchIngredientMacrosFromNinja(CreateMealItemDto ing)
+    {
+        if (string.IsNullOrWhiteSpace(ing.MealName)) return;
+
+        try
+        {
+            var query = $"{ing.Quantity} {ing.Unit} {ing.MealName}";
+            var result = await NutritionApiService.GetNutritionAsync(query);
+            if (result != null)
+            {
+                ing.Protein = (int)Math.Round(result.Protein);
+                ing.Carbs = (int)Math.Round(result.Carbs);
+                ing.Fats = (int)Math.Round(result.Fats);
+                ing.Calories = (int)Math.Round(result.Calories);
+
+                RecalculateDictionaryMealMacros();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("CalorieNinjas failed: " + ex.Message);
+        }
+    }
+
+    private void RecalculateDictionaryMealMacros()
+    {
+        // Auto-calculate individual ingredient calories using the standard Atwater fitness equation
+        foreach (var ing in editMealIngredients)
+        {
+            ing.Calories = (ing.Protein * 4) + (ing.Carbs * 4) + (ing.Fats * 9);
+        }
+
+        editMeal.Protein = editMealIngredients.Sum(x => x.Protein);
+        editMeal.Carbs = editMealIngredients.Sum(x => x.Carbs);
+        editMeal.Fats = editMealIngredients.Sum(x => x.Fats);
+        editMeal.Calories = editMealIngredients.Sum(x => x.Calories);
     }
     
     private async Task SaveMeal()
     {
+        if (isSaving) return;
         if (string.IsNullOrWhiteSpace(editMeal.MealName)) return;
-        if (editMeal.Id == 0) await DictionaryService.AddMealAsync(coachId, editMeal);
-        else await DictionaryService.UpdateMealAsync(coachId, editMeal);
-        
-        await LoadData();
-        showMealModal = false;
+
+        isSaving = true;
+        try
+        {
+            // Recalculate one last time to be absolute certain
+            RecalculateDictionaryMealMacros();
+
+            // Serialize ingredients list to JSON
+            editMeal.IngredientsJson = System.Text.Json.JsonSerializer.Serialize(editMealIngredients);
+
+            if (editMeal.Id == 0) await DictionaryService.AddMealAsync(coachId, editMeal);
+            else await DictionaryService.UpdateMealAsync(coachId, editMeal);
+
+            await LoadData();
+            showMealModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private void ConfirmDeleteMeal(CoachMealDictionary m)
@@ -328,7 +1035,7 @@ else
         showDeleteConfirm = true;
     }
 
-    // --- Exercises ---
+    // --- Dictionary: Exercises ---
     private void OpenAddExerciseModal() { editExercise = new CoachExerciseDictionary(); showExerciseModal = true; }
     private void OpenEditExerciseModal(CoachExerciseDictionary e) { 
         editExercise = new CoachExerciseDictionary { Id = e.Id, ExerciseName = e.ExerciseName, ExcerciseLink = e.ExcerciseLink }; 
@@ -337,12 +1044,26 @@ else
 
     private async Task SaveExercise()
     {
+        if (isSaving) return;
         if (string.IsNullOrWhiteSpace(editExercise.ExerciseName)) return;
-        if (editExercise.Id == 0) await DictionaryService.AddExerciseAsync(coachId, editExercise);
-        else await DictionaryService.UpdateExerciseAsync(coachId, editExercise);
 
-        await LoadData();
-        showExerciseModal = false;
+        isSaving = true;
+        try
+        {
+            if (editExercise.Id == 0) await DictionaryService.AddExerciseAsync(coachId, editExercise);
+            else await DictionaryService.UpdateExerciseAsync(coachId, editExercise);
+
+            await LoadData();
+            showExerciseModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private void ConfirmDeleteExercise(CoachExerciseDictionary e)
@@ -356,9 +1077,346 @@ else
         showDeleteConfirm = true;
     }
 
+    // --- Diet Templates Direct CRUD ---
+    private void OpenAddDietTemplateModal()
+    {
+        editDietTemplate = new DietTemplate { Name = "New Diet Plan Template", NumberOfMeals = 3 };
+        editDietTemplateMeals.Clear();
+        // default 3 meals to make editing fast
+        for (int i = 0; i < 3; i++)
+        {
+            AddMealToTemplate();
+        }
+        showDietTemplateModal = true;
+    }
+
+    private void OpenEditDietTemplateModal(DietTemplate temp)
+    {
+        editDietTemplate = new DietTemplate
+        {
+            Id = temp.Id,
+            Name = temp.Name,
+            CoachId = temp.CoachId,
+            Instructions = temp.Instructions,
+            NumberOfMeals = temp.NumberOfMeals
+        };
+
+        editDietTemplateMeals.Clear();
+        try
+        {
+            var list = JsonSerializer.Deserialize<List<DietMealResponseDto>>(temp.DietJson);
+            if (list != null)
+            {
+                editDietTemplateMeals.AddRange(list);
+            }
+        }
+        catch { }
+
+        showDietTemplateModal = true;
+    }
+
+    private void AddMealToTemplate()
+    {
+        editDietTemplateMeals.Add(new DietMealResponseDto
+        {
+            Id = 0,
+            Name = $"Meal {editDietTemplateMeals.Count + 1}",
+            Ingredients = new List<MealItemResponseDto> {
+                new MealItemResponseDto(0, "Primary Ingredient", 1, "servings", 0, 0, 0, 0, new List<AlternativeResponeDto>())
+            },
+            AlternativeMeals = new List<DietMealResponseDto>()
+        });
+    }
+
+    private void OnDictionaryMealSelected(DietMealResponseDto meal, string mealIdStr)
+    {
+        if (int.TryParse(mealIdStr, out var id) && id > 0)
+        {
+            var dm = meals.FirstOrDefault(x => x.Id == id);
+            if (dm != null)
+            {
+                meal.Name = dm.MealName;
+                meal.Link = dm.Link;
+                if (meal.Ingredients.Any())
+                {
+                    meal.Ingredients[0] = meal.Ingredients[0] with {
+                        MealName = dm.MealName,
+                        Protein = dm.Protein,
+                        Carbs = dm.Carbs,
+                        Fats = dm.Fats,
+                        Calories = dm.Calories
+                    };
+                }
+            }
+        }
+    }
+
+    private void UpdateMealName(DietMealResponseDto meal, string val)
+    {
+        meal.Name = val;
+        if (meal.Ingredients.Any())
+        {
+            meal.Ingredients[0] = meal.Ingredients[0] with { MealName = val };
+        }
+    }
+
+    private void UpdateMealProtein(DietMealResponseDto meal, int val)
+    {
+        if (meal.Ingredients.Any()) meal.Ingredients[0] = meal.Ingredients[0] with { Protein = val };
+    }
+
+    private void UpdateMealCarbs(DietMealResponseDto meal, int val)
+    {
+        if (meal.Ingredients.Any()) meal.Ingredients[0] = meal.Ingredients[0] with { Carbs = val };
+    }
+
+    private void UpdateMealFats(DietMealResponseDto meal, int val)
+    {
+        if (meal.Ingredients.Any()) meal.Ingredients[0] = meal.Ingredients[0] with { Fats = val };
+    }
+
+    private void UpdateMealCalories(DietMealResponseDto meal, int val)
+    {
+        if (meal.Ingredients.Any()) meal.Ingredients[0] = meal.Ingredients[0] with { Calories = val };
+    }
+
+    private async Task SaveDietTemplate()
+    {
+        if (isSaving) return;
+        if (string.IsNullOrWhiteSpace(editDietTemplate.Name)) return;
+
+        isSaving = true;
+        try
+        {
+            editDietTemplate.NumberOfMeals = editDietTemplateMeals.Count;
+            editDietTemplate.DietJson = JsonSerializer.Serialize(editDietTemplateMeals);
+            editDietTemplate.CoachId = coachId;
+
+            if (editDietTemplate.Id == 0)
+            {
+                await TemplateService.CreateDietTemplateAsync(editDietTemplate);
+            }
+            else
+            {
+                await TemplateService.UpdateDietTemplateAsync(editDietTemplate);
+            }
+
+            await LoadData();
+            showDietTemplateModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ConfirmDeleteDietTemplate(DietTemplate temp)
+    {
+        deleteConfirmMessage = $"Are you sure you want to delete the Diet Template '{temp.Name}'?";
+        deleteAction = async () =>
+        {
+            await TemplateService.DeleteDietTemplateAsync(temp.Id, coachId);
+            await LoadData();
+        };
+        showDeleteConfirm = true;
+    }
+
+
+    // --- Workout Templates Direct CRUD ---
+    private void OpenAddWorkoutTemplateModal()
+    {
+        editWorkoutTemplate = new WorkoutTemplate { Name = "New Workout Split Template", SplitName = "Push / Pull / Legs", NumberOfWorkoutDays = 3 };
+        editWorkoutTemplateDays.Clear();
+        // default 3 days to make editing fast
+        for (int i = 0; i < 3; i++)
+        {
+            AddWorkoutDayToTemplate();
+        }
+        showWorkoutTemplateModal = true;
+    }
+
+    private void OpenEditWorkoutTemplateModal(WorkoutTemplate temp)
+    {
+        editWorkoutTemplate = new WorkoutTemplate
+        {
+            Id = temp.Id,
+            Name = temp.Name,
+            CoachId = temp.CoachId,
+            SplitName = temp.SplitName,
+            Instructions = temp.Instructions,
+            NumberOfWorkoutDays = temp.NumberOfWorkoutDays
+        };
+
+        editWorkoutTemplateDays.Clear();
+        try
+        {
+            var days = JsonSerializer.Deserialize<List<WorkoutDayResponseDto>>(temp.WorkoutJson);
+            if (days != null)
+            {
+                foreach (var d in days)
+                {
+                    var holder = new WorkoutDayResponseDtoHolder
+                    {
+                        Id = d.Id,
+                        DayName = d.DayName,
+                        Day = d.Day,
+                        IncludeCardio = d.Cardio != null,
+                        CardioType = d.Cardio?.CardioType ?? "Treadmill",
+                        CardioDuration = d.Cardio?.DurationMinutes ?? 20,
+                        CardioIntensity = d.Cardio?.Intensity ?? CardioIntensity.Medium,
+                        CardioNotes = d.Cardio?.Notes
+                    };
+                    foreach (var e in d.Exercises)
+                    {
+                        holder.Exercises.Add(new ExerciseResponseDtoHolder
+                        {
+                            Id = e.Id,
+                            ExerciseName = e.ExerciseName,
+                            Sets = e.Sets,
+                            Reps = e.Reps,
+                            RestTime = e.RestTime,
+                            ExerciseLink = e.ExerciseLink
+                        });
+                    }
+                    editWorkoutTemplateDays.Add(holder);
+                }
+            }
+        }
+        catch { }
+
+        showWorkoutTemplateModal = true;
+    }
+
+    private void AddWorkoutDayToTemplate()
+    {
+        var num = editWorkoutTemplateDays.Count + 1;
+        var dayEnum = (Days)Math.Min(num - 1, 6);
+        editWorkoutTemplateDays.Add(new WorkoutDayResponseDtoHolder
+        {
+            DayName = $"Day {num}",
+            Day = dayEnum,
+            Exercises = new List<ExerciseResponseDtoHolder>()
+        });
+    }
+
+    private void AddExerciseToDay(WorkoutDayResponseDtoHolder day)
+    {
+        day.Exercises.Add(new ExerciseResponseDtoHolder
+        {
+            ExerciseName = "",
+            Sets = "4",
+            Reps = "10-12",
+            RestTime = "90s"
+        });
+    }
+
+    private void OnDictionaryExerciseSelected(ExerciseResponseDtoHolder exHolder, string exIdStr)
+    {
+        if (int.TryParse(exIdStr, out var id) && id > 0)
+        {
+            var dex = exercises.FirstOrDefault(x => x.Id == id);
+            if (dex != null)
+            {
+                exHolder.ExerciseName = dex.ExerciseName;
+                exHolder.ExerciseLink = dex.ExcerciseLink;
+            }
+        }
+    }
+
+    private async Task SaveWorkoutTemplate()
+    {
+        if (isSaving) return;
+        if (string.IsNullOrWhiteSpace(editWorkoutTemplate.Name)) return;
+
+        isSaving = true;
+        try
+        {
+            editWorkoutTemplate.NumberOfWorkoutDays = editWorkoutTemplateDays.Count;
+            editWorkoutTemplate.CoachId = coachId;
+
+            var finalDays = editWorkoutTemplateDays.Select(d => new WorkoutDayResponseDto(
+                d.Id,
+                d.DayName,
+                d.Day,
+                d.Exercises.Select(e => new ExerciseResponseDto(
+                    e.Id,
+                    e.ExerciseName,
+                    e.Sets,
+                    e.Reps,
+                    e.RestTime,
+                    e.ExerciseLink
+                )).ToList(),
+                d.IncludeCardio ? new CardioResponseDto(0, d.CardioType, d.CardioDuration, d.CardioIntensity, d.CardioNotes) : null
+            )).ToList();
+
+            editWorkoutTemplate.WorkoutJson = JsonSerializer.Serialize(finalDays);
+
+            if (editWorkoutTemplate.Id == 0)
+            {
+                await TemplateService.CreateWorkoutTemplateAsync(editWorkoutTemplate);
+            }
+            else
+            {
+                await TemplateService.UpdateWorkoutTemplateAsync(editWorkoutTemplate);
+            }
+
+            await LoadData();
+            showWorkoutTemplateModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ConfirmDeleteWorkoutTemplate(WorkoutTemplate temp)
+    {
+        deleteConfirmMessage = $"Are you sure you want to delete the Workout Template '{temp.Name}'?";
+        deleteAction = async () =>
+        {
+            await TemplateService.DeleteWorkoutTemplateAsync(temp.Id, coachId);
+            await LoadData();
+        };
+        showDeleteConfirm = true;
+    }
+
+    // --- Deletion Core ---
     private async Task PerformDelete()
     {
         if (deleteAction != null) await deleteAction();
         showDeleteConfirm = false;
+    }
+
+    // --- Mutable Wrapper Classes for Blazor Double Binding ---
+    public class WorkoutDayResponseDtoHolder
+    {
+        public int Id { get; set; }
+        public string DayName { get; set; } = string.Empty;
+        public Days Day { get; set; } = Days.Day1;
+        public List<ExerciseResponseDtoHolder> Exercises { get; set; } = new();
+        public bool IncludeCardio { get; set; }
+        public string CardioType { get; set; } = "Treadmill";
+        public int CardioDuration { get; set; } = 20;
+        public CardioIntensity CardioIntensity { get; set; } = CardioIntensity.Medium;
+        public string? CardioNotes { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public class ExerciseResponseDtoHolder
+    {
+        public int Id { get; set; }
+        public string ExerciseName { get; set; } = string.Empty;
+        public string Sets { get; set; } = "4";
+        public string Reps { get; set; } = "10-12";
+        public string RestTime { get; set; } = "90s";
+        public string? ExerciseLink { get; set; }
     }
 }

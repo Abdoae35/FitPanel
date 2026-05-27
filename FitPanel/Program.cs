@@ -11,6 +11,8 @@ builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IAlternativeService, AlternativeService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<ICoachDictionaryService, CoachDictionaryService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHttpClient<INutritionApiService, CalorieNinjasService>();
 
 // Add this so minimal APIs can read JSON bodies

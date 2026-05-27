@@ -21,6 +21,13 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
             .HasForeignKey(c => c.CoachId)
             .OnDelete(DeleteBehavior.Restrict); // Don't delete clients if coach deleted
 
+        // User → Notifications (one to many)
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany(u => u.Notifications)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Apply any extra configurations
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(FitPanelDbContext).Assembly);
@@ -39,4 +46,8 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
     
     public DbSet<CoachExerciseDictionary> CoachExerciseDictionaries { get; set; }
     public DbSet<CoachMealDictionary> CoachMealDictionaries { get; set; }
+    public DbSet<DietTemplate> DietTemplates { get; set; }
+    public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+}
 }

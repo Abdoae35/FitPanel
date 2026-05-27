@@ -15,6 +15,7 @@
 @inject IWorkoutService WorkoutService
 @inject IAlternativeService AlternativeService
 @inject IPdfService PdfService
+@inject ITemplateService TemplateService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
@@ -198,9 +199,20 @@ else
 
             @if (!diets.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-utensils"></i>
-                    <p>No diet plans yet.</p>
+                <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
+                    <i class="fa fa-utensils" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
+                    <p style="margin:0; color:var(--fp-text-muted);">No diet plans yet.</p>
+                    <div style="display:flex; gap:12px; margin-top:8px;">
+                        <button class="fp-btn-primary" @onclick='() => showDietModal = true'>
+                            <i class="fa fa-plus"></i> New Diet Plan
+                        </button>
+                        @if (dietTemplates.Any())
+                        {
+                            <button class="fp-btn-outline" style="border-color: #3b82f6; color: #3b82f6;" @onclick="OpenApplyDietTemplateModal">
+                                <i class="fa fa-folder-open"></i> Start from Template
+                            </button>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -258,6 +270,18 @@ else
                                                     @onclick="() => OpenEditDietModal(diet)">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            <button class="fp-icon-btn" style="background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2);"
+                                                    title="Save as Template"
+                                                    @onclick="() => OpenSaveDietTemplateModal(diet.Id)">
+                                                <i class="fa fa-save"></i>
+                                                <span>Save Template</span>
+                                            </button>
+                                            <button class="fp-icon-btn" style="background: rgba(168,85,247,0.1); color: #a855f7; border-color: rgba(168,85,247,0.2);"
+                                                    title="Edit Coaching Notes"
+                                                    @onclick="() => OpenEditDietNotesModal(diet)">
+                                                <i class="fa fa-sticky-note"></i>
+                                                <span>Notes</span>
+                                            </button>
                                             <button class="fp-icon-btn @(mealsLeft <= 0 ? "fp-icon-btn-disabled" : "")"
                                                     disabled="@(mealsLeft <= 0)"
                                                     title="@(mealsLeft <= 0 ? "Meal limit reached" : $"Add Meal ({mealsLeft} left)")"
@@ -306,22 +330,22 @@ else
                                                 </div>
                                                 @if (!string.IsNullOrWhiteSpace(dietMeal.Instruction) || !string.IsNullOrWhiteSpace(dietMeal.Link))
                                                 {
-                                                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); margin: 0 16px 12px 16px; border-left: 3px solid var(--fp-primary); font-size: 13px; color: var(--fp-text-muted); border-radius: 0 8px 8px 0;">
+                                                    <div class="fp-instruction-box">
                                                         @if (!string.IsNullOrWhiteSpace(dietMeal.Instruction))
                                                         {
-                                                            <div style="margin-bottom: 8px;">
-                                                                <strong><i class="fa fa-book-open"></i> Recipe/Instructions:</strong><br/>
-                                                                @dietMeal.Instruction
-                                                            </div>
+                                                            <div class="fp-instruction-label"><i class="fa fa-book-open"></i> Recipe / Instructions</div>
+                                                            <p class="fp-instruction-text">@dietMeal.Instruction</p>
+                                                        }
+                                                        @if (!string.IsNullOrWhiteSpace(dietMeal.Instruction) && !string.IsNullOrWhiteSpace(dietMeal.Link))
+                                                        {
+                                                            <div class="fp-instruction-divider"></div>
                                                         }
                                                         @if (!string.IsNullOrWhiteSpace(dietMeal.Link))
                                                         {
-                                                            <div>
-                                                                <strong><i class="fa fa-video"></i> Video Tutorial:</strong><br/>
-                                                                <a href="@dietMeal.Link" target="_blank" class="fp-meal-link" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--fp-primary); text-decoration: none;">
-                                                                    <i class="fa fa-play-circle" style="font-size: 16px;"></i> Watch Video
-                                                                </a>
-                                                            </div>
+                                                            <div class="fp-instruction-label"><i class="fa fa-video"></i> Video Tutorial</div>
+                                                            <a href="@dietMeal.Link" target="_blank" class="fp-meal-link">
+                                                                <i class="fa fa-play-circle"></i> Watch Video
+                                                            </a>
                                                         }
                                                     </div>
                                                 }
@@ -442,22 +466,22 @@ else
                                                             </div>
                                                             @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction) || !string.IsNullOrWhiteSpace(altDietMeal.Link))
                                                             {
-                                                                <div style="padding: 12px 16px; background: rgba(255,255,255,0.03); margin: 0 16px 12px 16px; border-left: 3px solid var(--fp-primary); font-size: 13px; color: var(--fp-text-muted); border-radius: 0 8px 8px 0;">
+                                                                <div class="fp-instruction-box">
                                                                     @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction))
                                                                     {
-                                                                        <div style="margin-bottom: 8px;">
-                                                                            <strong><i class="fa fa-book-open"></i> Recipe/Instructions:</strong><br/>
-                                                                            @altDietMeal.Instruction
-                                                                        </div>
+                                                                        <div class="fp-instruction-label"><i class="fa fa-book-open"></i> Recipe / Instructions</div>
+                                                                        <p class="fp-instruction-text">@altDietMeal.Instruction</p>
+                                                                    }
+                                                                    @if (!string.IsNullOrWhiteSpace(altDietMeal.Instruction) && !string.IsNullOrWhiteSpace(altDietMeal.Link))
+                                                                    {
+                                                                        <div class="fp-instruction-divider"></div>
                                                                     }
                                                                     @if (!string.IsNullOrWhiteSpace(altDietMeal.Link))
                                                                     {
-                                                                        <div>
-                                                                            <strong><i class="fa fa-video"></i> Video Tutorial:</strong><br/>
-                                                                            <a href="@altDietMeal.Link" target="_blank" class="fp-meal-link" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--fp-primary); text-decoration: none;">
-                                                                                <i class="fa fa-play-circle" style="font-size: 16px;"></i> Watch Video
-                                                                            </a>
-                                                                        </div>
+                                                                        <div class="fp-instruction-label"><i class="fa fa-video"></i> Video Tutorial</div>
+                                                                        <a href="@altDietMeal.Link" target="_blank" class="fp-meal-link">
+                                                                            <i class="fa fa-play-circle"></i> Watch Video
+                                                                        </a>
                                                                     }
                                                                 </div>
                                                             }
@@ -511,7 +535,7 @@ else
                                     }
                                     else
                                     {
-                                        <p style="color:var(--fp-text-muted);font-size:14px;padding:16px 0;">
+                                        <p style="color:var(--fp-text-muted);font-size:15px;padding:16px 0;">
                                             No meals yet. You can add up to @diet.NumberOfMeals meals.
                                         </p>
                                     }
@@ -540,9 +564,20 @@ else
 
             @if (!workouts.Any())
             {
-                <div class="fp-empty-card">
-                    <i class="fa fa-dumbbell"></i>
-                    <p>No workout plans yet.</p>
+                <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
+                    <i class="fa fa-dumbbell" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
+                    <p style="margin:0; color:var(--fp-text-muted);">No workout plans yet.</p>
+                    <div style="display:flex; gap:12px; margin-top:8px;">
+                        <button class="fp-btn-primary" @onclick='() => showWorkoutModal = true'>
+                            <i class="fa fa-plus"></i> New Workout Plan
+                        </button>
+                        @if (workoutTemplates.Any())
+                        {
+                            <button class="fp-btn-outline" style="border-color: #3b82f6; color: #3b82f6;" @onclick="OpenApplyWorkoutTemplateModal">
+                                <i class="fa fa-folder-open"></i> Start from Template
+                            </button>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -599,6 +634,12 @@ else
                                             <button class="fp-icon-btn" title="Edit day count"
                                                     @onclick="() => OpenEditWorkoutModal(workout)">
                                                 <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-icon-btn" style="background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.2);"
+                                                    title="Save as Template"
+                                                    @onclick="() => OpenSaveWorkoutTemplateModal(workout.Id)">
+                                                <i class="fa fa-save"></i>
+                                                <span>Save Template</span>
                                             </button>
                                             <button class="fp-icon-btn @(daysLeft <= 0 ? "fp-icon-btn-disabled" : "")"
                                                     disabled="@(daysLeft <= 0)"
@@ -682,6 +723,37 @@ else
                                                             </tbody>
                                                         </table>
                                                     }
+
+                                                    @* Workout Day Notes UI Display & Actions *@
+                                                    @if (!string.IsNullOrWhiteSpace(day.Notes))
+                                                    {
+                                                        <div class="fp-cardio-badge" style="background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.15); color: #a855f7; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box; width: 100%;">
+                                                            <div style="display:flex; width:100%; align-items:center;">
+                                                                <span style="font-weight:700; display:flex; align-items:center; gap:6px;">
+                                                                    <i class="fa fa-sticky-note"></i> Day Notes
+                                                                </span>
+                                                                <div style="margin-left:auto; display:flex; gap:6px;">
+                                                                    <button class="fp-meal-btn" style="background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.2);" title="Edit Day Notes"
+                                                                            @onclick="() => OpenEditWorkoutDayNotesModal(workout.Id, day)">
+                                                                        <i class="fa fa-edit"></i>
+                                                                    </button>
+                                                                    <button class="fp-meal-btn fp-meal-btn-danger" title="Delete Day Notes"
+                                                                            @onclick="() => ConfirmDeleteWorkoutDayNotes(workout.Id, day.Id)">
+                                                                        <i class="fa fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div style="color: var(--fp-text-muted); font-size: 16px; white-space: pre-wrap; width: 100%; text-align: left;">@day.Notes</div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="fp-add-cardio-btn" style="border-color: rgba(168,85,247,0.3); color: #a855f7; margin-bottom: 8px; margin-right: 6px; display: inline-flex;"
+                                                                @onclick="() => OpenEditWorkoutDayNotesModal(workout.Id, day)">
+                                                            <i class="fa fa-plus"></i> Add Day Notes
+                                                        </button>
+                                                    }
+
                                                     @if (day.Cardio != null)
                                                     {
                                                         <div class="fp-cardio-badge">
@@ -788,11 +860,144 @@ else
                     <label>Number of Meals per Day *</label>
                     <input type="number" @bind="newDiet.NumberOfMeals" min="1" max="10" placeholder="5" />
                 </div>
+                <div class="fp-input-group">
+                    <label>Coaching Notes / Instructions (optional — will appear as a dedicated page in the PDF)</label>
+                    <textarea @bind="newDiet.Instructions" rows="4" placeholder="e.g. Drink 3L of water daily. Take your vitamins with breakfast. Avoid processed sugars..."></textarea>
+                </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more meals than this number.</p>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showDietModal = false'>Cancel</button>
                 <button class="fp-btn-primary" @onclick="CreateDiet"><i class="fa fa-check"></i> Create</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Edit Diet Notes Modal *@
+@if (showEditDietNotesModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditDietNotesModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> COACHING NOTES</span>
+                <button class="fp-modal-close" @onclick='() => showEditDietNotesModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Diet Notes &amp; Instructions</label>
+                    <textarea @bind="editDietInstructions" rows="8"
+                              placeholder="e.g. Drink at least 3 liters of water daily.&#10;Take your multivitamin with breakfast.&#10;Avoid processed sugar and soft drinks.&#10;Do not skip meals — spacing matters."></textarea>
+                </div>
+                <p class="fp-hint"><i class="fa fa-info-circle"></i> These notes will appear as a dedicated page in the PDF after the cover page.</p>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditDietNotesModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveDietNotes"><i class="fa fa-check"></i> Save Notes</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Save Diet Template Modal *@
+@if (showSaveDietTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showSaveDietTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE DIET TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showSaveDietTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Template Name *</label>
+                    <input @bind="dietTemplateName" placeholder="e.g. 2000kcal High Protein Fat Loss" />
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showSaveDietTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveDietAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Save Workout Template Modal *@
+@if (showSaveWorkoutTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showSaveWorkoutTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE WORKOUT TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showSaveWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Template Name *</label>
+                    <input @bind="workoutTemplateName" placeholder="e.g. 4-Day Push/Pull/Legs Split" />
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showSaveWorkoutTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Apply Diet Template Modal *@
+@if (showApplyDietTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showApplyDietTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM DIET TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showApplyDietTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Select Diet Template *</label>
+                    <select @bind="selectedDietTemplateId">
+                        <option value="0">-- Choose Template --</option>
+                        @foreach (var temp in dietTemplates)
+                        {
+                            <option value="@temp.Id">@temp.Name (@temp.NumberOfMeals meals)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showApplyDietTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="ApplyDietTemplate" disabled="@(selectedDietTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Apply Workout Template Modal *@
+@if (showApplyWorkoutTemplateModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showApplyWorkoutTemplateModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM WORKOUT TEMPLATE</span>
+                <button class="fp-modal-close" @onclick='() => showApplyWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Select Workout Template *</label>
+                    <select @bind="selectedWorkoutTemplateId">
+                        <option value="0">-- Choose Template --</option>
+                        @foreach (var temp in workoutTemplates)
+                        {
+                            <option value="@temp.Id">@temp.Name (@temp.SplitName)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showApplyWorkoutTemplateModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="ApplyWorkoutTemplate" disabled="@(selectedWorkoutTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
             </div>
         </div>
     </div>
@@ -862,8 +1067,18 @@ else
                 }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showDietMealModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveDietMeal"><i class="fa fa-check"></i> Add</button>
+                <button class="fp-btn-outline" @onclick='() => showDietMealModal = false' disabled="@isSavingMeal">Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveDietMeal" disabled="@isSavingMeal">
+                    @if (isSavingMeal)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Adding...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-check"></i> <span>Add</span>
+                    }
+                </button>
             </div>
         </div>
     </div>
@@ -1050,6 +1265,10 @@ else
                         }
                     </select>
                 </div>
+                <div class="fp-input-group">
+                    <label>Day Notes / Instructions (optional — will appear in PDF)</label>
+                    <textarea @bind="newDay.Notes" rows="3" placeholder="e.g. Focus on mind-muscle connection. Rest 2 min between sets..."></textarea>
+                </div>
             </div>
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showDayModal = false'>Cancel</button>
@@ -1102,9 +1321,9 @@ else
             <div class="fp-modal-body">
                 <div class="fp-input-group"><label>Cardio Type *</label><input @bind="newCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Duration (minutes) *</label><input type="number" @bind="newCardio.DurationMinutes" placeholder="20" /></div>
+                    <div class="fp-input-group"><label style="white-space: nowrap;">Duration (min) *</label><input type="number" @bind="newCardio.DurationMinutes" placeholder="20" /></div>
                     <div class="fp-input-group">
-                        <label>Intensity *</label>
+                        <label style="white-space: nowrap;">Intensity *</label>
                         <select @bind="newCardioIntensity">
                             <option value="0">Low</option>
                             <option value="1">Medium</option>
@@ -1134,9 +1353,9 @@ else
             <div class="fp-modal-body">
                 <div class="fp-input-group"><label>Cardio Type *</label><input @bind="editCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Duration (minutes) *</label><input type="number" @bind="editCardio.DurationMinutes" placeholder="20" /></div>
+                    <div class="fp-input-group"><label style="white-space: nowrap;">Duration (min) *</label><input type="number" @bind="editCardio.DurationMinutes" placeholder="20" /></div>
                     <div class="fp-input-group">
-                        <label>Intensity *</label>
+                        <label style="white-space: nowrap;">Intensity *</label>
                         <select @bind="editCardioIntensity">
                             <option value="0">Low</option>
                             <option value="1">Medium</option>
@@ -1149,6 +1368,29 @@ else
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick='() => showEditCardioModal = false'>Cancel</button>
                 <button class="fp-btn-primary" @onclick="SaveEditCardio"><i class="fa fa-check"></i> Update Cardio</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Edit Workout Day Notes *@
+@if (showEditWorkoutDayNotesModal)
+{
+    <div class="fp-modal-overlay" @onclick='() => showEditWorkoutDayNotesModal = false'>
+        <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
+            <div class="fp-modal-header">
+                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> EDIT DAY NOTES</span>
+                <button class="fp-modal-close" @onclick='() => showEditWorkoutDayNotesModal = false'><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <div class="fp-input-group">
+                    <label>Day Notes &amp; Instructions</label>
+                    <textarea @bind="editWorkoutDayNotesText" rows="6" placeholder="e.g. Focus on tempo, keep rest under 60 seconds..."></textarea>
+                </div>
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick='() => showEditWorkoutDayNotesModal = false'>Cancel</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutDayNotes"><i class="fa fa-check"></i> Save Notes</button>
             </div>
         </div>
     </div>
@@ -1206,7 +1448,7 @@ else
             <div class="fp-modal-body">
                 <p style="color:var(--fp-text);font-size:15px;line-height:1.6;">
                     Are you sure you want to delete <strong>@deleteConfirmName</strong>?<br />
-                    <span style="color:var(--fp-text-muted);font-size:13px;">@deleteConfirmMessage</span>
+                    <span style="color:var(--fp-text-muted);font-size:16px;">@deleteConfirmMessage</span>
                 </p>
             </div>
             <div class="fp-modal-footer">
@@ -1267,6 +1509,27 @@ else
     private bool showRenewModal = false;
     private bool showDeleteConfirm = false;
 
+    // ── Edit Workout Day Notes ────────────────────────────────────
+    private bool showEditWorkoutDayNotesModal = false;
+    private int editWorkoutDayNotesWorkoutId = 0;
+    private int editWorkoutDayNotesDayId = 0;
+    private string? editWorkoutDayNotesText = "";
+
+
+    // ── Templates ─────────────────────────────────────────────────
+    private List<DietTemplate> dietTemplates = new();
+    private List<WorkoutTemplate> workoutTemplates = new();
+    private bool showSaveDietTemplateModal = false;
+    private bool showSaveWorkoutTemplateModal = false;
+    private bool showApplyDietTemplateModal = false;
+    private bool showApplyWorkoutTemplateModal = false;
+    private string dietTemplateName = "";
+    private string workoutTemplateName = "";
+    private int selectedDietTemplateId = 0;
+    private int selectedWorkoutTemplateId = 0;
+    private int savingTemplateDietId = 0;
+    private int savingTemplateWorkoutId = 0;
+
     // ── Month accordion state ─────────────────────────────────────
     private HashSet<int> expandedDietMonths = new() { 1 };
     private HashSet<int> expandedWorkoutMonths = new() { 1 };
@@ -1293,6 +1556,11 @@ else
     private int editingWorkoutId = 0;
     private int editWorkoutDayCount = 1;
     private int editWorkoutCurrentCount = 0;
+
+    // ── Edit Diet Notes ───────────────────────────────────────────
+    private bool showEditDietNotesModal = false;
+    private int editDietNotesId = 0;
+    private string? editDietInstructions = null;
 
     // ── Delete confirm ────────────────────────────────────────────
     private string deleteConfirmType = string.Empty;
@@ -1339,6 +1607,7 @@ else
 
     private List<CoachMealDictionary> mealDict = new();
     private List<CoachExerciseDictionary> exerciseDict = new();
+    private bool isSavingMeal = false;
 
     // ── Lifecycle ─────────────────────────────────────────────────
 
@@ -1355,6 +1624,8 @@ else
             workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
             mealDict = await DictionaryService.GetMealsAsync(coachId);
             exerciseDict = await DictionaryService.GetExercisesAsync(coachId);
+            dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+            workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
         }
         isLoading = false;
     }
@@ -1629,9 +1900,27 @@ else
         if (idx >= 0)
         {
             var d = diets[idx];
-            diets[idx] = new DietResponseDto(d.Id, editDietMealCount, d.CreatedAt, d.DietMeals);
+            diets[idx] = new DietResponseDto(d.Id, editDietMealCount, d.CreatedAt, d.Instructions, d.DietMeals);
         }
         showEditDietModal = false;
+    }
+
+    private void OpenEditDietNotesModal(DietResponseDto diet)
+    {
+        editDietNotesId = diet.Id;
+        editDietInstructions = diet.Instructions;
+        showEditDietNotesModal = true;
+    }
+
+    private async Task SaveDietNotes()
+    {
+        var updated = await DietService.UpdateDietInstructionsAsync(ClientId, editDietNotesId, editDietInstructions, coachId);
+        if (updated != null)
+        {
+            var idx = diets.FindIndex(d => d.Id == editDietNotesId);
+            if (idx >= 0) diets[idx] = updated;
+        }
+        showEditDietNotesModal = false;
     }
 
     private string newDietMealName = "";
@@ -1665,15 +1954,25 @@ else
 
     private async Task SaveDietMeal()
     {
+        if (isSavingMeal) return;
         if (string.IsNullOrWhiteSpace(newDietMealName)) return;
-        var result = await DietService.AddDietMealAsync(
-            ClientId, activeDietId, newDietMealName, newDietMealInstruction, newDietMealParentId, coachId, newDietMealLink, newDietMealInitialItems);
-        if (result != null)
+
+        isSavingMeal = true;
+        try
         {
-            var idx = diets.FindIndex(d => d.Id == activeDietId);
-            if (idx >= 0) diets[idx] = result;
+            var result = await DietService.AddDietMealAsync(
+                ClientId, activeDietId, newDietMealName, newDietMealInstruction, newDietMealParentId, coachId, newDietMealLink, newDietMealInitialItems);
+            if (result != null)
+            {
+                var idx = diets.FindIndex(d => d.Id == activeDietId);
+                if (idx >= 0) diets[idx] = result;
+            }
+            showDietMealModal = false;
         }
-        showDietMealModal = false;
+        finally
+        {
+            isSavingMeal = false;
+        }
     }
 
     private bool showEditDietMealModal = false;
@@ -2103,6 +2402,45 @@ else
         showEditCardioModal = false;
     }
 
+    private void OpenEditWorkoutDayNotesModal(int workoutId, WorkoutDayResponseDto day)
+    {
+        editWorkoutDayNotesWorkoutId = workoutId;
+        editWorkoutDayNotesDayId = day.Id;
+        editWorkoutDayNotesText = day.Notes;
+        showEditWorkoutDayNotesModal = true;
+    }
+
+    private async Task SaveWorkoutDayNotes()
+    {
+        var updated = await WorkoutService.UpdateWorkoutDayNotesAsync(
+            ClientId, editWorkoutDayNotesWorkoutId, editWorkoutDayNotesDayId, editWorkoutDayNotesText, coachId);
+        if (updated != null)
+        {
+            var day = workouts.FirstOrDefault(w => w.Id == editWorkoutDayNotesWorkoutId)
+                              ?.WorkoutDays.FirstOrDefault(d => d.Id == editWorkoutDayNotesDayId);
+            if (day != null)
+            {
+                day.Notes = updated.Notes;
+            }
+        }
+        showEditWorkoutDayNotesModal = false;
+    }
+
+    private async Task ConfirmDeleteWorkoutDayNotes(int workoutId, int dayId)
+    {
+        var updated = await WorkoutService.UpdateWorkoutDayNotesAsync(
+            ClientId, workoutId, dayId, null, coachId);
+        if (updated != null)
+        {
+            var day = workouts.FirstOrDefault(w => w.Id == workoutId)
+                              ?.WorkoutDays.FirstOrDefault(d => d.Id == dayId);
+            if (day != null)
+            {
+                day.Notes = null;
+            }
+        }
+    }
+
     // ── Subscription ──────────────────────────────────────────────
 
     private async Task RenewSubscription()
@@ -2171,5 +2509,79 @@ else
         {
             newExercise.ExerciseLink = match.ExcerciseLink;
         }
+    }
+
+    // ── Templates Logic ───────────────────────────────────────────
+
+    private void OpenSaveDietTemplateModal(int dietId)
+    {
+        savingTemplateDietId = dietId;
+        dietTemplateName = "";
+        showSaveDietTemplateModal = true;
+    }
+
+    private async Task SaveDietAsTemplate()
+    {
+        if (string.IsNullOrWhiteSpace(dietTemplateName)) return;
+        var template = await TemplateService.SaveDietAsTemplateAsync(savingTemplateDietId, dietTemplateName, coachId);
+        dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+        showSaveDietTemplateModal = false;
+        await JS.InvokeVoidAsync("alert", $"Diet template '{template.Name}' saved successfully!");
+    }
+
+    private void OpenApplyDietTemplateModal()
+    {
+        selectedDietTemplateId = 0;
+        showApplyDietTemplateModal = true;
+    }
+
+    private async Task ApplyDietTemplate()
+    {
+        if (selectedDietTemplateId == 0) return;
+        isLoading = true;
+        showApplyDietTemplateModal = false;
+        var success = await TemplateService.CloneDietTemplateAsync(selectedDietTemplateId, ClientId, coachId);
+        if (success)
+        {
+            diets = await DietService.GetDietsAsync(ClientId, coachId);
+            expandedDietMonths.Add(diets.Count);
+        }
+        isLoading = false;
+    }
+
+    private void OpenSaveWorkoutTemplateModal(int workoutId)
+    {
+        savingTemplateWorkoutId = workoutId;
+        workoutTemplateName = "";
+        showSaveWorkoutTemplateModal = true;
+    }
+
+    private async Task SaveWorkoutAsTemplate()
+    {
+        if (string.IsNullOrWhiteSpace(workoutTemplateName)) return;
+        var template = await TemplateService.SaveWorkoutAsTemplateAsync(savingTemplateWorkoutId, workoutTemplateName, coachId);
+        workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
+        showSaveWorkoutTemplateModal = false;
+        await JS.InvokeVoidAsync("alert", $"Workout template '{template.Name}' saved successfully!");
+    }
+
+    private void OpenApplyWorkoutTemplateModal()
+    {
+        selectedWorkoutTemplateId = 0;
+        showApplyWorkoutTemplateModal = true;
+    }
+
+    private async Task ApplyWorkoutTemplate()
+    {
+        if (selectedWorkoutTemplateId == 0) return;
+        isLoading = true;
+        showApplyWorkoutTemplateModal = false;
+        var success = await TemplateService.CloneWorkoutTemplateAsync(selectedWorkoutTemplateId, ClientId, coachId);
+        if (success)
+        {
+            workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
+            expandedWorkoutMonths.Add(workouts.Count);
+        }
+        isLoading = false;
     }
 }

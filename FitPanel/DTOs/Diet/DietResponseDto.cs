@@ -8,14 +8,16 @@ public class DietResponseDto
     public int Id { get; set; }
     public int NumberOfMeals { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? Instructions { get; set; }
     public List<DietMealResponseDto> DietMeals { get; set; } = new();
 
     public DietResponseDto() { }
-    public DietResponseDto(int id, int numberOfMeals, DateTime createdAt, List<DietMealResponseDto> dietMeals)
+    public DietResponseDto(int id, int numberOfMeals, DateTime createdAt, string? instructions, List<DietMealResponseDto> dietMeals)
     {
         Id = id;
         NumberOfMeals = numberOfMeals;
         CreatedAt = createdAt;
+        Instructions = instructions;
         DietMeals = dietMeals;
     }
 }

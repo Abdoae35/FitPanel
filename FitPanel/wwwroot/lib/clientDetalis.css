@@ -28,10 +28,10 @@
     .fp-link-after:hover{background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e}
 
     .fp-sub-status{display:flex;align-items:center;justify-content:space-between;background:var(--fp-surface);border:1px solid var(--fp-border);border-left:4px solid var(--fp-accent);padding:16px 20px;margin-bottom:24px;flex-wrap:wrap;gap:16px}
-    .fp-sub-info{display:flex;align-items:center;flex-wrap:wrap;gap:0}
-    .fp-sub-block{display:flex;flex-direction:column;gap:4px;padding:0 24px}
+    .fp-sub-info{display:flex;align-items:flex-start;flex-wrap:wrap;gap:0}
+    .fp-sub-block{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:0 24px}
     .fp-sub-block:first-child{padding-left:0}
-    .fp-sub-divider{width:1px;height:36px;background:var(--fp-border)}
+    .fp-sub-divider{width:1px;height:42px;background:var(--fp-border);align-self:center}
     .fp-sub-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--fp-text-muted)}
     .fp-sub-value{font-family:'Teko',sans-serif;font-size:20px;font-weight:600;color:var(--fp-text);line-height:1}
     .fp-expired{color:#ef4444 !important}
@@ -72,7 +72,7 @@
     .fp-icon-btn-danger:hover{border-color:#ef4444;color:#ef4444}
     .fp-icon-btn-disabled{opacity:.4;cursor:not-allowed !important}
     .fp-icon-btn-disabled:hover{border-color:var(--fp-border) !important;color:var(--fp-text-muted) !important}
-    .fp-meal-btn{width:26px;height:26px;background:transparent;border:1px solid var(--fp-border);color:var(--fp-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+    .fp-meal-btn{width:33px;height:33px;background:transparent;border:1px solid var(--fp-border);color:var(--fp-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
     .fp-meal-btn:hover{border-color:var(--fp-accent);color:var(--fp-accent)}
     .fp-meal-btn-danger:hover{border-color:#ef4444;color:#ef4444}
 
@@ -105,6 +105,13 @@
     .fp-alt-cal strong{color:#8b5cf6}
     .fp-add-alt-btn{display:flex;align-items:center;gap:8px;padding:7px 12px;background:transparent;border:1px dashed rgba(139,92,246,.3);color:#8b5cf6;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;margin-top:12px;width:100%;justify-content:center}
     .fp-add-alt-btn:hover{border-color:#8b5cf6;background:rgba(139,92,246,.05)}
+
+    /* ── Recipe / Instructions box ── */
+    .fp-instruction-box{padding:10px 14px;background:rgba(255,255,255,0.03);margin:0 16px 12px 16px;border-left:3px solid rgba(234,33,39,0.4);border-radius:0 6px 6px 0}
+    .fp-instruction-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fp-text-muted);margin-bottom:5px;font-family:'DM Sans',sans-serif}
+    .fp-instruction-label i{color:var(--fp-accent);font-size:11px}
+    .fp-instruction-text{font-size:13px;color:var(--fp-text-muted);line-height:1.55;font-family:'DM Sans',sans-serif}
+    .fp-instruction-divider{height:1px;background:rgba(255,255,255,0.05);margin:8px 0}
 
     .fp-days-list{display:flex;flex-direction:column;gap:16px}
     .fp-day-card{background:var(--fp-surface2);border:1px solid var(--fp-border);padding:16px}

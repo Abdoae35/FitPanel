@@ -47,13 +47,14 @@ public class WorkoutDayResponseDto
     public Days Day { get; set; }
     public List<ExerciseResponseDto> Exercises { get; set; } = new();
     public CardioResponseDto? Cardio { get; set; }
+    public string? Notes { get; set; }
 
     public WorkoutDayResponseDto() { }
     public WorkoutDayResponseDto(int id, string dayName, Days day,
-        List<ExerciseResponseDto> exercises, CardioResponseDto? cardio)
+        List<ExerciseResponseDto> exercises, CardioResponseDto? cardio, string? notes = null)
     {
         Id = id; DayName = dayName; Day = day;
-        Exercises = exercises; Cardio = cardio;
+        Exercises = exercises; Cardio = cardio; Notes = notes;
     }
 }
 

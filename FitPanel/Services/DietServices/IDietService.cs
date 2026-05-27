@@ -25,4 +25,5 @@ public interface IDietService
     Task<(bool Success, string Message)> DeleteDietAsync(int clientId, int dietId, string coachId);
     Task<(bool Success, string Message)> DeleteMealItemAsync(int mealId, string coachId);
     Task<(bool Success, string Message)> UpdateMealItemAsync(int mealId, CreateMealItemDto dto, string coachId);
+    Task<DietResponseDto?> UpdateDietInstructionsAsync(int clientId, int dietId, string? instructions, string coachId);
 }

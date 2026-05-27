@@ -13,12 +13,13 @@ namespace FitPanel.Data.Models;
         // Foreign Key to WorkOut
         public int WorkOutId { get; set; }   // FK
         public WorkOut WorkOut { get; set; }  // Navigation
-        
+
+        // Optional per-day notes shown in the PDF below the exercise table
+        public string? Notes { get; set; }
 
         //Apply one to many relationship with Excercise
         public ICollection<Excercise> ExcerciseItems { get; set; } = new List<Excercise>();
 
-            // Optional cardio — null means no cardio this day
-    public Cardio? Cardio { get; set; }
-       
+        // Optional cardio — null means no cardio this day
+        public Cardio? Cardio { get; set; }
     }

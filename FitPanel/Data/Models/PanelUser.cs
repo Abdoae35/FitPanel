@@ -25,6 +25,7 @@ public class PanelUser : IdentityUser
 
     // One Coach → Many Clients
     public ICollection<Client> Clients { get; set; } = new List<Client>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }
 
 }

@@ -114,8 +114,13 @@ public class DietService : IDietService
             await _db.SaveChangesAsync();
         }
 
-        // Upsert dictionary with full meal state
-        await UpsertMealDictionaryAsync(dietMeal.Id, coachId);
+        // Only upsert the dictionary when we actually have ingredients to store.
+        // If this is a brand-new empty meal (no initialItems), skip it — the upsert
+        // will happen when the first individual ingredient is added via AddMealItemAsync.
+        // This prevents creating an empty-ingredients dictionary entry that would then
+        // block future updates via the early-return guard in UpsertMealDictionaryAsync.
+        if (initialItems != null && initialItems.Count > 0)
+            await UpsertMealDictionaryAsync(dietMeal.Id, coachId);
 
         // Return full updated diet
         var fullDiet = await LoadFullDietAsync(dietId);
@@ -315,9 +320,16 @@ public class DietService : IDietService
 
         if (existing != null)
         {
-            // DO NOT update or overwrite the existing template in the dictionary!
-            // This preserves the original base template when it is modified for other clients.
-            return;
+            // Always keep the dictionary entry up-to-date with the latest ingredients snapshot.
+            // This ensures that when a coach adds ingredients to a new meal, those ingredients
+            // are reflected in the dictionary so they auto-fill correctly for other clients.
+            existing.IngredientsJson = ingredientsJson;
+            existing.Protein    = totalProtein;
+            existing.Carbs      = totalCarbs;
+            existing.Fats       = totalFats;
+            existing.Calories   = totalCalories;
+            existing.Link       = dietMeal.Link;
+            existing.Instruction = dietMeal.Instruction;
         }
         else
         {

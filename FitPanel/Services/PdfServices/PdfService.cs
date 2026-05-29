@@ -411,7 +411,7 @@ public class PdfService : IPdfService
                   <td class="exercise-name">{exerciseNameHtml}</td>
                   <td style="text-align: center; font-weight: 800; font-size: 15px;">{ex.Sets}</td>
                   <td style="text-align: center; font-weight: 700; font-size: 15px;">{ex.Reps}</td>
-                  <td style="text-align: center; color: var(--coach-primary); font-weight: 800; font-size: 15px;">{ex.RestTime}</td>
+                  <td style="text-align: center; color: var(--coach-primary); font-weight: 800; font-size: 15px;">{ex.RestTime}s</td>
                 </tr>
                 """);
         }
@@ -461,7 +461,7 @@ public class PdfService : IPdfService
           <div class="content-wrapper">
             <header class="header">
               <div>
-                <h2><span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
+                <h2>DAY <span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
                 <p>FitPanel Elite Coaching Protocols</p>
               </div>
               <div>
@@ -523,8 +523,17 @@ public class PdfService : IPdfService
         var pagesSb = new StringBuilder();
         bool isFirst = true;
 
-        foreach (var m in diet.DietMeals)
+        // Only count top-level meals (not alternative whole meals which have a ParentDietMealId)
+        var topLevelMeals = diet.DietMeals
+            .Where(m => m.ParentDietMealId == null)
+            .OrderBy(m => m.Id)
+            .ToList();
+        int totalMealCount = topLevelMeals.Count;
+        int mealNumber = 0;
+
+        foreach (var m in topLevelMeals)
         {
+            mealNumber++;
             string icon = "🍽️";
             var mealNameLower = m.Name.ToLower();
             if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning")) icon = "🍳";
@@ -573,36 +582,10 @@ public class PdfService : IPdfService
                     """;
             }
 
-            // Macro summary row for first page only
-            var macroSummaryHtml = "";
-            if (isFirst)
-            {
-                macroSummaryHtml = $"""
-                    <div style="display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; padding: 12px; background: var(--coach-dark-elevated); border-radius: 4px; border: 1px solid var(--coach-gray-dark);">
-                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
-                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">CALORIES</div>
-                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalCal}</div>
-                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">kcal</div>
-                      </div>
-                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
-                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">PROTEIN</div>
-                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalProtein}g</div>
-                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{pPct}%</div>
-                      </div>
-                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
-                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">CARBS</div>
-                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalCarbs}g</div>
-                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{cPct}%</div>
-                      </div>
-                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px; background:var(--coach-black); border-radius:4px;">
-                        <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--coach-gray-light);">FATS</div>
-                        <div style="font-size:22px; font-weight:900; color:var(--coach-primary);">{totalFats}g</div>
-                        <div style="font-size:10px; color:var(--coach-gray-light); font-weight:600;">{fPct}%</div>
-                      </div>
-                    </div>
-                    """;
-                isFirst = false;
-            }
+            // Meal name: hyperlink if Link exists in DB
+            var mealNameHtml = string.IsNullOrEmpty(m.Link)
+                ? m.Name
+                : $"<a href='{m.Link}' style='color:var(--coach-primary);text-decoration:none;font-weight:900;display:inline-flex;align-items:center;gap:6px;'>{m.Name} <i style='font-size:11px;'>🔗</i></a>";
 
             var mealCalTotal = m.MealItems.Sum(i => i.Calories);
             var mealProtTotal = m.MealItems.Sum(i => i.Protein);
@@ -615,15 +598,14 @@ public class PdfService : IPdfService
               <div class="content-wrapper">
                 <header class="header">
                   <div>
-                    <h2>{icon} {m.Name}</h2>
-                    <p>Personalized diet & nutrition plan</p>
+                    <h2>{icon} <span class="text-primary" style="font-size:0.85em; font-weight:900;">MEAL {mealNumber}</span> — {mealNameHtml}</h2>
+                    <p>Personalized diet &amp; nutrition plan &nbsp;·&nbsp; {mealNumber} of {totalMealCount}</p>
                   </div>
                   <div>
-                    <span class="skew-badge"><span>NUTRITION</span></span>
+                    <span class="skew-badge"><span>MEAL {mealNumber}/{totalMealCount}</span></span>
                   </div>
                 </header>
 
-                {macroSummaryHtml}
 
                 <div style="background: var(--coach-dark-elevated); border: 1px solid var(--coach-gray-dark); border-radius: 4px; overflow: hidden; padding: 0 16px;">
                   <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; border-bottom: 2px solid var(--coach-primary); margin-bottom: 4px;">
@@ -649,6 +631,98 @@ public class PdfService : IPdfService
             </div>
             """);
         }
+
+        // ── SUMMARY LAST PAGE ─────────────────────────────────────
+        var mealRows = new StringBuilder();
+        int rowNum = 0;
+        foreach (var m in topLevelMeals)
+        {
+            rowNum++;
+            var mCal  = m.MealItems.Sum(i => i.Calories);
+            var mProt = m.MealItems.Sum(i => i.Protein);
+            var mCarb = m.MealItems.Sum(i => i.Carbs);
+            var mFat  = m.MealItems.Sum(i => i.Fats);
+            var rowBg = rowNum % 2 == 0 ? "background:rgba(255,255,255,0.03);" : "";
+            mealRows.Append($"""
+                <tr style="{rowBg}">
+                  <td style="padding:10px 14px;font-size:13px;font-weight:700;color:var(--coach-white);">
+                    <span style="color:var(--coach-primary);font-weight:900;margin-right:8px;">#{rowNum}</span>{m.Name}
+                  </td>
+                  <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:var(--coach-primary);">{mCal}</td>
+                  <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:#00D9FF;">{mProt}g</td>
+                  <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:#FFD700;">{mCarb}g</td>
+                  <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:#FF6B00;">{mFat}g</td>
+                </tr>
+                """);
+        }
+
+        pagesSb.Append($"""
+        <div class="a4-page">
+          <div class="diagonal-overlay"></div>
+          <div class="content-wrapper">
+            <header class="header">
+              <div>
+                <h2>DAILY NUTRITION SUMMARY</h2>
+                <p>Total macros across all {totalMealCount} meals</p>
+              </div>
+              <div><span class="skew-badge"><span>SUMMARY</span></span></div>
+            </header>
+
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;background:var(--coach-dark-elevated);border:1px solid var(--coach-primary);border-radius:6px;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--coach-gray-light);">CALORIES</div>
+                <div style="font-size:36px;font-weight:900;color:var(--coach-primary);">{totalCal}</div>
+                <div style="font-size:11px;color:var(--coach-gray-light);font-weight:600;">kcal / day</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;background:var(--coach-dark-elevated);border:1px solid #00D9FF;border-radius:6px;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--coach-gray-light);">PROTEIN</div>
+                <div style="font-size:36px;font-weight:900;color:#00D9FF;">{totalProtein}g</div>
+                <div style="font-size:11px;color:var(--coach-gray-light);font-weight:600;">{pPct}% of macros</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;background:var(--coach-dark-elevated);border:1px solid #FFD700;border-radius:6px;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--coach-gray-light);">CARBS</div>
+                <div style="font-size:36px;font-weight:900;color:#FFD700;">{totalCarbs}g</div>
+                <div style="font-size:11px;color:var(--coach-gray-light);font-weight:600;">{cPct}% of macros</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;background:var(--coach-dark-elevated);border:1px solid #FF6B00;border-radius:6px;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--coach-gray-light);">FATS</div>
+                <div style="font-size:36px;font-weight:900;color:#FF6B00;">{totalFats}g</div>
+                <div style="font-size:11px;color:var(--coach-gray-light);font-weight:600;">{fPct}% of macros</div>
+              </div>
+            </div>
+
+            <div style="background:var(--coach-dark-elevated);border:1px solid var(--coach-gray-dark);border-radius:6px;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--coach-black);">
+                    <th style="padding:10px 14px;text-align:left;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--coach-white);border-bottom:2px solid var(--coach-primary);">MEAL</th>
+                    <th style="padding:10px 14px;text-align:center;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--coach-primary);border-bottom:2px solid var(--coach-primary);">KCAL</th>
+                    <th style="padding:10px 14px;text-align:center;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#00D9FF;border-bottom:2px solid var(--coach-primary);">PROTEIN</th>
+                    <th style="padding:10px 14px;text-align:center;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#FFD700;border-bottom:2px solid var(--coach-primary);">CARBS</th>
+                    <th style="padding:10px 14px;text-align:center;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#FF6B00;border-bottom:2px solid var(--coach-primary);">FATS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mealRows}
+                  <tr style="background:var(--coach-black);border-top:2px solid var(--coach-primary);">
+                    <td style="padding:12px 14px;font-size:13px;font-weight:900;color:var(--coach-white);">TOTAL</td>
+                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:900;color:var(--coach-primary);">{totalCal}</td>
+                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:900;color:#00D9FF;">{totalProtein}g</td>
+                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:900;color:#FFD700;">{totalCarbs}g</td>
+                    <td style="padding:12px 14px;text-align:center;font-size:14px;font-weight:900;color:#FF6B00;">{totalFats}g</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <footer class="footer">
+            <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
+            <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
+            <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+          </footer>
+        </div>
+        """);
 
         return pagesSb.ToString();
     }
@@ -1095,6 +1169,7 @@ public class PdfService : IPdfService
     {
         try
         {
+            // 1. Coach has a custom profile picture stored in wwwroot
             if (!string.IsNullOrEmpty(profilePicturePath))
             {
                 var cleanPath = profilePicturePath.TrimStart('/');
@@ -1108,23 +1183,29 @@ public class PdfService : IPdfService
                 }
             }
 
-            var possiblePaths = new string[]
+            // 2. Load fallback image from embedded assembly resource (always works on any server)
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var resourceNames = new[] { "FitPanel.templates.imgT.jpeg", "FitPanel.templates.img.jpeg" };
+            foreach (var resourceName in resourceNames)
+            {
+                using var stream = assembly.GetManifestResourceStream(resourceName);
+                if (stream != null)
+                {
+                    using var ms = new MemoryStream();
+                    stream.CopyTo(ms);
+                    return $"data:image/jpeg;base64,{Convert.ToBase64String(ms.ToArray())}";
+                }
+            }
+
+            // 3. Last resort: try file system paths (for local dev fallback)
+            var possiblePaths = new[]
             {
                 Path.Combine(_contentRootPath, "templates", "imgT.jpeg"),
-                Path.Combine(_contentRootPath, "templates", "img.jpeg"),
-                Path.Combine(_webRootPath, "templates", "imgT.jpeg"),
-                Path.Combine(_webRootPath, "templates", "img.jpeg"),
-                Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg"),
-                Path.Combine(Directory.GetCurrentDirectory(), "templates", "img.jpeg"),
                 Path.Combine(AppContext.BaseDirectory, "templates", "imgT.jpeg"),
-                Path.Combine(AppContext.BaseDirectory, "templates", "img.jpeg"),
-                Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "imgT.jpeg"),
-                Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())?.FullName ?? "", "templates", "img.jpeg")
+                Path.Combine(Directory.GetCurrentDirectory(), "templates", "imgT.jpeg"),
             };
-
             var fallbackPath = possiblePaths.FirstOrDefault(p => !string.IsNullOrEmpty(p) && File.Exists(p));
-            
-            if (!string.IsNullOrEmpty(fallbackPath) && File.Exists(fallbackPath))
+            if (!string.IsNullOrEmpty(fallbackPath))
             {
                 var bytes = File.ReadAllBytes(fallbackPath);
                 return $"data:image/jpeg;base64,{Convert.ToBase64String(bytes)}";
@@ -1135,6 +1216,7 @@ public class PdfService : IPdfService
             // Fail silently
         }
 
+        // 4. Absolute last resort: external URL
         return "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80";
     }
 }

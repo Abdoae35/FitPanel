@@ -461,7 +461,7 @@ public class PdfService : IPdfService
           <div class="content-wrapper">
             <header class="header">
               <div>
-                <h2>DAY <span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
+                <h2><span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
                 <p>FitPanel Elite Coaching Protocols</p>
               </div>
               <div>

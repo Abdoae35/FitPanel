@@ -26,7 +26,222 @@
    <head>
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
     <link href="/lib/fitpanel-accordion-fix.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ── Client Details Page — Premium Overhaul ──────────────────────── */
+        .fp-client-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ── Page Header & Avatar ── */
+        .fp-client-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+        }
+        .fp-client-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .fp-back-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            color: var(--fp-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .fp-back-btn:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.05);
+            transform: translateX(-2px);
+        }
+        .fp-client-avatar-xl {
+            width: 72px;
+            height: 72px;
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+            color: var(--fp-accent);
+            font-family: 'Inter', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            clip-path: none; /* remove Teko angled shape */
+        }
+        .fp-client-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--fp-text);
+            text-transform: none;
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        .fp-client-meta-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .fp-client-meta-row span {
+            font-size: 14px; /* standard readable, was 13px */
+            color: var(--fp-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fp-client-meta-row i {
+            color: var(--fp-accent);
+            font-size: 13px;
+        }
+
+        /* ── Links Row ── */
+        .fp-links-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .fp-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14.5px; /* standard readable, was 13px */
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid;
+            text-transform: none;
+            letter-spacing: 0px;
+        }
+        .fp-link-inbody {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+        .fp-link-inbody:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+        }
+        .fp-link-before {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        .fp-link-before:hover {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
+        }
+        .fp-link-after {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        .fp-link-after:hover {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: #22c55e;
+        }
+
+        /* ── Subscription Status Panel ── */
+        .fp-sub-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-left: 4px solid var(--fp-accent);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .fp-sub-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        .fp-sub-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 0 28px;
+        }
+        .fp-sub-block:first-child {
+            padding-left: 0;
+        }
+        .fp-sub-divider {
+            width: 1px;
+            height: 38px;
+            background: var(--fp-border);
+            align-self: center;
+        }
+        .fp-sub-label {
+            font-size: 11px; /* standard readable label, was 10px */
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--fp-text-muted);
+        }
+        .fp-sub-value {
+            font-family: 'Inter', sans-serif; /* standard readable instead of Teko */
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--fp-text);
+            line-height: 1.4;
+        }
+        .fp-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fp-badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
+        .fp-badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+        .fp-badge-green {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
         .fp-sub-actions {
             display: flex;
             align-items: center;
@@ -39,8 +254,9 @@
             background-color: #25D366;
             color: white !important;
             border: none;
-            border-radius: 6px;
-            padding: 10px 16px;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -57,6 +273,730 @@
         }
         .fp-btn-whatsapp i {
             font-size: 16px;
+        }
+
+        /* ── Modern Pill Tabs ── */
+        .fp-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--fp-border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .fp-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .fp-tab {
+            padding: 10px 18px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: var(--fp-text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 14.5px;
+            font-weight: 550;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .fp-tab:hover {
+            color: var(--fp-text);
+            background: var(--fp-surface2);
+        }
+        .fp-tab.active {
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+        }
+        .fp-tab i {
+            font-size: 14px;
+        }
+
+        /* ── Section Header ── */
+        .fp-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .fp-section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 20px; /* standard readable instead of Teko 28px */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: none;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+        .fp-section-sub {
+            font-size: 14px;
+            color: var(--fp-text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        /* ── Accordion Months ── */
+        .fp-month-accordion {
+            border: 1px solid var(--fp-border);
+            border-radius: 14px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            background: var(--fp-surface);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: border-color 0.2s ease;
+        }
+        .fp-month-accordion:hover {
+            border-color: rgba(234, 33, 39, 0.2);
+        }
+        .fp-month-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            background: var(--fp-surface);
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s ease;
+        }
+        .fp-month-header:hover {
+            background: var(--fp-surface2);
+        }
+        .fp-month-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .fp-month-number {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--fp-text);
+            white-space: nowrap;
+        }
+        .fp-month-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .fp-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 550;
+        }
+        .fp-pill-green {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+        .fp-pill-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        .fp-pill-muted {
+            background: var(--fp-surface2);
+            color: var(--fp-text-muted);
+            border: 1px solid var(--fp-border);
+        }
+        .fp-month-chevron {
+            color: var(--fp-text-muted);
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .fp-month-body {
+            padding: 0 24px 24px 24px;
+            background: var(--fp-surface);
+            border-top: 1px solid var(--fp-border);
+        }
+
+        /* ── Plan Details & Cards ── */
+        .fp-plan-card {
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .fp-plan-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .fp-plan-card-header h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px; /* standard readable instead of Teko 28px */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: none;
+            margin: 4px 0 0 0;
+            line-height: 1.3;
+        }
+        .fp-plan-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-radius: 6px;
+            background: rgba(234, 33, 39, 0.1);
+            color: var(--fp-accent);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+        }
+        .fp-plan-badge-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        .fp-plan-date {
+            font-size: 13.5px;
+            color: var(--fp-text-muted);
+            display: block;
+            margin-top: 6px;
+        }
+        .fp-plan-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ── Premium Small Buttons ── */
+        .fp-icon-btn {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            gap: 6px;
+            padding: 8px 14px;
+            white-space: nowrap;
+            height: auto;
+        }
+        .fp-icon-btn:hover:not(:disabled) {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.05);
+        }
+        .fp-icon-btn-danger:hover:not(:disabled) {
+            border-color: #ef4444;
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+        .fp-icon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress bars */
+        .fp-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .fp-progress-label {
+            font-size: 13.5px;
+            color: var(--fp-text-muted);
+            white-space: nowrap;
+            font-weight: 550;
+        }
+        .fp-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--fp-border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .fp-progress-fill {
+            height: 100%;
+            background: var(--fp-accent);
+            border-radius: 3px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Day Splits & Food Tables */
+        .fp-days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .fp-day-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .fp-day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--fp-border);
+        }
+        .fp-day-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fp-day-badge {
+            padding: 4px 10px;
+            background: rgba(234, 33, 39, 0.1);
+            color: var(--fp-accent);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+        .fp-day-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 19px; /* standard readable instead of Teko 22px */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: none;
+        }
+
+        /* Food & Exercise Tables: Standard size 19px as requested! */
+        .fp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .fp-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--fp-text-muted);
+            border-bottom: 2px solid var(--fp-border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fp-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--fp-border);
+            font-family: 'Inter', sans-serif;
+            font-size: 19px; /* EXACTLY 19px as requested */
+            color: var(--fp-text);
+            vertical-align: middle;
+            line-height: 1.5;
+        }
+        .fp-table tr:hover td {
+            background: var(--fp-surface2);
+        }
+
+        .fp-exercise-link {
+            color: var(--fp-accent);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fp-exercise-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Cardio details widget */
+        .fp-cardio-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            font-size: 15px; /* standard readable, was 13px */
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .fp-add-cardio-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px dashed var(--fp-border);
+            border-radius: 8px;
+            color: var(--fp-text-muted);
+            font-size: 14px; /* standard readable, was 12px */
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+        .fp-add-cardio-btn:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.05);
+        }
+
+        /* Diet plan meals grid & cards */
+        .fp-meals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .fp-meal-card {
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .fp-meal-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fp-meal-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 19px; /* EXACTLY 19px for food quantity & name */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: none;
+        }
+        .fp-meal-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .fp-meal-btn {
+            width: 34px;
+            height: 34px;
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .fp-meal-btn:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.05);
+        }
+        .fp-meal-btn-danger:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* Macro totals widgets inside meal card */
+        .fp-macro-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background: var(--fp-surface);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--fp-border);
+        }
+        .fp-macro {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .fp-macro-val {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px; /* standard readable instead of Teko 20px */
+            font-weight: 700;
+            color: var(--fp-text);
+            line-height: 1.2;
+        }
+        .fp-macro-val small {
+            font-size: 11px;
+            color: var(--fp-text-muted);
+            font-weight: 500;
+            margin-left: 1px;
+        }
+        .fp-macro-label {
+            font-size: 10px;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .fp-macro-cal .fp-macro-val {
+            color: var(--fp-accent);
+        }
+
+        /* Recipe instruction text box */
+        .fp-instruction-box {
+            padding: 14px;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            margin: 12px 0;
+            border-left: 4px solid var(--fp-accent);
+            border-radius: 10px;
+        }
+        .fp-instruction-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--fp-text-muted);
+            margin-bottom: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .fp-instruction-text {
+            font-size: 15px; /* standard readable, was 13px */
+            color: var(--fp-text-secondary);
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Alternative food items */
+        .fp-alt-section {
+            margin-top: 14px;
+            border-top: 1px dashed var(--fp-border);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fp-alt-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--fp-text-muted);
+        }
+        .fp-alt-header i {
+            color: #8b5cf6;
+        }
+        .fp-alt-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-left: 3px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .fp-alt-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .fp-alt-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: none;
+        }
+        .fp-alt-desc {
+            font-size: 15px;
+            color: var(--fp-text-muted);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .fp-alt-macros {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .fp-alt-macro {
+            font-size: 14px;
+            color: var(--fp-text-muted);
+        }
+        .fp-alt-macro strong {
+            color: var(--fp-text);
+        }
+        .fp-alt-cal strong {
+            color: #8b5cf6;
+        }
+        .fp-add-alt-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px dashed rgba(139,92,246,0.3);
+            border-radius: 8px;
+            color: #8b5cf6;
+            font-size: 13.5px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .fp-add-alt-btn:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        /* ── Modals & Popups ── */
+        .fp-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .fp-modal {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--fp-accent);
+        }
+        .fp-modal-sm {
+            max-width: 440px;
+        }
+        .fp-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--fp-border);
+        }
+        .fp-modal-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px; /* standard readable instead of Teko 22px */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .fp-modal-close {
+            width: 36px;
+            height: 36px;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .fp-modal-close:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+        }
+        .fp-modal-body {
+            padding: 24px;
+        }
+        .fp-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--fp-border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            background: var(--fp-surface2);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+
+        /* Grid utilities for Modals */
+        .fp-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .fp-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .fp-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .fp-input-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .fp-input-group label {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--fp-text-secondary);
+        }
+        .fp-input-group input,
+        .fp-input-group select,
+        .fp-input-group textarea {
+            width: 100%;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--fp-text);
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .fp-input-group input:focus,
+        .fp-input-group select:focus,
+        .fp-input-group textarea:focus {
+            border-color: var(--fp-accent);
+            box-shadow: 0 0 0 3px rgba(234, 33, 39, 0.12);
+            background: var(--fp-surface);
+        }
+        .fp-input-group input::placeholder,
+        .fp-input-group textarea::placeholder {
+            color: var(--fp-text-muted);
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -79,6 +1019,7 @@ else if (client == null)
 }
 else
 {
+    <div class="fp-client-page">
     @* ── Header ── *@
     <div class="fp-client-header">
         <div class="fp-client-header-left">
@@ -800,6 +1741,7 @@ else
             }
         </div>
     }
+    </div>
 }
 
 @* ══════════════════════════════ MODALS ══════════════════════════════ *@

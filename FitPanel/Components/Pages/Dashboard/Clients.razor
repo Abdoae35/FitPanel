@@ -12,15 +12,323 @@
 <PageTitle>Clients — FitPanel</PageTitle>
 <head>
     <link href="/lib/bootstrap/dist/css/style.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Clients Management — Premium Overhaul ──────────────────────── */
+        .fp-clients-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
+        /* Slots Badge styling */
+        .fp-slots-badge {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 30px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--fp-text-secondary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Clients Grid & Cards */
+        .fp-client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .fp-client-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+        }
+        .fp-client-card:hover {
+            border-color: var(--fp-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(234, 33, 39, 0.12);
+        }
+        .fp-client-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 24px 0;
+        }
+        .fp-client-avatar-lg {
+            width: 56px;
+            height: 56px;
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+            color: var(--fp-accent);
+            font-family: 'Inter', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            clip-path: none; /* remove Teko angled clip-path */
+        }
+        .fp-icon-btn {
+            width: 34px;
+            height: 34px;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .fp-icon-btn:hover {
+            border-color: #ea2127;
+            color: #ea2127;
+            background: rgba(234, 33, 39, 0.05);
+        }
+
+        .fp-client-card-body {
+            padding: 20px 24px;
+            flex: 1;
+        }
+        .fp-client-card-body h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 19px; /* EXACTLY 19px standard readable */
+            font-weight: 750;
+            color: var(--fp-text);
+            text-transform: none;
+            margin: 0 0 12px 0;
+            line-height: 1.2;
+        }
+        .fp-client-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .fp-client-meta span {
+            font-size: 14.5px;
+            color: var(--fp-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fp-client-meta i {
+            color: var(--fp-accent);
+            font-size: 13px;
+        }
+        .fp-client-date {
+            font-size: 14px;
+            color: var(--fp-text-muted);
+            margin: 0;
+        }
+
+        .fp-client-card-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--fp-border);
+            background: var(--fp-surface2);
+            transition: background 0.2s ease;
+        }
+        .fp-client-card-footer span {
+            font-size: 14px;
+            color: var(--fp-accent);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Modals & Popups ── */
+        .fp-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .fp-modal {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--fp-accent);
+        }
+        .fp-modal-sm {
+            max-width: 440px;
+        }
+        .fp-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--fp-border);
+        }
+        .fp-modal-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px; /* standard readable instead of Teko 24px */
+            font-weight: 700;
+            color: var(--fp-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .fp-modal-close {
+            width: 36px;
+            height: 36px;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .fp-modal-close:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+        }
+        .fp-modal-body {
+            padding: 24px;
+        }
+        .fp-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--fp-border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            background: var(--fp-surface2);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+
+        /* Grid utilities for Modals */
+        .fp-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .fp-input-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .fp-input-group label {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--fp-text-secondary);
+            text-transform: none;
+            letter-spacing: 0px;
+        }
+        .fp-input-group input {
+            width: 100%;
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--fp-text);
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .fp-input-group input:focus {
+            border-color: var(--fp-accent);
+            box-shadow: 0 0 0 3px rgba(234, 33, 39, 0.12);
+            background: var(--fp-surface);
+        }
+        .fp-input-group input::placeholder {
+            color: var(--fp-text-muted);
+            opacity: 0.7;
+        }
+
+        /* Alert Box */
+        .fp-alert {
+            margin: 16px 24px 0;
+            padding: 12px 16px;
+            font-size: 14px;
+            border-left: 3px solid #ea2127;
+            font-family: 'Inter', sans-serif;
+            border-radius: 0 8px 8px 0;
+        }
+        .fp-alert-danger {
+            background: rgba(234, 33, 39, 0.08);
+            color: #ff6b6b;
+        }
+
+        /* Loading & Spinners */
+        .fp-loading {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 60px 0;
+            color: var(--fp-text-muted);
+            font-size: 15px;
+        }
+        .fp-spinner-lg {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--fp-border);
+            border-top-color: var(--fp-accent);
+            border-radius: 50%;
+            animation: fp-spin 0.8s linear infinite;
+        }
+        .fp-spinner-sm {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: fp-spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        .fp-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 80px 0;
+            color: var(--fp-text-muted);
+            font-size: 15px;
+        }
+        .fp-empty i {
+            font-size: 48px;
+            opacity: 0.2;
+        }
+    </style>
 </head>
 
-
+<div class="fp-clients-page">
 @* ── Header Row ── *@
 <div class="fp-page-header">
     <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
         <div>
-            <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
+            <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:var(--fp-text);margin:0;line-height:1.2;letter-spacing:-0.5px;">
                 My Clients
             </h1>
             <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
@@ -28,7 +336,7 @@
             </p>
         </div>
         
-        <div style="background:var(--fp-surface); border:1px solid var(--fp-border); border-radius:30px; padding:6px 16px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--fp-text-secondary); box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+        <div class="fp-slots-badge">
             <i class="fa fa-users" style="color:var(--fp-accent);"></i>
             <span>Active Slots:</span>
             <span style="color:var(--fp-text); font-weight:700;">@clients.Count / @maxClients</span>
@@ -222,225 +530,10 @@ else
     </div>
 }
 
+</div>
+
 <style>
-    .fp-input-group label {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--fp-text-muted);
-    margin-bottom: 8px;
-}
-    .fp-client-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 20px;
-    }
-    .fp-client-card {
-        background: var(--fp-surface);
-        border: 1px solid var(--fp-border);
-        cursor: pointer;
-        transition: all 0.25s;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    .fp-client-card:hover {
-        border-color: var(--fp-accent);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 30px rgba(234,33,39,0.1);
-    }
-    .fp-client-card-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 20px 0;
-    }
-    .fp-client-avatar-lg {
-        width: 52px; height: 52px;
-        background: rgba(234,33,39,0.15);
-        color: var(--fp-accent);
-        font-family: 'Teko', sans-serif;
-        font-size: 26px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        clip-path: polygon(0 0, 88% 0, 100% 12%, 100% 100%, 12% 100%, 0 88%);
-    }
-    .fp-icon-btn {
-        width: 32px; height: 32px;
-        background: transparent;
-        border: 1px solid var(--fp-border);
-        color: var(--fp-text-muted);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        transition: all 0.2s;
-    }
-    .fp-icon-btn:hover { border-color: #ea2127; color: #ea2127; }
-    .fp-client-card-body { padding: 16px 20px; flex: 1; }
-    .fp-client-card-body h3 {
-        font-family: 'Teko', sans-serif;
-        font-size: 26px;
-        font-weight: 600;
-        color: var(--fp-text);
-        text-transform: uppercase;
-        margin: 0 0 10px;
-        line-height: 1;
-    }
-    .fp-client-meta {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 8px;
-    }
-    .fp-client-meta span {
-        font-size: 13px;
-        color: var(--fp-text-muted);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .fp-client-meta i { color: var(--fp-accent); font-size: 11px; }
-    .fp-client-date { font-size: 12px; color: var(--fp-text-muted); margin: 0; }
-    .fp-client-card-footer {
-        padding: 12px 20px;
-        border-top: 1px solid var(--fp-border);
-        background: var(--fp-surface2);
-    }
-    .fp-client-card-footer span {
-        font-size: 13px;
-        color: var(--fp-accent);
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Modal */
-    .fp-modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(4px);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-    .fp-modal {
-        background: var(--fp-surface);
-        border: 1px solid var(--fp-border);
-        border-top: 3px solid var(--fp-accent);
-        width: 100%;
-        max-width: 600px;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-    .fp-modal-sm { max-width: 420px; }
-    .fp-modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--fp-border);
-    }
-    .fp-modal-title {
-        font-family: 'Teko', sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--fp-text);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .fp-modal-close {
-        width: 32px; height: 32px;
-        background: transparent;
-        border: 1px solid var(--fp-border);
-        color: var(--fp-text-muted);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    }
-    .fp-modal-close:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
-    .fp-modal-body { padding: 24px; }
-    .fp-modal-footer {
-        padding: 16px 24px;
-        border-top: 1px solid var(--fp-border);
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-    }
-
-    .fp-alert {
-        margin: 0 24px;
-        padding: 12px 16px;
-        font-size: 21px;
-        border-left: 3px solid #ea2127;
-        margin-bottom: 0;
-    }
-    .fp-alert-danger { background: rgba(234,33,39,0.08); color: #ff6b6b; }
-
-    .fp-loading {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 60px 0;
-        color: var(--fp-text-muted);
-    }
-    .fp-spinner-lg {
-        width: 28px; height: 28px;
-        border: 3px solid var(--fp-border);
-        border-top-color: var(--fp-accent);
-        border-radius: 50%;
-        animation: fp-spin 0.8s linear infinite;
-    }
-    .fp-spinner-sm {
-        width: 16px; height: 16px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: fp-spin 0.8s linear infinite;
-        display: inline-block;
-    }
-    @@keyframes fp-spin { to { transform: rotate(360deg); } }
-    .fp-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        padding: 80px 0;
-        color: var(--fp-text-muted);
-    }
-    .fp-empty i { font-size: 48px; opacity: 0.2; }
-    .fp-empty p { font-size: 16px; }
-
-    /* ── Page Header ── */
-    .fp-page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 28px;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       MOBILE & TABLET — max-width: 768px
-       Only adds overrides; does NOT change desktop layout.
-    ═══════════════════════════════════════════════════ */
+    /* Mobile styles overrides */
     @@media (max-width: 768px) {
         .fp-page-header {
             flex-direction: column;
@@ -455,7 +548,7 @@ else
             gap: 14px;
         }
         .fp-client-card-body h3 {
-            font-size: 20px;
+            font-size: 17px;
         }
         .fp-modal-overlay {
             padding: 12px;
@@ -477,21 +570,13 @@ else
             width: 100%;
             justify-content: center;
         }
-        /* Stack the 2-col modal grids to 1 col */
         .fp-grid-2 {
             grid-template-columns: 1fr;
         }
-        .fp-grid-3 {
-            grid-template-columns: 1fr;
-        }
     }
-
     @@media (max-width: 480px) {
         .fp-client-grid {
             grid-template-columns: 1fr;
-        }
-        .fp-client-card-body h3 {
-            font-size: 18px;
         }
     }
 </style>

@@ -21,327 +21,646 @@
 <PageTitle>My Profile — FitPanel</PageTitle>
 
 <head>
-
     <link href="/lib/clientDetalis.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .fp-profile-layout {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-            margin-top: 24px;
+        /* ── Profile Page — Premium Overhaul ──────────────────────── */
+
+        .fp-prof-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .fp-profile-sidebar {
+        /* ── Page Header ── */
+        .fp-prof-header {
+            margin-bottom: 32px;
+        }
+        .fp-prof-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--fp-text);
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        .fp-prof-header p {
+            color: var(--fp-text-muted);
+            font-size: 14px;
+            font-weight: 400;
+            margin: 6px 0 0 0;
+            line-height: 1.5;
+        }
+
+        /* ── Layout Grid ── */
+        .fp-prof-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+        .fp-prof-main {
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
         }
 
-        .fp-profile-card {
+        /* ── Sidebar ── */
+        .fp-prof-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 100px;
+        }
+
+        /* ── Profile Identity Card ── */
+        .fp-identity-card {
             background: var(--fp-surface);
             border: 1px solid var(--fp-border);
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 16px;
+            padding: 32px 24px 24px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+            transition: box-shadow 0.3s ease;
+        }
+        .fp-identity-card:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08), 0 10px 24px rgba(0,0,0,0.05);
         }
 
-        .fp-profile-avatar-lg {
-            width: 110px;
-            height: 110px;
+        .fp-avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .fp-avatar-ring {
+            width: 108px;
+            height: 108px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--fp-accent), #8b1014);
-            color: white;
-            font-size: 38px;
-            font-weight: 700;
+            background: linear-gradient(135deg, var(--fp-accent), #ff4757, #c0392b);
+            padding: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 16px auto;
-            border: 3px solid var(--fp-surface);
-            box-shadow: 0 4px 10px rgba(234, 33, 39, 0.25);
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(234, 33, 39, 0.2);
+        }
+        .fp-avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--fp-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .fp-avatar-inner img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            border-radius: 50%;
+        }
+        .fp-avatar-initials {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--fp-accent);
+            letter-spacing: 1px;
+            user-select: none;
+        }
+        .fp-avatar-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            background: #22c55e;
+            border: 3px solid var(--fp-surface);
+            border-radius: 50%;
         }
 
-        .fp-profile-card h2 {
+        .fp-identity-name {
             font-size: 20px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--fp-text);
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
         }
-
-        .fp-profile-card p.fp-prof-specialty {
-            font-size: 13px;
+        .fp-identity-role {
+            display: inline-block;
+            font-size: 11px;
             font-weight: 600;
             color: var(--fp-accent);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 16px 0;
-        }
-
-        .fp-profile-card p.fp-prof-bio {
-            font-size: 14px;
-            color: var(--fp-text-secondary);
-            line-height: 1.5;
-            margin: 0 0 20px 0;
-            font-style: italic;
-        }
-
-        .fp-info-badge {
+            letter-spacing: 1.2px;
+            margin: 0 0 14px 0;
+            padding: 4px 12px;
             background: rgba(234, 33, 39, 0.08);
-            border: 1px dashed rgba(234, 33, 39, 0.25);
-            border-radius: 8px;
-            padding: 14px;
-            margin-top: 10px;
+            border-radius: 20px;
+        }
+        .fp-identity-bio {
+            font-size: 13px;
+            color: var(--fp-text-secondary);
+            line-height: 1.65;
+            margin: 0 0 24px 0;
+            font-style: italic;
+            padding: 0 8px;
+        }
+
+        /* ── Client Slots Widget ── */
+        .fp-slots-widget {
+            background: var(--fp-surface2);
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 16px;
             text-align: left;
         }
+        .fp-slots-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .fp-slots-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .fp-slots-count {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--fp-accent);
+        }
+        .fp-slots-track {
+            height: 6px;
+            background: var(--fp-border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .fp-slots-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--fp-accent), #ff4757);
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fp-slots-caption {
+            font-size: 12px;
+            color: var(--fp-text-muted);
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        .fp-slots-caption strong {
+            color: var(--fp-text-secondary);
+        }
 
-        .fp-info-badge h4 {
+        /* ── Info Tip Card ── */
+        .fp-tip-card {
+            background: rgba(234, 33, 39, 0.04);
+            border: 1px solid rgba(234, 33, 39, 0.12);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+        }
+        .fp-tip-card h4 {
             font-size: 13px;
             font-weight: 700;
             color: var(--fp-accent);
             margin: 0 0 6px 0;
-            text-transform: uppercase;
+            letter-spacing: 0.2px;
         }
-
-        .fp-info-badge p {
-            font-size: 12px;
+        .fp-tip-card p {
+            font-size: 12.5px;
             color: var(--fp-text-secondary);
-            line-height: 1.4;
+            line-height: 1.6;
             margin: 0;
         }
 
-        .fp-alert-box {
+        /* ── Form Cards ── */
+        .fp-form-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+        }
+        .fp-form-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--fp-text);
+            margin: 0 0 24px 0;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--fp-border);
+            letter-spacing: -0.2px;
+        }
+        .fp-form-card-title i {
+            color: var(--fp-accent);
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ── Profile Form Input Overrides ── */
+        .fp-prof-page .fp-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--fp-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+        }
+        .fp-prof-page .fp-input-group input,
+        .fp-prof-page .fp-input-group select {
+            height: 44px;
+            border-radius: 10px;
+            font-size: 14px;
+            padding: 0 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .fp-prof-page .fp-input-group textarea {
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 100px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .fp-prof-page .fp-input-group input:focus,
+        .fp-prof-page .fp-input-group textarea:focus {
+            border-color: var(--fp-accent);
+            box-shadow: 0 0 0 3px rgba(234, 33, 39, 0.08);
+        }
+
+        /* ── File Upload Zone ── */
+        .fp-upload-zone {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: var(--fp-surface2);
+            border: 1px dashed var(--fp-border);
+            padding: 14px;
+            border-radius: 12px;
+            transition: border-color 0.2s;
+        }
+        .fp-upload-zone:hover {
+            border-color: var(--fp-accent);
+        }
+        .fp-upload-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--fp-accent);
+            flex-shrink: 0;
+        }
+        .fp-upload-placeholder {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--fp-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--fp-text-muted);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .fp-upload-hint {
+            display: block;
+            font-size: 12px;
+            color: var(--fp-text-muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .fp-upload-remove {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--fp-accent);
+            border: 1px solid rgba(234,33,39,0.25);
             border-radius: 8px;
-            padding: 12px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fp-upload-remove:hover {
+            background: rgba(234,33,39,0.08);
+            border-color: var(--fp-accent);
+        }
+
+        /* ── Alerts ── */
+        .fp-alert {
+            border-radius: 10px;
+            padding: 12px 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 17px;
+            gap: 10px;
+            font-size: 13.5px;
             font-weight: 500;
+            line-height: 1.5;
         }
-
-        .fp-alert-box.success {
-            background: rgba(37, 211, 102, 0.1);
-            border: 1px solid rgba(37, 211, 102, 0.3);
-            color: #25D366;
+        .fp-alert i {
+            font-size: 16px;
+            flex-shrink: 0;
         }
-
-        .fp-alert-box.error {
-            background: rgba(234, 33, 39, 0.1);
-            border: 1px solid rgba(234, 33, 39, 0.3);
+        .fp-alert.fp-alert-success {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #16a34a;
+        }
+        .fp-alert.fp-alert-error {
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px solid rgba(234, 33, 39, 0.2);
             color: var(--fp-accent);
         }
 
-        @@media (max-width: 992px) {
-            .fp-profile-layout {
+        /* ── Form Footer / Actions ── */
+        .fp-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--fp-border);
+        }
+        .fp-form-actions .fp-btn-primary {
+            padding: 10px 28px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: none;
+            clip-path: none;
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 1100px) {
+            .fp-prof-grid {
+                grid-template-columns: 300px 1fr;
+                gap: 20px;
+            }
+        }
+        @@media (max-width: 900px) {
+            .fp-prof-grid {
                 grid-template-columns: 1fr;
+            }
+            .fp-prof-sidebar {
+                position: static;
+            }
+            .fp-identity-card {
+                max-width: 420px;
+                margin: 0 auto;
+            }
+            .fp-tip-card {
+                max-width: 420px;
+                margin: 0 auto;
+            }
+        }
+        @@media (max-width: 640px) {
+            .fp-prof-header h1 {
+                font-size: 22px;
+            }
+            .fp-form-card {
+                padding: 20px 16px;
+                border-radius: 12px;
+            }
+            .fp-identity-card {
+                padding: 24px 16px 20px;
+                max-width: none;
+            }
+            .fp-tip-card {
+                max-width: none;
+            }
+            .fp-form-card-title {
+                font-size: 15px;
+            }
+            .fp-form-actions .fp-btn-primary {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 
-<div class="fp-page-header">
-    <div>
-        <h1 style="font-family:'Teko',sans-serif;font-size:42px;font-weight:700;color:var(--fp-text);text-transform:uppercase;margin:0;line-height:1;">
-            Coach Profile
-        </h1>
-        <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
-            Manage your personal brand, active client slots, and PDF configurations
-        </p>
-    </div>
-</div>
+<div class="fp-prof-page">
 
-@if (isLoading)
-{
-    <div class="fp-loading">
-        <div class="fp-spinner-lg"></div>
-        <span>Loading your profile details...</span>
+    @* ── Page Header ── *@
+    <div class="fp-prof-header">
+        <h1>Coach Profile</h1>
+        <p>Manage your personal brand, active client slots, and PDF configurations</p>
     </div>
-}
-else if (coach == null)
-{
-    <div class="fp-empty">
-        <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
-        <p>Could not load profile. Please refresh or try logging in again.</p>
-    </div>
-}
-else
-{
-    <div class="fp-profile-layout">
-        
-        @* ── Sidebar Profile Details ── *@
-        <div class="fp-profile-sidebar">
-            <div class="fp-profile-card">
-                @if (!string.IsNullOrEmpty(profilePicture))
-                {
-                    <img src="@profilePicture" class="fp-profile-avatar-lg" alt="Profile Picture" />
-                }
-                else
-                {
-                    <div class="fp-profile-avatar-lg">
-                        @GetInitials(fullName)
-                    </div>
-                }
-                
-                <h2>@fullName</h2>
-                <p class="fp-prof-specialty">@(string.IsNullOrEmpty(specialization) ? "Professional Fitness Coach" : specialization)</p>
-                <p class="fp-prof-bio">"@(string.IsNullOrEmpty(bio) ? "Crush your limits every day." : bio)"</p>
-                
-                @* Subscription Limits Slot Widget *@
-                <div style="background:var(--fp-surface2); border:1px solid var(--fp-border); border-radius:8px; padding:16px; text-align:left;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:600; font-size:13px; color:var(--fp-text-secondary);">
-                        <span>ACTIVE CLIENTS</span>
-                        <span style="color:var(--fp-accent); font-weight:700;">@clients.Count / @coach.MaxClients</span>
-                    </div>
-                    <div style="height:8px; background:var(--fp-border); border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; background:var(--fp-accent); width: @(Math.Min(100, (double)clients.Count / coach.MaxClients * 100))%; transition: width 0.3s ease;"></div>
-                    </div>
-                    <p style="font-size:11px; color:var(--fp-text-muted); margin-top:8px; line-height:1.4;">
-                        You are coaching <strong>@clients.Count</strong> active clients out of <strong>@coach.MaxClients</strong> allowed slots.
-                    </p>
-                </div>
-            </div>
 
-            @* PDF Templates Tip *@
-            <div class="fp-info-badge">
-                <h4>🎨 PDF Templates (Soon)</h4>
-                <p>In the next update, you will be able to customize page structures, colors, and layout templates directly from this section to match your personal fitness brand!</p>
-            </div>
+    @if (isLoading)
+    {
+        <div class="fp-loading">
+            <div class="fp-spinner-lg"></div>
+            <span>Loading your profile details...</span>
         </div>
+    }
+    else if (coach == null)
+    {
+        <div class="fp-empty">
+            <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
+            <p>Could not load profile. Please refresh or try logging in again.</p>
+        </div>
+    }
+    else
+    {
+        <div class="fp-prof-grid">
 
-        @* ── Editable Details ── *@
-        <div class="fp-card" style="margin:0;">
-            <h3 class="fp-card-title" style="margin-bottom: 24px; border-bottom: 1px solid var(--fp-border); padding-bottom: 12px;">
-                <i class="fa fa-sliders-h" style="color:var(--fp-accent); margin-right:8px;"></i> Brand Settings
-            </h3>
+            @* ── Sidebar ── *@
+            <div class="fp-prof-sidebar">
+                <div class="fp-identity-card">
+                    <div class="fp-avatar-wrapper">
+                        <div class="fp-avatar-ring">
+                            <div class="fp-avatar-inner">
+                                @if (!string.IsNullOrEmpty(profilePicture))
+                                {
+                                    <img src="@profilePicture" alt="Profile Picture" />
+                                }
+                                else
+                                {
+                                    <span class="fp-avatar-initials">@GetInitials(fullName)</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="fp-avatar-badge"></div>
+                    </div>
 
-            @if (!string.IsNullOrEmpty(successMessage))
-            {
-                <div class="fp-alert-box success">
-                    <i class="fa fa-check-circle"></i> @successMessage
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="fp-alert-box error">
-                    <i class="fa fa-exclamation-circle"></i> @errorMessage
-                </div>
-            }
+                    <h2 class="fp-identity-name">@fullName</h2>
+                    <div class="fp-identity-role">@(string.IsNullOrEmpty(specialization) ? "Professional Fitness Coach" : specialization)</div>
+                    <p class="fp-identity-bio">"@(string.IsNullOrEmpty(bio) ? "Crush your limits every day." : bio)"</p>
 
-            <div class="fp-grid-2">
-                <div class="fp-input-group">
-                    <label>Coach / Brand Name *</label>
-                    <input @bind="fullName" placeholder="Coach John Doe" />
+                    @* Subscription Slots *@
+                    <div class="fp-slots-widget">
+                        <div class="fp-slots-header">
+                            <span class="fp-slots-label">Active Clients</span>
+                            <span class="fp-slots-count">@clients.Count / @coach.MaxClients</span>
+                        </div>
+                        <div class="fp-slots-track">
+                            <div class="fp-slots-fill" style="width: @(Math.Min(100, (double)clients.Count / coach.MaxClients * 100))%"></div>
+                        </div>
+                        <p class="fp-slots-caption">
+                            You are coaching <strong>@clients.Count</strong> active clients out of <strong>@coach.MaxClients</strong> allowed slots.
+                        </p>
+                    </div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Specialization (e.g. Body Recomposition)</label>
-                    <input @bind="specialization" placeholder="Weight Loss & Strength Coach" />
+
+                @* PDF Templates Tip *@
+                <div class="fp-tip-card">
+                    <h4>🎨 PDF Templates (Soon)</h4>
+                    <p>In the next update, you will be able to customize page structures, colors, and layout templates directly from this section to match your personal fitness brand!</p>
                 </div>
             </div>
 
-            <div class="fp-grid-2">
-                <div class="fp-input-group">
-                    <label>Email *</label>
-                    <input @bind="email" placeholder="coach@example.com" />
-                </div>
-                <div class="fp-input-group">
-                    <label>Phone Number *</label>
-                    <input @bind="phoneNumber" placeholder="+966500000000" />
-                </div>
-            </div>
+            @* ── Main Content ── *@
+            <div class="fp-prof-main">
 
-            <div class="fp-grid-2">
-                <div class="fp-input-group">
-                    <label>Instagram Username</label>
-                    <input @bind="instagramUsername" placeholder="@@coach_john" />
-                </div>
-                <div class="fp-input-group">
-                    <label>Instagram Profile Link</label>
-                    <input @bind="instagramLink" placeholder="https://instagram.com/coach_john" />
-                </div>
-            </div>
+                @* ── Brand Settings Card ── *@
+                <div class="fp-form-card">
+                    <h3 class="fp-form-card-title">
+                        <i class="fa fa-sliders-h"></i> Brand Settings
+                    </h3>
 
-            <div class="fp-input-group">
-                <label>Profile Picture</label>
-                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--fp-surface2); border: 1px solid var(--fp-border); padding: 12px; border-radius: 6px;">
-                    @if (!string.IsNullOrEmpty(profilePicture))
+                    @if (!string.IsNullOrEmpty(successMessage))
                     {
-                        <img src="@profilePicture" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--fp-accent);" alt="Profile Picture Preview" />
-                    }
-                    else
-                    {
-                        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--fp-border); display: flex; align-items: center; justify-content: center; color: var(--fp-text-muted); font-size: 20px;">
-                            <i class="fa fa-user"></i>
+                        <div class="fp-alert fp-alert-success">
+                            <i class="fa fa-check-circle"></i> @successMessage
                         </div>
                     }
-                    <InputFile OnChange="OnProfilePictureUpload" style="flex: 1; font-size: 14px; color: var(--fp-text);" />
-                    @if (!string.IsNullOrEmpty(profilePicture))
+                    @if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        <button type="button" class="fp-btn-outline" style="color: var(--fp-accent); border-color: var(--fp-accent); padding: 6px 12px; font-size: 12px;" @onclick="RemoveProfilePicture">
-                            <i class="fa fa-trash"></i> Remove
-                        </button>
+                        <div class="fp-alert fp-alert-error">
+                            <i class="fa fa-exclamation-circle"></i> @errorMessage
+                        </div>
                     }
+
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>Coach / Brand Name *</label>
+                            <input @bind="fullName" placeholder="Coach John Doe" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Specialization</label>
+                            <input @bind="specialization" placeholder="e.g. Body Recomposition" />
+                        </div>
+                    </div>
+
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>Email *</label>
+                            <input @bind="email" placeholder="coach@example.com" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Phone Number *</label>
+                            <input @bind="phoneNumber" placeholder="+966500000000" />
+                        </div>
+                    </div>
+
+                    <div class="fp-grid-2">
+                        <div class="fp-input-group">
+                            <label>Instagram Username</label>
+                            <input @bind="instagramUsername" placeholder="@@coach_john" />
+                        </div>
+                        <div class="fp-input-group">
+                            <label>Instagram Profile Link</label>
+                            <input @bind="instagramLink" placeholder="https://instagram.com/coach_john" />
+                        </div>
+                    </div>
+
+                    <div class="fp-input-group">
+                        <label>Profile Picture</label>
+                        <div class="fp-upload-zone">
+                            @if (!string.IsNullOrEmpty(profilePicture))
+                            {
+                                <img src="@profilePicture" class="fp-upload-preview" alt="Profile Picture Preview" />
+                            }
+                            else
+                            {
+                                <div class="fp-upload-placeholder">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                            }
+                            <InputFile OnChange="OnProfilePictureUpload" style="flex: 1; font-size: 13px; color: var(--fp-text-secondary);" />
+                            @if (!string.IsNullOrEmpty(profilePicture))
+                            {
+                                <button type="button" class="fp-upload-remove" @onclick="RemoveProfilePicture">
+                                    <i class="fa fa-trash"></i> Remove
+                                </button>
+                            }
+                        </div>
+                        <span class="fp-upload-hint">Upload a profile picture (JPEG, PNG). Max size: 2MB.</span>
+                    </div>
+
+                    <div class="fp-input-group">
+                        <label>Biography / Coaching Philosophy</label>
+                        <textarea @bind="bio" rows="4" placeholder="Write a short bio about yourself and your approach to coaching..."></textarea>
+                    </div>
+
+                    <div class="fp-form-actions">
+                        <button class="fp-btn-primary" @onclick="SaveChanges">
+                            <i class="fa fa-check"></i> Save Brand Details
+                        </button>
+                    </div>
                 </div>
-                <small style="color: var(--fp-text-muted); margin-top: 4px;">Upload a profile picture (JPEG, PNG). Max size: 2MB.</small>
-            </div>
 
-            <div class="fp-input-group">
-                <label>Biography / Coaching Philosophy</label>
-                <textarea @bind="bio" rows="4" style="width:100%; border:1px solid var(--fp-border); background:var(--fp-surface2); border-radius:6px; padding:12px; color:var(--fp-text); font-family:inherit; resize:vertical;" placeholder="Write a short bio about yourself and your approach to coaching..."></textarea>
-            </div>
+                @* ── Change Password Card ── *@
+                <div class="fp-form-card">
+                    <h3 class="fp-form-card-title">
+                        <i class="fa fa-shield-halved"></i> Change Password
+                    </h3>
 
-            <div style="text-align: right; margin-top: 24px; border-top: 1px solid var(--fp-border); padding-top: 20px;">
-                <button class="fp-btn-primary" style="padding: 12px 24px;" @onclick="SaveChanges">
-                    <i class="fa fa-check"></i> Save Brand Details
-                </button>
+                    @if (!string.IsNullOrEmpty(pwdSuccessMessage))
+                    {
+                        <div class="fp-alert fp-alert-success">
+                            <i class="fa fa-check-circle"></i> @pwdSuccessMessage
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(pwdErrorMessage))
+                    {
+                        <div class="fp-alert fp-alert-error">
+                            <i class="fa fa-exclamation-circle"></i> @pwdErrorMessage
+                        </div>
+                    }
+
+                    <div class="fp-input-group">
+                        <label>Current Password *</label>
+                        <input type="password" @bind="currentPassword" placeholder="Enter your current password" />
+                    </div>
+
+                    <div class="fp-input-group">
+                        <label>New Password *</label>
+                        <input type="password" @bind="newPassword" placeholder="Min 8 characters" />
+                    </div>
+
+                    <div class="fp-input-group">
+                        <label>Confirm New Password *</label>
+                        <input type="password" @bind="confirmNewPassword" placeholder="Confirm your new password" />
+                    </div>
+
+                    <div class="fp-form-actions">
+                        <button class="fp-btn-primary" @onclick="ChangePassword">
+                            <i class="fa fa-lock"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        @* ── Change Password card ── *@
-        <div class="fp-card" style="margin-top:24px;">
-            <h3 class="fp-card-title" style="margin-bottom: 24px; border-bottom: 1px solid var(--fp-border); padding-bottom: 12px;">
-                <i class="fa fa-key" style="color:var(--fp-accent); margin-right:8px;"></i> Change Password
-            </h3>
-
-            @if (!string.IsNullOrEmpty(pwdSuccessMessage))
-            {
-                <div class="fp-alert-box success">
-                    <i class="fa fa-check-circle"></i> @pwdSuccessMessage
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(pwdErrorMessage))
-            {
-                <div class="fp-alert-box error">
-                    <i class="fa fa-exclamation-circle"></i> @pwdErrorMessage
-                </div>
-            }
-
-            <div class="fp-input-group">
-                <label>Current Password *</label>
-                <input type="password" @bind="currentPassword" placeholder="Enter your current password" />
-            </div>
-
-            <div class="fp-input-group" style="margin-top: 16px;">
-                <label>New Password *</label>
-                <input type="password" @bind="newPassword" placeholder="Min 8 characters" />
-            </div>
-
-            <div class="fp-input-group" style="margin-top: 16px;">
-                <label>Confirm New Password *</label>
-                <input type="password" @bind="confirmNewPassword" placeholder="Confirm your new password" />
-            </div>
-
-            <div style="text-align: right; margin-top: 24px; border-top: 1px solid var(--fp-border); padding-top: 20px;">
-                <button class="fp-btn-primary" style="padding: 12px 24px;" @onclick="ChangePassword">
-                    <i class="fa fa-lock"></i> Change Password
-                </button>
-            </div>
-        </div>
-
-    </div>
-}
+    }
+</div>
 
 @code {
     private bool isLoading = true;

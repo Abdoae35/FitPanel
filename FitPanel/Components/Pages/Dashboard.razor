@@ -17,10 +17,227 @@
 <PageTitle>Dashboard — FitPanel</PageTitle>
 <head>
     <link href="/lib/bootstrap/dist/css/style.css" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Dashboard Landing — Premium Overhaul ──────────────────────── */
+        .fp-dashboard-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Stats Cards */
+        .fp-stat-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .fp-stat-card:hover {
+            border-color: var(--fp-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08), 0 10px 24px rgba(0,0,0,0.05);
+        }
+        .fp-stat-card-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fp-stat-card-value {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--fp-text);
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+        .fp-stat-unit {
+            font-size: 18px;
+            color: var(--fp-text-muted);
+            font-weight: 500;
+            margin-left: 2px;
+        }
+
+        /* Recent Clients Container Card */
+        .fp-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+        }
+        .fp-card-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--fp-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .fp-card-sub {
+            font-size: 14.5px;
+            color: var(--fp-text-muted);
+            margin: 0 0 20px 0;
+        }
+
+        /* Data table custom styling overrides: 19px as requested */
+        .fp-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .fp-table thead th {
+            text-align: left;
+            padding: 12px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--fp-text-muted);
+            border-bottom: 2px solid var(--fp-border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fp-table tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--fp-border);
+            font-family: 'Inter', sans-serif;
+            font-size: 19px; /* EXACTLY 19px as requested */
+            color: var(--fp-text);
+            vertical-align: middle;
+            line-height: 1.5;
+        }
+        .fp-table tbody tr:hover td {
+            background: var(--fp-surface2);
+        }
+
+        /* Muted / Expiration cell text size */
+        .fp-muted-cell {
+            color: var(--fp-text-secondary);
+            font-size: 19px;
+            font-family: 'Inter', sans-serif;
+        }
+        .fp-unit {
+            color: var(--fp-text-muted);
+            font-size: 14px;
+            margin-left: 2px;
+        }
+
+        /* Avatar styles */
+        .fp-client-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(234, 33, 39, 0.08);
+            border: 1px solid rgba(234, 33, 39, 0.15);
+            color: var(--fp-accent);
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+        }
+        .fp-client-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fp-client-name-cell span {
+            font-family: 'Inter', sans-serif;
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--fp-text);
+        }
+
+        /* Buttons overrides */
+        .fp-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: 1px solid var(--fp-border);
+            color: var(--fp-text-secondary);
+            cursor: pointer;
+        }
+        .fp-btn-outline:hover {
+            border-color: var(--fp-accent);
+            color: var(--fp-accent);
+            background: rgba(234, 33, 39, 0.05);
+        }
+        .fp-btn-sm {
+            padding: 6px 12px;
+            font-size: 13.5px;
+        }
+
+        /* Mobile specific card styles */
+        .fp-mobile-client-card {
+            border: 1px solid var(--fp-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--fp-surface2);
+        }
+        .fp-meta-label {
+            font-size: 12px;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .fp-meta-value {
+            font-size: 15px;
+            font-weight: 550;
+            color: var(--fp-text);
+            margin-top: 4px;
+        }
+
+        /* Spinner & Loading states */
+        .fp-loading {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 40px 0;
+            color: var(--fp-text-muted);
+            font-size: 15px;
+        }
+        .fp-spinner-lg {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--fp-border);
+            border-top-color: var(--fp-accent);
+            border-radius: 50%;
+            animation: fp-spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+        .fp-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 60px 0;
+            color: var(--fp-text-muted);
+            font-size: 15px;
+        }
+    </style>
 </head>
 
-
+<div class="fp-dashboard-page">
 @* ── Stats Row ── *@
 <div class="fp-grid-4" style="margin-bottom: 28px;">
     <div class="fp-stat-card">
@@ -164,278 +381,7 @@
         }
     }
 </div>
-
-<style>
-    /* ───────────────────────────────────────────
-       Stats grid
-    ─────────────────────────────────────────── */
-    .fp-grid-4 {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    }
-
-    .fp-stat-unit {
-        font-size: 24px;
-        color: var(--fp-text-muted);
-    }
-
-    /* ───────────────────────────────────────────
-       Loading state
-    ─────────────────────────────────────────── */
-    .fp-loading {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 40px 0;
-        color: var(--fp-text-muted);
-        font-size: 15px;
-    }
-
-    .fp-spinner-lg {
-        width: 28px;
-        height: 28px;
-        border: 3px solid var(--fp-border);
-        border-top-color: var(--fp-accent);
-        border-radius: 50%;
-        animation: fp-spin 0.8s linear infinite;
-        flex-shrink: 0;
-    }
-
-    @@keyframes fp-spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* ───────────────────────────────────────────
-       Empty state
-    ─────────────────────────────────────────── */
-    .fp-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        padding: 60px 0;
-        color: var(--fp-text-muted);
-    }
-
-    .fp-empty i {
-        font-size: 40px;
-        opacity: 0.3;
-    }
-
-    .fp-empty p {
-        font-size: 15px;
-        text-align: center;
-    }
-
-    .fp-link {
-        color: var(--fp-accent);
-        text-decoration: none;
-    }
-
-    .fp-link:hover {
-        text-decoration: underline;
-    }
-
-    /* ───────────────────────────────────────────
-       Table helpers
-    ─────────────────────────────────────────── */
-
-    /* Table header cells */
-    .fp-table thead th {
-        font-family: 'Teko', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: var(--fp-text-muted);
-        padding: 14px 16px;
-    }
-
-    /* Table body cells */
-    .fp-table tbody td {
-        font-family: 'DM Sans', sans-serif;
-        font-size: 15px;
-        color: var(--fp-text);
-        padding: 14px 16px;
-    }
-
-    .fp-unit {
-        color: var(--fp-text-muted);
-        font-size: 13px;
-        margin-left: 2px;
-    }
-
-    /* Date / secondary data cells */
-    .fp-muted-cell {
-        color: var(--fp-text-secondary);
-        font-size: 14px;
-        font-family: 'DM Sans', sans-serif;
-    }
-
-    .fp-btn-sm {
-        padding: 6px 14px;
-        font-size: 12px;
-    }
-
-    .fp-client-name-cell {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    /* Client name text */
-    .fp-client-name-cell span {
-        font-family: 'DM Sans', sans-serif;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--fp-text);
-        letter-spacing: 0.3px;
-    }
-
-    /* ───────────────────────────────────────────
-       Client avatar
-    ─────────────────────────────────────────── */
-    .fp-client-avatar {
-        width: 34px;
-        height: 34px;
-        background: rgba(234, 33, 39, 0.15);
-        color: var(--fp-accent);
-        font-family: 'Teko', sans-serif;
-        font-size: 16px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        border-radius: 4px;
-    }
-
-    /* ───────────────────────────────────────────
-       Desktop table / Mobile cards toggle
-    ─────────────────────────────────────────── */
-    .fp-table-wrap   { display: block; overflow-x: auto; }
-    .fp-mobile-cards { display: none; }
-
-    /* ───────────────────────────────────────────
-       Mobile client card
-    ─────────────────────────────────────────── */
-    .fp-mobile-client-card {
-        border: 1px solid var(--fp-border);
-        border-radius: 8px;
-        padding: 14px;
-        margin-bottom: 12px;
-    }
-
-    .fp-mobile-client-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 12px;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .fp-mobile-client-card-meta {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px 12px;
-        margin-bottom: 12px;
-    }
-
-    .fp-meta-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .fp-meta-label {
-        font-size: 11px;
-        color: var(--fp-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .fp-meta-value {
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    /* Full-width button on mobile cards */
-    .fp-btn-block {
-        display: flex !important;
-        justify-content: center;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* ───────────────────────────────────────────
-       View-all link
-    ─────────────────────────────────────────── */
-    .fp-view-all-wrap {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    /* ───────────────────────────────────────────
-       Breakpoints
-    ─────────────────────────────────────────── */
-
-    /* Tablet – 2-column stat grid, keep table */
-    @@media (max-width: 900px) {
-        .fp-grid-4 {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-    }
-
-    /* Mobile – switch to card layout */
-    @@media (max-width: 640px) {
-        .fp-grid-4 {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .fp-stat-card {
-            padding: 14px;
-        }
-
-        .fp-stat-card-value {
-            font-size: 28px;
-        }
-
-        .fp-stat-unit {
-            font-size: 16px;
-        }
-
-        .fp-stat-card-label {
-            font-size: 11px;
-        }
-
-        .fp-card {
-            padding: 16px;
-        }
-
-        .fp-card-title {
-            font-size: 16px;
-        }
-
-        .fp-card-sub {
-            font-size: 13px;
-        }
-
-        /* Swap table ↔ cards */
-        .fp-table-wrap   { display: none; }
-        .fp-mobile-cards { display: block; }
-    }
-
-    /* Very small screens – stack meta to 2 columns */
-    @@media (max-width: 380px) {
-        .fp-mobile-client-card-meta {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-</style>
+</div>
 
 @code {
     private List<ClientResponseDto> clients = new();

@@ -2,6 +2,7 @@
 
 @namespace FitPanel.Components.Layout
 @inject SignInManager<PanelUser> SignInManager
+@inject UserManager<PanelUser> UserManager
 @inject NavigationManager Nav
 @inject INotificationService NotificationService
 
@@ -83,11 +84,18 @@
             <AuthorizeView Context="userCtx">
                 <Authorized>
                     <div class="fp-user-card">
-                        <div class="fp-user-avatar">
-                            @GetInitials(userCtx.User.Identity?.Name)
-                        </div>
+                        @if (!string.IsNullOrEmpty(currentUser?.ProfilePicture))
+                        {
+                            <img src="@currentUser.ProfilePicture" class="fp-user-avatar" alt="Avatar" style="object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="fp-user-avatar">
+                                @GetInitials(currentUser?.FullName ?? userCtx.User.Identity?.Name)
+                            </div>
+                        }
                         <div class="fp-user-info">
-                            <span class="fp-user-name">@userCtx.User.Identity?.Name</span>
+                            <span class="fp-user-name">@(currentUser?.FullName ?? userCtx.User.Identity?.Name)</span>
                             <span class="fp-user-role">
                                 @(userCtx.User.IsInRole(Policies.AdminRole) ? "Administrator" : Policies.CoachRole)
                             </span>
@@ -1119,6 +1127,7 @@
     private List<Notification> notifications = new();
     private bool showNotificationDropdown = false;
     private string currentUserId = "";
+    private PanelUser? currentUser;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -1141,6 +1150,7 @@
                 if (!string.IsNullOrEmpty(userId))
                 {
                     currentUserId = userId;
+                    currentUser = await UserManager.FindByIdAsync(currentUserId);
                 }
             }
         }
@@ -1245,10 +1255,18 @@
         }
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         UpdateCurrentPage(e.Location);
-        InvokeAsync(StateHasChanged);
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            try
+            {
+                currentUser = await UserManager.FindByIdAsync(currentUserId);
+            }
+            catch (Exception) {}
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
     private void UpdateCurrentPage(string uri)

@@ -4,6 +4,8 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
 @using FitPanel.Data
 @using FitPanel.Data.Models
 @using FitPanel.Services
@@ -13,6 +15,7 @@
 @inject IClientService ClientService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JS
+@inject IWebHostEnvironment Env
 @rendermode InteractiveServer
 
 <PageTitle>My Profile — FitPanel</PageTitle>
@@ -261,8 +264,27 @@ else
             </div>
 
             <div class="fp-input-group">
-                <label>Profile Picture URL</label>
-                <input @bind="profilePicture" placeholder="https://drive.google.com/..." />
+                <label>Profile Picture</label>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--fp-surface2); border: 1px solid var(--fp-border); padding: 12px; border-radius: 6px;">
+                    @if (!string.IsNullOrEmpty(profilePicture))
+                    {
+                        <img src="@profilePicture" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--fp-accent);" alt="Profile Picture Preview" />
+                    }
+                    else
+                    {
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--fp-border); display: flex; align-items: center; justify-content: center; color: var(--fp-text-muted); font-size: 20px;">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    }
+                    <InputFile OnChange="OnProfilePictureUpload" style="flex: 1; font-size: 14px; color: var(--fp-text);" />
+                    @if (!string.IsNullOrEmpty(profilePicture))
+                    {
+                        <button type="button" class="fp-btn-outline" style="color: var(--fp-accent); border-color: var(--fp-accent); padding: 6px 12px; font-size: 12px;" @onclick="RemoveProfilePicture">
+                            <i class="fa fa-trash"></i> Remove
+                        </button>
+                    }
+                </div>
+                <small style="color: var(--fp-text-muted); margin-top: 4px;">Upload a profile picture (JPEG, PNG). Max size: 2MB.</small>
             </div>
 
             <div class="fp-input-group">
@@ -493,5 +515,54 @@ else
         return parts.Length >= 2
             ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
             : name[..1].ToUpper();
+    }
+
+    private async Task OnProfilePictureUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+            var file = e.File;
+            if (file != null)
+            {
+                if (file.Size > 2 * 1024 * 1024)
+                {
+                    errorMessage = "File size exceeds the 2MB limit.";
+                    return;
+                }
+
+                var ext = Path.GetExtension(file.Name).ToLower();
+                if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+                {
+                    errorMessage = "Only JPG, JPEG, and PNG files are allowed.";
+                    return;
+                }
+
+                var uploadsFolder = Path.Combine(Env.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                var fileName = $"coach_{coach?.Id ?? Guid.NewGuid().ToString()}{ext}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using var stream = file.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
+                using var fs = new FileStream(filePath, FileMode.Create);
+                await stream.CopyToAsync(fs);
+
+                profilePicture = $"/uploads/{fileName}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to upload photo: {ex.Message}";
+        }
+    }
+
+    private void RemoveProfilePicture()
+    {
+        profilePicture = string.Empty;
     }
 }

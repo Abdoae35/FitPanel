@@ -1272,7 +1272,9 @@
     private void UpdateCurrentPage(string uri)
     {
         if (uri.Contains("coaches"))       currentPage = "Coaches";
-        else if (uri.Contains("clients"))  currentPage = "Clients";
+        else if (uri.Contains("clients"))  currentPage = "My Clients";
+        else if (uri.Contains("my-data"))  currentPage = "My Data";
+        else if (uri.Contains("profile"))  currentPage = "My Profile";
         else                               currentPage = "Dashboard";
     }
 

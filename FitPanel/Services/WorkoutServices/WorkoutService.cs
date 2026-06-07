@@ -372,6 +372,51 @@ public class WorkoutService : IWorkoutService
                         day.Cardio.Intensity,
                         day.Cardio.Notes),
                     day.Notes
-                );
+                 );
+            }
+
+            public async Task<(bool Success, string Message)> DeleteWorkoutDayAsync(
+                int clientId, int workoutId, int dayId, string coachId)
+            {
+                var day = await _db.WorkOutDays
+                    .Include(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                    .FirstOrDefaultAsync(d => d.Id == dayId
+                        && d.WorkOutId == workoutId
+                        && d.WorkOut.ClientId == clientId
+                        && d.WorkOut.Client.CoachId == coachId);
+
+                if (day == null) return (false, "Workout day not found.");
+
+                _db.WorkOutDays.Remove(day);
+                await _db.SaveChangesAsync();
+                return (true, "Workout day deleted.");
+            }
+
+            public async Task<(bool Success, string Message)> UpdateWorkoutDayAsync(
+                int clientId, int workoutId, int dayId, string dayName, FitPanel.Data.Enums.Days dayOfWeek, string coachId)
+            {
+                var day = await _db.WorkOutDays
+                    .Include(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                    .FirstOrDefaultAsync(d => d.Id == dayId
+                        && d.WorkOutId == workoutId
+                        && d.WorkOut.ClientId == clientId
+                        && d.WorkOut.Client.CoachId == coachId);
+
+                if (day == null) return (false, "Workout day not found.");
+
+                var isDayOfWeekUsed = await _db.WorkOutDays
+                    .AnyAsync(d => d.WorkOutId == workoutId && d.Id != dayId && d.Day == dayOfWeek);
+                
+                if (isDayOfWeekUsed)
+                {
+                    return (false, $"{dayOfWeek} is already used in this workout plan.");
+                }
+
+                day.DayName = dayName;
+                day.Day = dayOfWeek;
+                await _db.SaveChangesAsync();
+                return (true, "Workout day updated.");
             }
 }

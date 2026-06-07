@@ -12,6 +12,7 @@
 @inject UserManager<PanelUser> UserManager
 @inject IClientService ClientService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard — FitPanel</PageTitle>
@@ -89,63 +90,79 @@
             margin: 0 0 20px 0;
         }
 
-        /* Data table custom styling overrides: 19px as requested */
+        /* Data table custom styling overrides */
         .fp-table {
             width: 100%;
             border-collapse: collapse;
         }
         .fp-table thead th {
             text-align: left;
-            padding: 12px 16px;
+            padding: 14px 18px;
             font-family: 'Inter', sans-serif;
-            font-size: 13.5px;
+            font-size: 11.5px;
             font-weight: 600;
             color: var(--fp-text-muted);
-            border-bottom: 2px solid var(--fp-border);
+            border-bottom: 2.5px solid var(--fp-border);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.75px;
+        }
+        .fp-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .fp-table tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.02) !important;
         }
         .fp-table tbody td {
-            padding: 14px 16px;
+            padding: 16px 18px;
             border-bottom: 1px solid var(--fp-border);
             font-family: 'Inter', sans-serif;
-            font-size: 19px; /* EXACTLY 19px as requested */
+            font-size: 15px;
             color: var(--fp-text);
             vertical-align: middle;
             line-height: 1.5;
-        }
-        .fp-table tbody tr:hover td {
-            background: var(--fp-surface2);
+            transition: background 0.2s ease;
         }
 
-        /* Muted / Expiration cell text size */
-        .fp-muted-cell {
-            color: var(--fp-text-secondary);
-            font-size: 19px;
-            font-family: 'Inter', sans-serif;
-        }
         .fp-unit {
             color: var(--fp-text-muted);
-            font-size: 14px;
+            font-size: 13px;
             margin-left: 2px;
         }
 
-        /* Avatar styles */
+        /* Avatar styles & rings */
         .fp-client-avatar {
-            width: 36px;
-            height: 36px;
-            background: rgba(234, 33, 39, 0.08);
-            border: 1px solid rgba(234, 33, 39, 0.15);
-            color: var(--fp-accent);
+            width: 38px;
+            height: 38px;
             font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             border-radius: 50%;
+            transition: all 0.2s ease;
         }
+        .fp-avatar-active {
+            border: 2px solid #22c55e;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.15);
+        }
+        .fp-avatar-expiring {
+            border: 2px solid #f59e0b;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.15);
+        }
+        .fp-avatar-expired {
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.15);
+        }
+
         .fp-client-name-cell {
             display: flex;
             align-items: center;
@@ -153,9 +170,57 @@
         }
         .fp-client-name-cell span {
             font-family: 'Inter', sans-serif;
-            font-size: 19px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--fp-text);
+        }
+
+        /* Expiration text status coloring */
+        .fp-date-active {
+            color: var(--fp-text-secondary);
+        }
+        .fp-date-expiring {
+            color: #f59e0b;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fp-date-expired {
+            color: #ef4444;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Subscription Status Badges */
+        .fp-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .fp-status-badge-active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+        .fp-status-badge-expiring {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+        .fp-status-badge-expired {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.15);
         }
 
         /* Buttons overrides */
@@ -185,26 +250,180 @@
             font-size: 13.5px;
         }
 
-        /* Mobile specific card styles */
-        .fp-mobile-client-card {
-            border: 1px solid var(--fp-border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            background: var(--fp-surface2);
-        }
-        .fp-meta-label {
-            font-size: 12px;
-            color: var(--fp-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* Secondary View Button */
+        .fp-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
             font-weight: 600;
+            color: var(--fp-text-secondary);
+            border: 1px solid var(--fp-border);
+            background: transparent;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            cursor: pointer;
         }
-        .fp-meta-value {
-            font-size: 15px;
-            font-weight: 550;
+        .fp-btn-secondary:hover {
             color: var(--fp-text);
-            margin-top: 4px;
+            border-color: var(--fp-text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            text-decoration: none;
+        }
+
+        /* Responsive show/hide layouts */
+        .fp-table-wrap {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+        }
+        .fp-mobile-cards {
+            display: none;
+        }
+
+        @@media (max-width: 768px) {
+            .fp-table-wrap {
+                display: none;
+            }
+            .fp-mobile-cards {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        /* Mobile Cards Premium Redesign */
+        .fp-mobile-client-card {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 14px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .fp-mobile-client-card:hover {
+            border-color: var(--fp-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(234, 33, 39, 0.08);
+        }
+        .fp-mobile-card-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fp-mobile-name-desc {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .fp-mobile-client-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--fp-text);
+        }
+        .fp-mobile-client-sub {
+            font-size: 13px;
+            color: var(--fp-text-muted);
+        }
+        .fp-mobile-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--fp-border);
+            padding-top: 10px;
+            margin-top: 2px;
+        }
+        .fp-mobile-expiry-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+        }
+        .fp-mobile-expiry-label {
+            color: var(--fp-text-muted);
+        }
+        .fp-mobile-expiry-value {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .fp-mobile-view-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--fp-accent);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Graceful Empty State */
+        .fp-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--fp-surface2);
+            border: 1px dashed var(--fp-border);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+        .fp-empty-icon-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--fp-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            color: var(--fp-text-muted);
+            font-size: 24px;
+        }
+        .fp-empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--fp-text);
+            margin: 0 0 8px 0;
+        }
+        .fp-empty-state p {
+            font-size: 14.5px;
+            color: var(--fp-text-muted);
+            max-width: 320px;
+            margin: 0 0 20px 0;
+            line-height: 1.5;
+        }
+        .fp-btn-primary-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--fp-accent);
+            border: 1px solid var(--fp-accent);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .fp-btn-primary-custom:hover {
+            background: #f12c33;
+            border-color: #f12c33;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(234, 33, 39, 0.2);
+            text-decoration: none;
         }
 
         /* Spinner & Loading states */
@@ -284,9 +503,15 @@
     }
     else if (!clients.Any())
     {
-        <div class="fp-empty">
-            <i class="fa fa-user-plus"></i>
-            <p>No clients yet. <a href="/dashboard/clients" class="fp-link">Add your first client →</a></p>
+        <div class="fp-empty-state">
+            <div class="fp-empty-icon-wrap">
+                <i class="fa fa-users"></i>
+            </div>
+            <h3>No recent clients found</h3>
+            <p>Get started by adding a new client to your coaching panel.</p>
+            <a href="/dashboard/clients" class="fp-btn-primary-custom">
+                <i class="fa fa-user-plus"></i> Add New Client
+            </a>
         </div>
     }
     else
@@ -307,10 +532,11 @@
                 <tbody>
                     @foreach (var client in clients.Take(5))
                     {
-                        <tr>
+                        var status = GetSubscriptionStatus(client.EndDate);
+                        <tr @onclick="() => GoToClient(client.Id)">
                             <td>
                                 <div class="fp-client-name-cell">
-                                    <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
+                                    <div class="fp-client-avatar @GetAvatarClass(status)">@client.Name[..1].ToUpper()</div>
                                     <span>@client.Name</span>
                                 </div>
                             </td>
@@ -319,16 +545,41 @@
                                 <span class="fp-unit">kg</span>
                             </td>
                             <td>
-                                <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
+                                @if (status == SubscriptionStatus.Expired)
+                                {
+                                    <span class="fp-status-badge fp-status-badge-expired">
+                                        <i class="fa fa-exclamation-circle"></i> @client.SubscriptionDurationPerMonth mo
+                                    </span>
+                                }
+                                else if (status == SubscriptionStatus.ExpiringSoon)
+                                {
+                                    <span class="fp-status-badge fp-status-badge-expiring">
+                                        <i class="fa fa-clock"></i> @client.SubscriptionDurationPerMonth mo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="fp-status-badge fp-status-badge-active">
+                                        @client.SubscriptionDurationPerMonth mo
+                                    </span>
+                                }
                             </td>
                             <td class="fp-muted-cell">
                                 @client.CreatedAt.ToString("MMM dd, yyyy")
                             </td>
-                            <td class="fp-muted-cell">
-                                @(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))
+                            <td class="@GetDateClass(status)">
+                                @if (status == SubscriptionStatus.Expired)
+                                {
+                                    <i class="fa fa-exclamation-triangle" style="font-size: 13px; margin-right: 4px;"></i>
+                                }
+                                else if (status == SubscriptionStatus.ExpiringSoon)
+                                {
+                                    <i class="fa fa-clock" style="font-size: 13px; margin-right: 4px;"></i>
+                                }
+                                @client.EndDate.ToString("MMM dd, yyyy")
                             </td>
                             <td>
-                                <a href="/dashboard/clients/@client.Id" class="fp-btn-outline fp-btn-sm">
+                                <a href="/dashboard/clients/@client.Id" @onclick:stopPropagation class="fp-btn-secondary">
                                     <i class="fa fa-eye"></i> View
                                 </a>
                             </td>
@@ -342,31 +593,56 @@
         <div class="fp-mobile-cards">
             @foreach (var client in clients.Take(5))
             {
-                <div class="fp-mobile-client-card">
-                    <div class="fp-mobile-client-card-header">
+                var status = GetSubscriptionStatus(client.EndDate);
+                <div class="fp-mobile-client-card" @onclick="() => GoToClient(client.Id)">
+                    <div class="fp-mobile-card-main">
                         <div class="fp-client-name-cell">
-                            <div class="fp-client-avatar">@client.Name[..1].ToUpper()</div>
-                            <span style="font-weight:600;font-size:15px;">@client.Name</span>
+                            <div class="fp-client-avatar @GetAvatarClass(status)">@client.Name[..1].ToUpper()</div>
+                            <div class="fp-mobile-name-desc">
+                                <span class="fp-mobile-client-name">@client.Name</span>
+                                <span class="fp-mobile-client-sub">@client.Weight kg</span>
+                            </div>
                         </div>
-                        <span class="fp-badge fp-badge-red">@client.SubscriptionDurationPerMonth mo</span>
+                        <div class="fp-mobile-card-badge-area">
+                            @if (status == SubscriptionStatus.Expired)
+                            {
+                                <span class="fp-status-badge fp-status-badge-expired">
+                                    <i class="fa fa-exclamation-circle"></i> @client.SubscriptionDurationPerMonth mo
+                                </span>
+                            }
+                            else if (status == SubscriptionStatus.ExpiringSoon)
+                            {
+                                <span class="fp-status-badge fp-status-badge-expiring">
+                                    <i class="fa fa-clock"></i> @client.SubscriptionDurationPerMonth mo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="fp-status-badge fp-status-badge-active">
+                                    @client.SubscriptionDurationPerMonth mo
+                                </span>
+                            }
+                        </div>
                     </div>
-                    <div class="fp-mobile-client-card-meta">
-                        <div class="fp-meta-item">
-                            <span class="fp-meta-label">Weight</span>
-                            <span class="fp-meta-value">@client.Weight kg</span>
+                    <div class="fp-mobile-card-footer">
+                        <div class="fp-mobile-expiry-info">
+                            <span class="fp-mobile-expiry-label">Expires:</span>
+                            <span class="fp-mobile-expiry-value @GetDateClass(status)">
+                                @if (status == SubscriptionStatus.Expired)
+                                {
+                                    <i class="fa fa-exclamation-triangle" style="font-size: 11px;"></i>
+                                }
+                                else if (status == SubscriptionStatus.ExpiringSoon)
+                                {
+                                    <i class="fa fa-clock" style="font-size: 11px;"></i>
+                                }
+                                @client.EndDate.ToString("MMM dd, yyyy")
+                            </span>
                         </div>
-                        <div class="fp-meta-item">
-                            <span class="fp-meta-label">Joined</span>
-                            <span class="fp-meta-value">@client.CreatedAt.ToString("MMM dd, yyyy")</span>
-                        </div>
-                        <div class="fp-meta-item">
-                            <span class="fp-meta-label">Expires</span>
-                            <span class="fp-meta-value">@(client.CreatedAt.AddMonths(client.SubscriptionDurationPerMonth).ToString("MMM dd, yyyy"))</span>
+                        <div class="fp-mobile-card-action">
+                            <span class="fp-mobile-view-link">View Details <i class="fa fa-chevron-right"></i></span>
                         </div>
                     </div>
-                    <a href="/dashboard/clients/@client.Id" class="fp-btn-outline fp-btn-sm fp-btn-block">
-                        <i class="fa fa-eye"></i> View Client
-                    </a>
                 </div>
             }
         </div>
@@ -390,6 +666,57 @@
     private int activeClients = 0;
     private int avgSub = 0;
     private int newThisMonth = 0;
+
+    private enum SubscriptionStatus
+    {
+        Active,
+        ExpiringSoon,
+        Expired
+    }
+
+    private SubscriptionStatus GetSubscriptionStatus(DateTime endDate)
+    {
+        var today = DateTime.UtcNow.Date;
+        if (endDate.Date < today)
+        {
+            return SubscriptionStatus.Expired;
+        }
+        else if (endDate.Date <= today.AddDays(7))
+        {
+            return SubscriptionStatus.ExpiringSoon;
+        }
+        else
+        {
+            return SubscriptionStatus.Active;
+        }
+    }
+
+    private string GetAvatarClass(SubscriptionStatus status)
+    {
+        return status switch
+        {
+            SubscriptionStatus.Active => "fp-avatar-active",
+            SubscriptionStatus.ExpiringSoon => "fp-avatar-expiring",
+            SubscriptionStatus.Expired => "fp-avatar-expired",
+            _ => ""
+        };
+    }
+
+    private string GetDateClass(SubscriptionStatus status)
+    {
+        return status switch
+        {
+            SubscriptionStatus.Active => "fp-date-active",
+            SubscriptionStatus.ExpiringSoon => "fp-date-expiring",
+            SubscriptionStatus.Expired => "fp-date-expired",
+            _ => ""
+        };
+    }
+
+    private void GoToClient(int id)
+    {
+        Nav.NavigateTo($"/dashboard/clients/{id}");
+    }
 
     protected override async Task OnInitializedAsync()
     {

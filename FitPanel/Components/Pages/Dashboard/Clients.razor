@@ -20,6 +20,14 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+        .fp-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
 
         /* Slots Badge styling */
         .fp-slots-badge {
@@ -345,8 +353,9 @@
     <button class="fp-btn-primary" @onclick="() => showModal = true">
         <i class="fa fa-plus"></i> New Client
     </button>
-</div>
 
+
+</div>
 @* ── Clients Grid ── *@
 @if (isLoading)
 {

@@ -998,6 +998,104 @@
             color: var(--fp-text-muted);
             opacity: 0.7;
         }
+
+        /* Mobile responsive stylesheet overrides */
+        @@media (max-width: 768px) {
+            .fp-client-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+                padding: 16px;
+            }
+            .fp-client-header-left {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 14px;
+            }
+            .fp-client-meta-row {
+                justify-content: center;
+                gap: 12px;
+            }
+            .fp-client-header > button {
+                width: 100%;
+                justify-content: center;
+            }
+            .fp-links-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .fp-link-btn {
+                width: 100%;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+            .fp-sub-status {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 20px;
+                gap: 20px;
+            }
+            .fp-sub-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                width: 100%;
+            }
+            .fp-sub-block {
+                padding: 0 !important;
+                align-items: flex-start;
+            }
+            .fp-sub-divider {
+                display: none;
+            }
+            .fp-sub-actions {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                gap: 10px;
+                margin-top: 4px;
+            }
+            .fp-sub-actions button,
+            .fp-sub-actions a {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+            .fp-tabs {
+                gap: 8px;
+            }
+            .fp-tab {
+                padding: 10px 16px;
+                font-size: 14px;
+                flex: 1;
+                justify-content: center;
+            }
+            .fp-section-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .fp-section-header button {
+                width: 100%;
+                justify-content: center;
+            }
+            .fp-day-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .fp-day-header > div {
+                width: 100%;
+            }
+            .fp-day-header > div:last-child {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .fp-day-header button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 

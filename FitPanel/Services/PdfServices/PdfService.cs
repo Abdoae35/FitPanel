@@ -193,7 +193,7 @@ public class PdfService : IPdfService
           <div class="content-wrapper">
             <header class="header">
               <div>
-                <h2>📋 COACHING NOTES</h2>
+                <h2><svg width="22" height="22" viewBox="0 0 24 24" style="vertical-align:middle;" fill="#e2e8f0"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> COACHING NOTES</h2>
                 <p>Special guidelines &amp; instructions from your coach</p>
               </div>
               <div><span class="skew-badge"><span>NOTES</span></span></div>
@@ -247,11 +247,11 @@ public class PdfService : IPdfService
                 <div class="cover-keys-list" style="margin-bottom: 28px;">
                   <div style="font-family: var(--coach-font-body); font-size: 14px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
                   <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> NUTRITION</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> CARDIO</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> SUPPLEMENTATION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> WORKOUT</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> ABS</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> NUTRITION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> CARDIO</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> SUPPLEMENTATION</li>
                   </ul>
                   <div style="margin-top: 14px; font-style: italic; font-size: 12px; color: var(--coach-white); font-weight: 600;">
                     "All are keys to reach our goal"
@@ -337,11 +337,11 @@ public class PdfService : IPdfService
                 <div class="cover-keys-list" style="margin-bottom: 28px;">
                   <div style="font-family: var(--coach-font-body); font-size: 15px; font-weight: 800; color: var(--coach-primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">OUR KEYS TO SUCCESS</div>
                   <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--coach-gray-light);">
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> WORKOUT</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> ABS</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> NUTRITION</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> CARDIO</li>
-                    <li style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--coach-primary);">⚡</span> SUPPLEMENTATION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> WORKOUT</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> ABS</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> NUTRITION</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> CARDIO</li>
+                    <li style="display: flex; align-items: center; gap: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="#F59E0B"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg> SUPPLEMENTATION</li>
                   </ul>
                   <div style="margin-top: 14px; font-style: italic; font-size: 14px; color: var(--coach-white); font-weight: 600;">
                     "All are keys to reach our goal"
@@ -404,7 +404,7 @@ public class PdfService : IPdfService
         {
             var exerciseNameHtml = string.IsNullOrEmpty(ex.ExcerciseLink)
                 ? ex.ExerciseName
-                : $"<a href='{ex.ExcerciseLink}' style='color: var(--coach-primary); text-decoration: none; font-weight: 700;'>{ex.ExerciseName} <i style='font-size: 9px; margin-left: 2px;'>🔗</i></a>";
+                : $"<a href='{ex.ExcerciseLink}' style='color: var(--coach-primary); text-decoration: none; font-weight: 700; display:inline-flex; align-items:center; gap:4px;'>{ex.ExerciseName} <svg width='10' height='10' viewBox='0 0 24 24' style='vertical-align:middle;' fill='currentColor'><path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7C4.24 7 2 9.24 2 12s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/></svg></a>";
 
             rows.Append($"""
                 <tr>
@@ -423,7 +423,7 @@ public class PdfService : IPdfService
             cardioSection = $"""
                 <div class="cardio-section" style="margin-top: 16px;">
                   <div class="cardio-header">
-                    <div class="cardio-title">🏃 CARDIO PROTOCOL</div>
+                    <div class="cardio-title"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;" fill="#e2e8f0"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg> CARDIO PROTOCOL</div>
                     <div class="cardio-badge">{c.Intensity}</div>
                   </div>
                   <div class="cardio-grid">
@@ -449,7 +449,7 @@ public class PdfService : IPdfService
         {
             dayNotesSection = $"""
                 <div style="margin-top: 16px; padding: 16px 20px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--coach-primary); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-                  <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-primary); margin-bottom: 8px;">📋 DAY NOTES &amp; INSTRUCTIONS</div>
+                  <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-primary); margin-bottom: 8px; display:flex; align-items:center; gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> DAY NOTES &amp; INSTRUCTIONS</div>
                   <div style="font-size: 18px; line-height: 1.7; color: #f0f0f0; font-weight: 500; white-space: pre-wrap;">{day.Notes}</div>
                 </div>
                 """;
@@ -534,12 +534,12 @@ public class PdfService : IPdfService
         foreach (var m in topLevelMeals)
         {
             mealNumber++;
-            string icon = "🍽️";
+            string icon = "<svg width='22' height='22' viewBox='0 0 24 24' style='vertical-align:middle;' fill='#e2e8f0'><path d='M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z'/></svg>";
             var mealNameLower = m.Name.ToLower();
-            if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning")) icon = "🍳";
-            else if (mealNameLower.Contains("lunch") || mealNameLower.Contains("dinner") || mealNameLower.Contains("night")) icon = "🍗";
-            else if (mealNameLower.Contains("snack") || mealNameLower.Contains("shake") || mealNameLower.Contains("smoothie")) icon = "🥤";
-            else if (mealNameLower.Contains("pre") || mealNameLower.Contains("intra") || mealNameLower.Contains("workout")) icon = "⚡";
+            if (mealNameLower.Contains("breakfast") || mealNameLower.Contains("morning")) icon = "<svg width='22' height='22' viewBox='0 0 24 24' style='vertical-align:middle;' fill='#FBBF24'><path d='M12 3C8.13 3 5 6.13 5 10v1h14v-1c0-3.87-3.13-7-7-7zm-6 8v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1H6zm-1 3v1c0 2.21 1.79 4 4 4h2v2h2v-2h2c2.21 0 4-1.79 4-4v-1H5zm7 4.5c-.83 0-1.5-.67-1.5-1.5h3c0 .83-.67 1.5-1.5 1.5z'/></svg>";
+            else if (mealNameLower.Contains("lunch") || mealNameLower.Contains("dinner") || mealNameLower.Contains("night")) icon = "<svg width='22' height='22' viewBox='0 0 24 24' style='vertical-align:middle;' fill='#F97316'><path d='M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z'/></svg>";
+            else if (mealNameLower.Contains("snack") || mealNameLower.Contains("shake") || mealNameLower.Contains("smoothie")) icon = "<svg width='22' height='22' viewBox='0 0 24 24' style='vertical-align:middle;' fill='#60A5FA'><path d='M3 2h18l-2 7H5L3 2zm2.5 9h13l-1.5 5.5c-.3 1.1-1.3 1.9-2.5 1.9H9.5c-1.2 0-2.2-.8-2.5-1.9L5.5 11zM10 14v3h1v-3h-1zm3 0v3h1v-3h-1z'/></svg>";
+            else if (mealNameLower.Contains("pre") || mealNameLower.Contains("intra") || mealNameLower.Contains("workout")) icon = "<svg width='22' height='22' viewBox='0 0 24 24' style='vertical-align:middle;' fill='#F59E0B'><path d='M7 2v11h3v9l7-12h-4l4-8z'/></svg>";
 
             var foodItems = new StringBuilder();
             foreach (var item in m.MealItems)
@@ -576,7 +576,7 @@ public class PdfService : IPdfService
             {
                 instrHtml = $"""
                     <div style="margin-top: 20px; padding: 16px 20px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--coach-secondary); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                      <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 8px;">📝 MEAL INSTRUCTIONS</div>
+                      <div style="font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coach-secondary); margin-bottom: 8px; display:flex; align-items:center; gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:middle;flex-shrink:0;" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> MEAL INSTRUCTIONS</div>
                       <div style="font-size: 15px; line-height: 1.8; color: #f0f0f0; font-weight: 500; white-space: pre-wrap;">{m.Instruction}</div>
                     </div>
                     """;
@@ -585,7 +585,7 @@ public class PdfService : IPdfService
             // Meal name: hyperlink if Link exists in DB
             var mealNameHtml = string.IsNullOrEmpty(m.Link)
                 ? m.Name
-                : $"<a href='{m.Link}' style='color:var(--coach-primary);text-decoration:none;font-weight:900;display:inline-flex;align-items:center;gap:6px;'>{m.Name} <i style='font-size:11px;'>🔗</i></a>";
+                : $"<a href='{m.Link}' style='color:var(--coach-primary);text-decoration:none;font-weight:900;display:inline-flex;align-items:center;gap:6px;'>{m.Name} <svg width='12' height='12' viewBox='0 0 24 24' style='vertical-align:middle;' fill='currentColor'><path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7C4.24 7 2 9.24 2 12s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/></svg></a>";
 
             var mealCalTotal = m.MealItems.Sum(i => i.Calories);
             var mealProtTotal = m.MealItems.Sum(i => i.Protein);

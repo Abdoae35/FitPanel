@@ -19,4 +19,5 @@ public interface IWorkoutService
     Task<WorkoutDayResponseDto?> UpdateWorkoutDayNotesAsync(int clientId, int workoutId, int dayId, string? notes, string coachId);
     Task<(bool Success, string Message)> DeleteWorkoutDayAsync(int clientId, int workoutId, int dayId, string coachId);
     Task<(bool Success, string Message)> UpdateWorkoutDayAsync(int clientId, int workoutId, int dayId, string dayName, FitPanel.Data.Enums.Days dayOfWeek, string coachId);
+    Task<(bool Success, string Message)> UpdateWarmUpAsync(int clientId, int workoutId, int dayId, string? warmUpName, string? warmUpLink, string coachId);
 }

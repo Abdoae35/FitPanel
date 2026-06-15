@@ -46,6 +46,7 @@ public class FitPanelDbContext : IdentityDbContext<PanelUser>
     
     public DbSet<CoachExerciseDictionary> CoachExerciseDictionaries { get; set; }
     public DbSet<CoachMealDictionary> CoachMealDictionaries { get; set; }
+    public DbSet<CoachWarmUpDictionary> CoachWarmUpDictionaries { get; set; }
     public DbSet<DietTemplate> DietTemplates { get; set; }
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
     public DbSet<Notification> Notifications { get; set; }

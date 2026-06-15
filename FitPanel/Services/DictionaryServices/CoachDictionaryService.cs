@@ -94,4 +94,44 @@ public class CoachDictionaryService : ICoachDictionaryService
         await _db.SaveChangesAsync();
         return (true, "Exercise deleted.");
     }
+
+    // ── Warm-Up Dictionary ───────────────────────────────────────
+
+    public async Task<List<CoachWarmUpDictionary>> GetWarmUpsAsync(string coachId)
+    {
+        return await _db.CoachWarmUpDictionaries
+            .Where(x => x.CoachId == coachId)
+            .OrderBy(x => x.WarmUpName)
+            .ToListAsync();
+    }
+
+    public async Task<CoachWarmUpDictionary> AddWarmUpAsync(string coachId, CoachWarmUpDictionary warmUp)
+    {
+        warmUp.CoachId = coachId;
+        _db.CoachWarmUpDictionaries.Add(warmUp);
+        await _db.SaveChangesAsync();
+        return warmUp;
+    }
+
+    public async Task<(bool Success, string Message)> UpdateWarmUpAsync(string coachId, CoachWarmUpDictionary warmUp)
+    {
+        var existing = await _db.CoachWarmUpDictionaries.FirstOrDefaultAsync(x => x.Id == warmUp.Id && x.CoachId == coachId);
+        if (existing == null) return (false, "Warm-up not found.");
+
+        existing.WarmUpName = warmUp.WarmUpName;
+        existing.WarmUpLink = warmUp.WarmUpLink;
+
+        await _db.SaveChangesAsync();
+        return (true, "Warm-up updated.");
+    }
+
+    public async Task<(bool Success, string Message)> DeleteWarmUpAsync(string coachId, int id)
+    {
+        var existing = await _db.CoachWarmUpDictionaries.FirstOrDefaultAsync(x => x.Id == id && x.CoachId == coachId);
+        if (existing == null) return (false, "Warm-up not found.");
+
+        _db.CoachWarmUpDictionaries.Remove(existing);
+        await _db.SaveChangesAsync();
+        return (true, "Warm-up deleted.");
+    }
 }

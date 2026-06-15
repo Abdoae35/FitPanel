@@ -74,7 +74,9 @@ public class WorkoutService : IWorkoutService
                         d.Cardio.DurationMinutes,
                         d.Cardio.Intensity,
                         d.Cardio.Notes),
-                    d.Notes
+                    d.Notes,
+                    d.WarmUpName,
+                    d.WarmUpLink
                 )).ToList()
             ))
             .ToListAsync();
@@ -126,6 +128,8 @@ public class WorkoutService : IWorkoutService
             day.DayName,
             day.Day,
             new List<ExerciseResponseDto>(),
+            null,
+            null,
             null,
             null);
     }
@@ -268,7 +272,9 @@ public class WorkoutService : IWorkoutService
                     d.Cardio.DurationMinutes,
                     d.Cardio.Intensity,
                     d.Cardio.Notes),
-                d.Notes
+                d.Notes,
+                d.WarmUpName,
+                d.WarmUpLink
             )).ToList()
         );
 
@@ -371,7 +377,9 @@ public class WorkoutService : IWorkoutService
                         day.Cardio.DurationMinutes,
                         day.Cardio.Intensity,
                         day.Cardio.Notes),
-                    day.Notes
+                    day.Notes,
+                    day.WarmUpName,
+                    day.WarmUpLink
                  );
             }
 
@@ -418,5 +426,24 @@ public class WorkoutService : IWorkoutService
                 day.Day = dayOfWeek;
                 await _db.SaveChangesAsync();
                 return (true, "Workout day updated.");
+            }
+
+            public async Task<(bool Success, string Message)> UpdateWarmUpAsync(
+                int clientId, int workoutId, int dayId, string? warmUpName, string? warmUpLink, string coachId)
+            {
+                var day = await _db.WorkOutDays
+                    .Include(d => d.WorkOut)
+                        .ThenInclude(w => w.Client)
+                    .FirstOrDefaultAsync(d => d.Id == dayId
+                        && d.WorkOutId == workoutId
+                        && d.WorkOut.ClientId == clientId
+                        && d.WorkOut.Client.CoachId == coachId);
+
+                if (day == null) return (false, "Workout day not found.");
+
+                day.WarmUpName = warmUpName;
+                day.WarmUpLink = warmUpLink;
+                await _db.SaveChangesAsync();
+                return (true, "Warm-up updated.");
             }
 }

@@ -13,4 +13,9 @@ public interface ICoachDictionaryService
     Task<CoachExerciseDictionary> AddExerciseAsync(string coachId, CoachExerciseDictionary exercise);
     Task<(bool Success, string Message)> UpdateExerciseAsync(string coachId, CoachExerciseDictionary exercise);
     Task<(bool Success, string Message)> DeleteExerciseAsync(string coachId, int id);
+
+    Task<List<CoachWarmUpDictionary>> GetWarmUpsAsync(string coachId);
+    Task<CoachWarmUpDictionary> AddWarmUpAsync(string coachId, CoachWarmUpDictionary warmUp);
+    Task<(bool Success, string Message)> UpdateWarmUpAsync(string coachId, CoachWarmUpDictionary warmUp);
+    Task<(bool Success, string Message)> DeleteWarmUpAsync(string coachId, int id);
 }

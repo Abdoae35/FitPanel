@@ -17,6 +17,10 @@ namespace FitPanel.Data.Models;
         // Optional per-day notes shown in the PDF below the exercise table
         public string? Notes { get; set; }
 
+        // Optional warm-up set — a name + hyperlink shown at the top of the day
+        public string? WarmUpName { get; set; }
+        public string? WarmUpLink { get; set; }
+
         //Apply one to many relationship with Excercise
         public ICollection<Excercise> ExcerciseItems { get; set; } = new List<Excercise>();
 

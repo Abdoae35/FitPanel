@@ -625,6 +625,9 @@
             <button class="fp-data-tab @(activeTab == "exercises" ? "active" : "")" @onclick='() => activeTab = "exercises"'>
                 <i class="fa fa-dumbbell"></i> Exercises Dictionary (@exercises.Count)
             </button>
+            <button class="fp-data-tab @(activeTab == "warmups" ? "active" : "")" @onclick='() => activeTab = "warmups"'>
+                <i class="fa fa-fire"></i> Warm-Ups Dictionary (@warmups.Count)
+            </button>
             <button class="fp-data-tab @(activeTab == "diet-templates" ? "active" : "")" @onclick='() => activeTab = "diet-templates"'>
                 <i class="fa fa-folder-open"></i> Diet Templates (@dietTemplates.Count)
             </button>
@@ -743,6 +746,65 @@
                                                 <i class="fa fa-edit"></i>
                                             </button>
                                             <button class="fp-action-btn btn-delete" title="Delete" @onclick="() => ConfirmDeleteExercise(ex)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+
+        @* ── WARMUPS DICTIONARY TAB ── *@
+        @if (activeTab == "warmups")
+        {
+            <div class="fp-data-card">
+                <div class="fp-data-card-title">
+                    <div class="fp-data-card-title-left">
+                        <i class="fa fa-fire"></i> Warm-Ups Dictionary
+                    </div>
+                    <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddWarmUpModal">
+                        <i class="fa fa-plus"></i> Add Warm-Up
+                    </button>
+                </div>
+
+                @if (!warmups.Any())
+                {
+                    <div class="fp-data-empty">
+                        <i class="fa fa-fire"></i>
+                        <p>No warm-ups saved yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="fp-data-table-wrapper">
+                        <table class="fp-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Warm-Up Name</th>
+                                    <th>Link / URL</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var wu in warmups)
+                                {
+                                    <tr>
+                                        <td style="font-weight:600;">@wu.WarmUpName</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(wu.WarmUpLink))
+                                            {
+                                                <a href="@wu.WarmUpLink" target="_blank" style="color:var(--fp-accent);"><i class="fa fa-external-link-alt"></i> Link</a>
+                                            }
+                                        </td>
+                                        <td>
+                                            <button class="fp-action-btn" title="Edit" @onclick="() => OpenEditWarmUpModal(wu)" style="margin-right:8px;">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button class="fp-action-btn btn-delete" title="Delete" @onclick="() => ConfirmDeleteWarmUp(wu)">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </td>
@@ -1060,6 +1122,37 @@
                     else
                     {
                         <i class="fa fa-save"></i> <span>Save Exercise</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Warm-Up Dictionary Modal *@
+@if (showWarmUpModal)
+{
+    <div class="fp-modal-overlay" @onclick="() => showWarmUpModal = false">
+        <div class="fp-data-modal" style="max-width: 560px;" @onclick:stopPropagation="true">
+            <div class="fp-data-modal-header">
+                <span class="fp-data-modal-title"><i class="fa fa-fire"></i> @(editWarmUp.Id == 0 ? "ADD" : "EDIT") DICTIONARY WARM-UP</span>
+                <button class="fp-data-modal-close" @onclick="() => showWarmUpModal = false"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-data-modal-body">
+                <div class="fp-input-group"><label>Warm-up Name *</label><input @bind="editWarmUp.WarmUpName" /></div>
+                <div class="fp-input-group"><label>Link / URL (optional)</label><input @bind="editWarmUp.WarmUpLink" /></div>
+            </div>
+            <div class="fp-data-modal-footer">
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showWarmUpModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-btn-primary fp-data-btn" @onclick="SaveWarmUp" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <i class="fa fa-save"></i> <span>Save Warm-up</span>
                     }
                 </button>
             </div>
@@ -1428,6 +1521,10 @@
     private CoachExerciseDictionary editExercise = new();
     private bool isSaving = false;
 
+    private List<CoachWarmUpDictionary> warmups = new();
+    private bool showWarmUpModal = false;
+    private CoachWarmUpDictionary editWarmUp = new();
+
     // Template Modals & Editors
     private bool showDietTemplateModal = false;
     private DietTemplate editDietTemplate = new();
@@ -1472,6 +1569,7 @@
     {
         meals = await DictionaryService.GetMealsAsync(coachId);
         exercises = await DictionaryService.GetExercisesAsync(coachId);
+        warmups = await DictionaryService.GetWarmUpsAsync(coachId);
         dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
         workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
     }
@@ -1646,6 +1744,54 @@
         deleteAction = async () =>
         {
             await DictionaryService.DeleteExerciseAsync(coachId, e.Id);
+            await LoadData();
+        };
+        showDeleteConfirm = true;
+    }
+
+    // --- Dictionary: Warm Ups ---
+    private void OpenAddWarmUpModal()
+    {
+        editWarmUp = new CoachWarmUpDictionary();
+        showWarmUpModal = true;
+    }
+
+    private void OpenEditWarmUpModal(CoachWarmUpDictionary wu)
+    {
+        editWarmUp = new CoachWarmUpDictionary { Id = wu.Id, WarmUpName = wu.WarmUpName, WarmUpLink = wu.WarmUpLink };
+        showWarmUpModal = true;
+    }
+
+    private async Task SaveWarmUp()
+    {
+        if (isSaving) return;
+        if (string.IsNullOrWhiteSpace(editWarmUp.WarmUpName)) return;
+
+        isSaving = true;
+        try
+        {
+            if (editWarmUp.Id == 0) await DictionaryService.AddWarmUpAsync(coachId, editWarmUp);
+            else await DictionaryService.UpdateWarmUpAsync(coachId, editWarmUp);
+
+            await LoadData();
+            showWarmUpModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ConfirmDeleteWarmUp(CoachWarmUpDictionary wu)
+    {
+        deleteConfirmMessage = $"Are you sure you want to delete the warm-up '{wu.WarmUpName}' from your dictionary?";
+        deleteAction = async () =>
+        {
+            await DictionaryService.DeleteWarmUpAsync(coachId, wu.Id);
             await LoadData();
         };
         showDeleteConfirm = true;

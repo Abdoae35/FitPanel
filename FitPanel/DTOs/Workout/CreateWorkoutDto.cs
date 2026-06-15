@@ -48,13 +48,17 @@ public class WorkoutDayResponseDto
     public List<ExerciseResponseDto> Exercises { get; set; } = new();
     public CardioResponseDto? Cardio { get; set; }
     public string? Notes { get; set; }
+    public string? WarmUpName { get; set; }
+    public string? WarmUpLink { get; set; }
 
     public WorkoutDayResponseDto() { }
     public WorkoutDayResponseDto(int id, string dayName, Days day,
-        List<ExerciseResponseDto> exercises, CardioResponseDto? cardio, string? notes = null)
+        List<ExerciseResponseDto> exercises, CardioResponseDto? cardio, string? notes = null,
+        string? warmUpName = null, string? warmUpLink = null)
     {
         Id = id; DayName = dayName; Day = day;
         Exercises = exercises; Cardio = cardio; Notes = notes;
+        WarmUpName = warmUpName; WarmUpLink = warmUpLink;
     }
 }
 

@@ -416,6 +416,30 @@ public class PdfService : IPdfService
                 """);
         }
 
+        var warmUpHtml = "";
+        if (!string.IsNullOrEmpty(day.WarmUpName))
+        {
+            if (!string.IsNullOrEmpty(day.WarmUpLink))
+            {
+                warmUpHtml = $"""
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff;">
+                  <span> Warm Up Set:</span>
+                  <a href="{day.WarmUpLink}" target="_blank" style="color: var(--coach-primary); text-decoration: underline; display: inline-flex; align-items: center; gap: 4px;">
+                    {day.WarmUpName} <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                  </a>
+                </div>
+                """;
+            }
+            else
+            {
+                warmUpHtml = $"""
+                <div style="margin-top: 8px; font-size: 13px; font-weight: 700; color: #a0aec0; display: flex; align-items: center; gap: 6px;">
+                  <span> Warm Up Set: {day.WarmUpName}</span>
+                </div>
+                """;
+            }
+        }
+
         var cardioSection = "";
         if (day.Cardio != null)
         {
@@ -463,6 +487,7 @@ public class PdfService : IPdfService
               <div>
                 <h2><span class="text-primary">{day.Day}</span> <span>{day.DayName}</span></h2>
                 <p>FitPanel Elite Coaching Protocols</p>
+                {warmUpHtml}
               </div>
               <div>
                 <span class="skew-badge"><span>STRENGTH PHASE</span></span>

@@ -798,6 +798,24 @@
 
         try
         {
+            // Delete old file if the profile picture changed
+            if (coach.ProfilePicture != profilePicture && !string.IsNullOrEmpty(coach.ProfilePicture))
+            {
+                try
+                {
+                    var oldRelativePath = coach.ProfilePicture.TrimStart('/');
+                    var oldFilePath = Path.Combine(Env.WebRootPath, oldRelativePath);
+                    if (File.Exists(oldFilePath))
+                    {
+                        File.Delete(oldFilePath);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore or log file deletion error
+                }
+            }
+
             coach.FullName = fullName;
             coach.Email = email;
             coach.NormalizedEmail = email.ToUpperInvariant();
@@ -880,8 +898,64 @@
         }
     }
 
-    private void RemoveProfilePicture()
+    private async Task RemoveProfilePicture()
     {
+        if (coach == null) return;
+
+        // Delete the unsaved new profile picture file if there is one
+        if (!string.IsNullOrEmpty(profilePicture))
+        {
+            try
+            {
+                var relativePath = profilePicture.TrimStart('/');
+                var filePath = Path.Combine(Env.WebRootPath, relativePath);
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore or log
+            }
+        }
+
+        // Delete the database's saved profile picture file if it's different
+        if (!string.IsNullOrEmpty(coach.ProfilePicture) && coach.ProfilePicture != profilePicture)
+        {
+            try
+            {
+                var relativePath = coach.ProfilePicture.TrimStart('/');
+                var filePath = Path.Combine(Env.WebRootPath, relativePath);
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore or log
+            }
+        }
+
         profilePicture = string.Empty;
+        coach.ProfilePicture = string.Empty;
+
+        try
+        {
+            var result = await UserManager.UpdateAsync(coach);
+            if (!result.Succeeded)
+            {
+                errorMessage = "Failed to update profile record in database: " + string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+            else
+            {
+                successMessage = "Profile picture removed successfully.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update database profile record: {ex.Message}";
+        }
     }
 }

@@ -207,7 +207,7 @@ public class PdfService : IPdfService
           <footer class="footer">
             <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
             <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
-            <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+            <div><a href="{FormatWhatsAppLink(phone)}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;min-width:14px;flex-shrink:0;fill:#25D366;vertical-align:middle;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg><span>{phone}</span></a></div>
           </footer>
         </div>
         """;
@@ -294,9 +294,9 @@ public class PdfService : IPdfService
               </a>
             </div>
             <div>
-              <a href="tel:{coachPhone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              <a href="{FormatWhatsAppLink(coachPhone)}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; min-width: 14px; flex-shrink: 0; fill: #25D366; vertical-align: middle;" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/>
                 </svg>
                 <span>{coachPhone}</span>
               </a>
@@ -384,9 +384,9 @@ public class PdfService : IPdfService
               </a>
             </div>
             <div>
-              <a href="tel:{coachPhone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              <a href="{FormatWhatsAppLink(coachPhone)}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; min-width: 14px; flex-shrink: 0; fill: #25D366; vertical-align: middle;" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/>
                 </svg>
                 <span>{coachPhone}</span>
               </a>
@@ -503,8 +503,8 @@ public class PdfService : IPdfService
               </a>
             </div>
             <div>
-              <a href="tel:{phone}" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
-                <svg style="width: 14px; height: 14px; fill: var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+              <a href="{FormatWhatsAppLink(phone)}" target="_blank" style="color: var(--coach-gray-light); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 14px; height: 14px; min-width: 14px; flex-shrink: 0; fill: #25D366; vertical-align: middle;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg>
                 <span>{phone}</span>
               </a>
             </div>
@@ -626,7 +626,7 @@ public class PdfService : IPdfService
               <footer class="footer">
                 <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
                 <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
-                <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+                <div><a href="{FormatWhatsAppLink(phone)}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;min-width:14px;flex-shrink:0;fill:#25D366;vertical-align:middle;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg><span>{phone}</span></a></div>
               </footer>
             </div>
             """);
@@ -719,7 +719,7 @@ public class PdfService : IPdfService
           <footer class="footer">
             <div><a href="{instagramLink}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
             <div><a href="mailto:{email}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{email}</span></a></div>
-            <div><a href="tel:{phone}" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>{phone}</span></a></div>
+            <div><a href="{FormatWhatsAppLink(phone)}" target="_blank" style="color:var(--coach-gray-light);text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;min-width:14px;flex-shrink:0;fill:#25D366;vertical-align:middle;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg><span>{phone}</span></a></div>
           </footer>
         </div>
         """);
@@ -832,14 +832,18 @@ public class PdfService : IPdfService
           font-size: 14px !important;
           color: var(--coach-gray-light) !important;
           text-decoration: none !important;
-          display: flex !important;
+          display: inline-flex !important;
           align-items: center !important;
           gap: 8px !important;
+          line-height: 1 !important;
         }
 
         .footer svg {
-          width: 18px !important;
-          height: 18px !important;
+          width: 16px !important;
+          height: 16px !important;
+          flex-shrink: 0 !important;
+          display: inline-block !important;
+          vertical-align: middle !important;
           fill: var(--coach-gray-light) !important;
         }
 
@@ -1218,5 +1222,13 @@ public class PdfService : IPdfService
 
         // 4. Absolute last resort: external URL
         return "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80";
+    }
+
+    private static string FormatWhatsAppLink(string phone)
+    {
+        if (string.IsNullOrEmpty(phone)) return "#";
+        // Keep only digits
+        var cleanPhone = new string(phone.Where(char.IsDigit).ToArray());
+        return $"https://wa.me/{cleanPhone}";
     }
 }

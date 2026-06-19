@@ -23,6 +23,11 @@ public class PanelUser : IdentityUser
     public DateTime SubscriptionEndDate { get; set; } = DateTime.UtcNow.AddYears(1);
     public int MaxClients { get; set; } = 10;
 
+    // PDF customization
+    public string? PdfIntroduction { get; set; }
+    public int PdfTheme { get; set; } = 1;
+    public bool CanChangePdfTheme { get; set; } = false;
+
     // One Coach → Many Clients
     public ICollection<Client> Clients { get; set; } = new List<Client>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();

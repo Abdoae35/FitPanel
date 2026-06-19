@@ -518,10 +518,29 @@
                     </div>
                 </div>
 
-                @* PDF Templates Tip *@
+                @* PDF Theme Status *@
                 <div class="fp-tip-card">
-                    <h4>🎨 PDF Templates (Soon)</h4>
-                    <p>In the next update, you will be able to customize page structures, colors, and layout templates directly from this section to match your personal fitness brand!</p>
+                    <h4><i class="fa fa-palette" style="color:var(--fp-accent);margin-right:6px;"></i> PDF Theme</h4>
+                    @if (pdfTheme == 2)
+                    {
+                        <p>Active: <strong>Professional Navy</strong> — clean, minimal navy blue design.</p>
+                    }
+                    else if (pdfTheme == 3)
+                    {
+                        <p>Active: <strong>Athletic Orange</strong> — bold, high-energy orange design.</p>
+                    }
+                    else
+                    {
+                        <p>Active: <strong>Classic</strong> — the signature bold red design.</p>
+                    }
+                    @if (coach.CanChangePdfTheme)
+                    {
+                        <p style="margin-top:8px;font-size:12px;color:var(--fp-accent);font-weight:600;">You can change your PDF theme in the PDF Branding section below.</p>
+                    }
+                    else
+                    {
+                        <p style="margin-top:8px;font-size:12px;color:var(--fp-text-muted);">Contact your admin to unlock additional PDF themes.</p>
+                    }
                 </div>
             </div>
 
@@ -612,6 +631,86 @@
                     <div class="fp-form-actions">
                         <button class="fp-btn-primary" @onclick="SaveChanges">
                             <i class="fa fa-check"></i> Save Brand Details
+                        </button>
+                    </div>
+                </div>
+
+                @* ── PDF Branding Card ── *@
+                <div class="fp-form-card">
+                    <h3 class="fp-form-card-title">
+                        <i class="fa fa-file-pdf"></i> PDF Branding
+                    </h3>
+
+                    @if (!string.IsNullOrEmpty(pdfSuccessMessage))
+                    {
+                        <div class="fp-alert fp-alert-success">
+                            <i class="fa fa-check-circle"></i> @pdfSuccessMessage
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(pdfErrorMessage))
+                    {
+                        <div class="fp-alert fp-alert-error">
+                            <i class="fa fa-exclamation-circle"></i> @pdfErrorMessage
+                        </div>
+                    }
+
+                    <div class="fp-input-group">
+                        <label>Coach Introduction</label>
+                        <textarea @bind="pdfIntroduction" rows="8" placeholder="Write your coaching background, philosophy, certifications, and experience. This text will appear as a dedicated page in all your client PDFs..."></textarea>
+                        <span class="fp-upload-hint">Leave empty to skip the intro page. When filled, an "About Your Coach" page is automatically inserted after the cover in every PDF you generate for clients.</span>
+                    </div>
+
+                    @if (coach.CanChangePdfTheme)
+                    {
+                        <div class="fp-input-group" style="margin-top:20px;">
+                            <label>PDF Theme</label>
+                            <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+                                <label style="@ThemeOptionStyle(1, "#ea2127", "234,33,39")">
+                                    <input type="radio" name="pdfThemeRadio" @onchange="@(_ => pdfTheme = 1)" style="display:none;" />
+                                    <div style="width:32px;height:32px;border-radius:50%;background:#ea2127;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                                        @if (pdfTheme == 1) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
+                                    </div>
+                                    <div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Classic</div>
+                                        <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Dark red — bold, dynamic design with coach photo on cover</div>
+                                    </div>
+                                </label>
+                                <label style="@ThemeOptionStyle(2, "#0EA5E9", "14,165,233")">
+                                    <input type="radio" name="pdfThemeRadio" @onchange="@(_ => pdfTheme = 2)" style="display:none;" />
+                                    <div style="width:32px;height:32px;border-radius:50%;background:#0EA5E9;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                                        @if (pdfTheme == 2) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
+                                    </div>
+                                    <div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Professional Navy</div>
+                                        <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Navy blue — clean, minimal, modern layout</div>
+                                    </div>
+                                </label>
+                                <label style="@ThemeOptionStyle(3, "#F97316", "249,115,22")">
+                                    <input type="radio" name="pdfThemeRadio" @onchange="@(_ => pdfTheme = 3)" style="display:none;" />
+                                    <div style="width:32px;height:32px;border-radius:50%;background:#F97316;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                                        @if (pdfTheme == 3) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
+                                    </div>
+                                    <div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Athletic Orange</div>
+                                        <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Orange — bold, high-energy, athletic impact</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="fp-form-actions">
+                        <button class="fp-btn-primary" @onclick="SavePdfBranding" disabled="@isSavingPdf">
+                            @if (isSavingPdf)
+                            {
+                                <span class="fp-spinner-sm"></span>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <i class="fa fa-check"></i>
+                                <span>Save PDF Settings</span>
+                            }
                         </button>
                     </div>
                 </div>
@@ -731,6 +830,15 @@
     private string instagramLink = string.Empty;
     private string profilePicture = string.Empty;
 
+    private string pdfIntroduction = string.Empty;
+    private int pdfTheme = 1;
+    private string pdfSuccessMessage = string.Empty;
+    private string pdfErrorMessage = string.Empty;
+    private bool isSavingPdf = false;
+
+    private string ThemeOptionStyle(int themeId, string color, string rgba) =>
+        $"display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid {(pdfTheme == themeId ? color : "var(--fp-border)")};border-radius:10px;cursor:pointer;background:{(pdfTheme == themeId ? $"rgba({rgba},0.08)" : "transparent")};transition:border-color 0.2s,background 0.2s;";
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -758,6 +866,8 @@
             instagramUsername = coach.InstagramUsername ?? string.Empty;
             instagramLink = coach.InstagramLink ?? string.Empty;
             profilePicture = coach.ProfilePicture ?? string.Empty;
+            pdfIntroduction = coach.PdfIntroduction ?? string.Empty;
+            pdfTheme = coach.PdfTheme < 1 ? 1 : coach.PdfTheme;
 
             // Load clients to calculate counter
             clients = await ClientService.GetMyClientsAsync(coach.Id);
@@ -895,6 +1005,37 @@
         catch (Exception ex)
         {
             errorMessage = $"Failed to upload photo: {ex.Message}";
+        }
+    }
+
+    private async Task SavePdfBranding()
+    {
+        if (coach == null) return;
+        pdfSuccessMessage = string.Empty;
+        pdfErrorMessage = string.Empty;
+        isSavingPdf = true;
+        try
+        {
+            coach.PdfIntroduction = string.IsNullOrWhiteSpace(pdfIntroduction) ? null : pdfIntroduction.Trim();
+            coach.PdfTheme = coach.CanChangePdfTheme ? pdfTheme : 1;
+            var result = await UserManager.UpdateAsync(coach);
+            if (result.Succeeded)
+            {
+                pdfSuccessMessage = "PDF settings saved! Changes will apply to all future generated PDFs.";
+                StateHasChanged();
+            }
+            else
+            {
+                pdfErrorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            pdfErrorMessage = $"Failed to save PDF settings: {ex.Message}";
+        }
+        finally
+        {
+            isSavingPdf = false;
         }
     }
 

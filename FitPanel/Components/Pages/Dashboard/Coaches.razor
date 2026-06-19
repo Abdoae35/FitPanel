@@ -415,6 +415,11 @@
                         <td>
                             <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px;" @onclick="() => OpenEditModal(coach)">Edit</button>
                             <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px;" @onclick="() => RenewSubscription(coach)">Renew</button>
+                            <button class="fp-btn-outline" title="@(coach.CanChangePdfTheme ? "Revoke PDF theme access" : "Grant PDF theme access")"
+                                style="padding: 6px 12px; font-size: 11px; margin-left: 8px; border-color: @(coach.CanChangePdfTheme ? "#10B981" : "var(--fp-border)"); color: @(coach.CanChangePdfTheme ? "#10B981" : "var(--fp-text-muted)");"
+                                @onclick="() => TogglePdfThemePermission(coach)">
+                                <i class="fa fa-palette"></i> @(coach.CanChangePdfTheme ? "Theme ✓" : "Theme")
+                            </button>
                             <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px; border-color: var(--fp-accent); color: var(--fp-accent);" @onclick="() => PromptDeleteCoach(coach)">Delete</button>
                         </td>
                     </tr>
@@ -844,6 +849,13 @@
     {
         coach.SubscriptionEndDate = DateTime.UtcNow.AddYears(1);
         await UserManager.UpdateAsync(coach);
+    }
+
+    private async Task TogglePdfThemePermission(PanelUser coach)
+    {
+        coach.CanChangePdfTheme = !coach.CanChangePdfTheme;
+        await UserManager.UpdateAsync(coach);
+        StateHasChanged();
     }
 
     private void PromptDeleteCoach(PanelUser coach)

@@ -1,0 +1,122 @@
+@rendermode InteractiveServer
+@implements IDisposable
+@inject INotificationService NotificationService
+@inject NavigationManager Nav
+
+<div style="position: relative; display: inline-block;">
+    <button class="fp-theme-toggle" @onclick="ToggleDropdown" title="Notifications" type="button">
+        <i class="fa fa-bell"></i>
+        @if (notifications.Any(n => !n.IsRead))
+        {
+            <span class="fp-notification-badge">@notifications.Count(n => !n.IsRead)</span>
+        }
+    </button>
+
+    @if (showDropdown)
+    {
+        <div class="fp-notification-dropdown">
+            <div class="fp-notif-header">
+                <span>NOTIFICATIONS</span>
+                @if (notifications.Any(n => !n.IsRead))
+                {
+                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead" type="button">Mark all read</button>
+                }
+            </div>
+            <div class="fp-notif-body">
+                @if (!notifications.Any())
+                {
+                    <div class="fp-notif-empty">
+                        <i class="fa fa-bell-slash"></i>
+                        <span>No new notifications</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var notif in notifications)
+                    {
+                        <div class="fp-notif-item @(notif.IsRead ? "read" : "unread")">
+                            <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
+                                <span class="fp-notif-title">@notif.Title</span>
+                                <div style="display:flex; gap:4px; flex-shrink:0;">
+                                    @if (!notif.IsRead)
+                                    {
+                                        <button class="fp-notif-action-btn" title="Mark as read" @onclick="() => MarkAsRead(notif)" type="button">
+                                            <i class="fa fa-check"></i>
+                                        </button>
+                                    }
+                                    <button class="fp-notif-action-btn delete" title="Delete" @onclick="() => DeleteNotification(notif)" type="button">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="fp-notif-msg">@notif.Message</p>
+                            <span class="fp-notif-time">@notif.CreatedAt.ToLocalTime().ToString("g")</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string UserId { get; set; } = string.Empty;
+
+    private List<Notification> notifications = new();
+    private bool showDropdown = false;
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrEmpty(UserId))
+        {
+            notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+            StateHasChanged();
+        }
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ToggleDropdown()
+    {
+        showDropdown = !showDropdown;
+        if (showDropdown && !string.IsNullOrEmpty(UserId))
+        {
+            notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+        }
+    }
+
+    private async Task MarkAsRead(Notification notif)
+    {
+        await NotificationService.MarkAsReadAsync(notif.Id, UserId);
+        notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+    }
+
+    private async Task DeleteNotification(Notification notif)
+    {
+        await NotificationService.DeleteNotificationAsync(notif.Id, UserId);
+        notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationService.MarkAllAsReadAsync(UserId);
+        notifications = await NotificationService.GetNotificationsForUserAsync(UserId);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

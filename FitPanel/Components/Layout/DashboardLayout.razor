@@ -4,8 +4,6 @@
 @inject SignInManager<PanelUser> SignInManager
 @inject UserManager<PanelUser> UserManager
 @inject NavigationManager Nav
-@inject INotificationService NotificationService
-
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject IJSRuntime JS
@@ -142,61 +140,7 @@
                 </a>
 
                 @* Notification Bell dropdown *@
-                <div style="position: relative; display: inline-block;">
-                    <button class="fp-theme-toggle" @onclick="ToggleNotificationDropdown" title="Notifications" type="button">
-                        <i class="fa fa-bell"></i>
-                        @if (notifications.Any(n => !n.IsRead))
-                        {
-                            <span class="fp-notification-badge">@notifications.Count(n => !n.IsRead)</span>
-                        }
-                    </button>
-
-                    @if (showNotificationDropdown)
-                    {
-                        <div class="fp-notification-dropdown">
-                            <div class="fp-notif-header">
-                                <span>NOTIFICATIONS</span>
-                                @if (notifications.Any(n => !n.IsRead))
-                                {
-                                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead" type="button">Mark all read</button>
-                                }
-                            </div>
-                            <div class="fp-notif-body">
-                                @if (!notifications.Any())
-                                {
-                                    <div class="fp-notif-empty">
-                                        <i class="fa fa-bell-slash"></i>
-                                        <span>No new notifications</span>
-                                    </div>
-                                }
-                                else
-                                {
-                                    @foreach (var notif in notifications)
-                                    {
-                                        <div class="fp-notif-item @(notif.IsRead ? "read" : "unread")">
-                                            <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
-                                                <span class="fp-notif-title">@notif.Title</span>
-                                                <div style="display:flex; gap:4px; flex-shrink:0;">
-                                                    @if (!notif.IsRead)
-                                                    {
-                                                        <button class="fp-notif-action-btn" title="Mark as read" @onclick="() => MarkAsRead(notif)" type="button">
-                                                            <i class="fa fa-check"></i>
-                                                        </button>
-                                                    }
-                                                    <button class="fp-notif-action-btn delete" title="Delete" @onclick="() => DeleteNotification(notif)" type="button">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <p class="fp-notif-msg">@notif.Message</p>
-                                            <span class="fp-notif-time">@notif.CreatedAt.ToLocalTime().ToString("g")</span>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
+                <NotificationBell UserId="@currentUserId" />
             </div>
         </header>
 
@@ -1150,9 +1094,6 @@
     private bool sidebarOpen = true;
     private string currentPage = "Dashboard";
 
-    // Notifications state
-    private List<Notification> notifications = new();
-    private bool showNotificationDropdown = false;
     private string currentUserId = "";
     private PanelUser? currentUser;
 
@@ -1191,53 +1132,6 @@
         Nav.LocationChanged += OnLocationChanged;
     }
 
-    private async Task ToggleNotificationDropdown()
-    {
-        showNotificationDropdown = !showNotificationDropdown;
-        if (showNotificationDropdown)
-        {
-            try
-            {
-                notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
-            }
-            catch (Exception) {}
-        }
-        StateHasChanged();
-    }
-
-    private async Task MarkAsRead(Notification notif)
-    {
-        try
-        {
-            await NotificationService.MarkAsReadAsync(notif.Id, currentUserId);
-            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
-        }
-        catch (Exception) {}
-        StateHasChanged();
-    }
-
-    private async Task DeleteNotification(Notification notif)
-    {
-        try
-        {
-            await NotificationService.DeleteNotificationAsync(notif.Id, currentUserId);
-            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
-        }
-        catch (Exception) {}
-        StateHasChanged();
-    }
-
-    private async Task MarkAllAsRead()
-    {
-        try
-        {
-            await NotificationService.MarkAllAsReadAsync(currentUserId);
-            notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
-        }
-        catch (Exception) {}
-        StateHasChanged();
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -1250,16 +1144,9 @@
                     var user = await SignInManager.UserManager.GetUserAsync(auth.User);
                     if (user != null)
                     {
-                        // Ensure currentUserId is always set so bell interactions work correctly
                         currentUserId = user.Id;
                         currentUser = user;
-
-                        try
-                        {
-                            notifications = await NotificationService.GetNotificationsForUserAsync(user.Id);
-                            StateHasChanged();
-                        }
-                        catch (Exception) {}
+                        StateHasChanged();
 
                         if (!user.IsActive)
                         {
@@ -1294,7 +1181,6 @@
             try
             {
                 currentUser = await UserManager.FindByIdAsync(currentUserId);
-                notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
             }
             catch (Exception) {}
         }

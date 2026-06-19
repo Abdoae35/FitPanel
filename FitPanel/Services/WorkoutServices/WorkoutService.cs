@@ -443,6 +443,24 @@ public class WorkoutService : IWorkoutService
 
                 day.WarmUpName = warmUpName;
                 day.WarmUpLink = warmUpLink;
+
+                if (!string.IsNullOrWhiteSpace(warmUpName))
+                {
+                    var existsInDict = await _db.CoachWarmUpDictionaries
+                        .AnyAsync(x => x.CoachId == coachId
+                            && x.WarmUpName.ToLower() == warmUpName.ToLower());
+
+                    if (!existsInDict)
+                    {
+                        _db.CoachWarmUpDictionaries.Add(new CoachWarmUpDictionary
+                        {
+                            CoachId = coachId,
+                            WarmUpName = warmUpName,
+                            WarmUpLink = warmUpLink
+                        });
+                    }
+                }
+
                 await _db.SaveChangesAsync();
                 return (true, "Warm-up updated.");
             }

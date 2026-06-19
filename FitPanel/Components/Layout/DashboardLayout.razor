@@ -1250,6 +1250,10 @@
                     var user = await SignInManager.UserManager.GetUserAsync(auth.User);
                     if (user != null)
                     {
+                        // Ensure currentUserId is always set so bell interactions work correctly
+                        currentUserId = user.Id;
+                        currentUser = user;
+
                         try
                         {
                             notifications = await NotificationService.GetNotificationsForUserAsync(user.Id);
@@ -1290,6 +1294,7 @@
             try
             {
                 currentUser = await UserManager.FindByIdAsync(currentUserId);
+                notifications = await NotificationService.GetNotificationsForUserAsync(currentUserId);
             }
             catch (Exception) {}
         }

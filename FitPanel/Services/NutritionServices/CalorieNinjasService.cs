@@ -6,11 +6,12 @@ namespace FitPanel.Services;
 public class CalorieNinjasService : INutritionApiService
 {
     private readonly HttpClient _http;
-    private readonly string _apiKey = "aU6+BjyEfoaibx2cAplVkA==LcEVk0diDNWFXkhp"; // User needs to replace this
+    private readonly string _apiKey;
 
-    public CalorieNinjasService(HttpClient http)
+    public CalorieNinjasService(HttpClient http, IConfiguration configuration)
     {
         _http = http;
+        _apiKey = configuration["CalorieNinjas:ApiKey"] ?? throw new InvalidOperationException("CalorieNinjas:ApiKey is not configured.");
     }
 
     public async Task<NutritionResult?> GetNutritionAsync(string query)

@@ -411,7 +411,7 @@ public class PdfService : IPdfService
                   <td class="exercise-name">{exerciseNameHtml}</td>
                   <td style="text-align: center; font-weight: 800; font-size: 15px;">{ex.Sets}</td>
                   <td style="text-align: center; font-weight: 700; font-size: 15px;">{ex.Reps}</td>
-                  <td style="text-align: center; color: var(--coach-primary); font-weight: 800; font-size: 15px;">{ex.RestTime}s</td>
+                  <td style="text-align: center; color: var(--coach-primary); font-weight: 800; font-size: 15px;">{(!string.IsNullOrWhiteSpace(ex.RestTime) ? (ex.RestTime.Trim().EndsWith("s", StringComparison.OrdinalIgnoreCase) ? ex.RestTime.Trim() : ex.RestTime.Trim() + "s") : "")}</td>
                 </tr>
                 """);
         }

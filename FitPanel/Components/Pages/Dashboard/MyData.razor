@@ -2052,6 +2052,34 @@
         if (isSaving) return;
         if (string.IsNullOrWhiteSpace(editWorkoutTemplate.Name)) return;
 
+        // Validate all template exercises
+        foreach (var day in editWorkoutTemplateDays)
+        {
+            foreach (var ex in day.Exercises)
+            {
+                if (string.IsNullOrWhiteSpace(ex.ExerciseName))
+                {
+                    errorMessage = $"Exercise name is required for {day.DayName}.";
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(ex.Sets))
+                {
+                    errorMessage = $"Sets cannot be empty for exercise '{ex.ExerciseName}' in {day.DayName}.";
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(ex.Reps))
+                {
+                    errorMessage = $"Reps cannot be empty for exercise '{ex.ExerciseName}' in {day.DayName}.";
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(ex.RestTime))
+                {
+                    errorMessage = $"Rest time cannot be empty for exercise '{ex.ExerciseName}' in {day.DayName}.";
+                    return;
+                }
+            }
+        }
+
         isSaving = true;
         try
         {

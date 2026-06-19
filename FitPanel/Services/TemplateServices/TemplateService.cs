@@ -172,7 +172,10 @@ public class TemplateService : ITemplateService
                 d.Cardio.CardioType,
                 d.Cardio.DurationMinutes,
                 d.Cardio.Intensity,
-                d.Cardio.Notes)
+                d.Cardio.Notes),
+            d.Notes,
+            d.WarmUpName,
+            d.WarmUpLink
         )).ToList();
 
         var json = JsonSerializer.Serialize(daysData);
@@ -226,7 +229,10 @@ public class TemplateService : ITemplateService
                 {
                     WorkOutId = workout.Id,
                     DayName = dayDto.DayName,
-                    Day = dayDto.Day
+                    Day = dayDto.Day,
+                    Notes = dayDto.Notes,
+                    WarmUpName = dayDto.WarmUpName,
+                    WarmUpLink = dayDto.WarmUpLink
                 };
                 _db.WorkOutDays.Add(day);
                 await _db.SaveChangesAsync(); // get Day ID

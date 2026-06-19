@@ -760,6 +760,16 @@
             successMsg = "Coach created successfully!";
             var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
             coaches = allCoaches.ToList();
+
+            // Send welcome notification to the new coach
+            var newCoach = await UserManager.FindByEmailAsync(dto.Email);
+            if (newCoach != null)
+            {
+                await NotificationService.CreateNotificationAsync(newCoach.Id,
+                    "👋 Welcome to FitPanel!",
+                    "Your coach account has been created. Head to your profile to set up your photo, bio, and PDF introduction — then start managing your clients!");
+            }
+
             await Task.Delay(1500);
             CloseModal();
         }
@@ -792,12 +802,15 @@
         successMsg = string.Empty;
         isSaving = true;
 
-        // Fetch current DB values without tracking before update
+        // Capture original values for change-detection
         var originalCoach = await UserManager.FindByIdAsync(editingCoach.Id);
         int? oldMaxClients = originalCoach?.MaxClients;
         bool? oldIsActive = originalCoach?.IsActive;
-        string? oldSpecialization = originalCoach?.Specialization;
         string? oldFullName = originalCoach?.FullName;
+        string? oldSpecialization = originalCoach?.Specialization;
+        string? oldPhone = originalCoach?.PhoneNumber;
+        string? oldInstagram = originalCoach?.InstagramUsername;
+        bool passwordWasChanged = false;
 
         if (!string.IsNullOrWhiteSpace(newCoachPassword))
         {
@@ -816,6 +829,7 @@
                 isSaving = false;
                 return;
             }
+            passwordWasChanged = true;
         }
 
         if (!editingCoach.IsActive)
@@ -828,11 +842,45 @@
 
         if (result.Succeeded)
         {
+            // Max clients changed
             if (oldMaxClients != null && oldMaxClients != editingCoach.MaxClients)
             {
-                var title = "🔒 Client Limit Updated";
-                var message = $"An administrator has updated your maximum allowed client limit to {editingCoach.MaxClients}. You can now manage up to {editingCoach.MaxClients} clients.";
-                await NotificationService.CreateNotificationAsync(editingCoach.Id, title, message);
+                await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                    "🔒 Client Limit Updated",
+                    $"An administrator has updated your maximum client limit to {editingCoach.MaxClients}. You can now manage up to {editingCoach.MaxClients} clients.");
+            }
+
+            // Account status changed
+            if (oldIsActive.HasValue && oldIsActive != editingCoach.IsActive)
+            {
+                if (editingCoach.IsActive)
+                    await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                        "✅ Account Activated",
+                        "Your account has been reactivated by an administrator. You can now log in and manage your clients.");
+                else
+                    await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                        "⛔ Account Deactivated",
+                        "Your account has been deactivated by an administrator. Contact support if you believe this is a mistake.");
+            }
+
+            // Password was reset
+            if (passwordWasChanged)
+            {
+                await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                    "🔑 Password Reset",
+                    "Your account password has been changed by an administrator. If you did not request this, please contact support immediately.");
+            }
+
+            // General profile fields changed
+            bool profileChanged = oldFullName != editingCoach.FullName
+                || oldSpecialization != editingCoach.Specialization
+                || oldPhone != editingCoach.PhoneNumber
+                || oldInstagram != editingCoach.InstagramUsername;
+            if (profileChanged)
+            {
+                await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                    "📝 Profile Updated",
+                    "Your coach profile information has been updated by an administrator.");
             }
 
             successMsg = "Coach updated successfully!";
@@ -848,13 +896,30 @@
     private async Task RenewSubscription(PanelUser coach)
     {
         coach.SubscriptionEndDate = DateTime.UtcNow.AddYears(1);
-        await UserManager.UpdateAsync(coach);
+        var result = await UserManager.UpdateAsync(coach);
+        if (result.Succeeded)
+        {
+            await NotificationService.CreateNotificationAsync(coach.Id,
+                "🎉 Subscription Renewed",
+                $"Your subscription has been renewed by an administrator and is now valid until {coach.SubscriptionEndDate:MMMM dd, yyyy}.");
+        }
     }
 
     private async Task TogglePdfThemePermission(PanelUser coach)
     {
         coach.CanChangePdfTheme = !coach.CanChangePdfTheme;
-        await UserManager.UpdateAsync(coach);
+        var result = await UserManager.UpdateAsync(coach);
+        if (result.Succeeded)
+        {
+            if (coach.CanChangePdfTheme)
+                await NotificationService.CreateNotificationAsync(coach.Id,
+                    "🎨 PDF Theme Access Granted",
+                    "An administrator has granted you access to customize your PDF template theme. You can now choose from multiple designs in your Profile → PDF Branding section.");
+            else
+                await NotificationService.CreateNotificationAsync(coach.Id,
+                    "🎨 PDF Theme Access Revoked",
+                    "Your PDF theme customization access has been revoked. Your PDFs will continue using the Classic theme.");
+        }
         StateHasChanged();
     }
 

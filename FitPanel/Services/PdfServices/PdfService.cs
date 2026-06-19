@@ -116,6 +116,10 @@ public class PdfService : IPdfService
 
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
         var photoBase64 = (theme == 1 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
+        // Classic theme uses a dedicated cover image; falls back to profile photo then embedded default
+        var coverImageBase64 = theme == 1
+            ? GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage)
+            : photoBase64;
 
         var introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
             ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
@@ -139,7 +143,7 @@ public class PdfService : IPdfService
                 break;
             default:
                 css = SharedCss("#ea2127", "rgba(234, 33, 39, 0.25)", "#ff0066");
-                cover = WorkoutCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64);
+                cover = WorkoutCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64);
                 break;
         }
 
@@ -177,6 +181,10 @@ public class PdfService : IPdfService
 
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
         var photoBase64 = (theme == 1 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
+        // Classic theme uses a dedicated cover image; falls back to profile photo then embedded default
+        var coverImageBase64 = theme == 1
+            ? GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage)
+            : photoBase64;
 
         var introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
             ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
@@ -209,7 +217,7 @@ public class PdfService : IPdfService
                 break;
             default:
                 css = SharedCss("#00FF88", "rgba(0, 255, 136, 0.25)", "#FF0066");
-                cover = DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64);
+                cover = DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64);
                 break;
         }
 

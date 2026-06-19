@@ -27,6 +27,7 @@ public class PanelUser : IdentityUser
     public string? PdfIntroduction { get; set; }
     public int PdfTheme { get; set; } = 1;
     public bool CanChangePdfTheme { get; set; } = false;
+    public string? PdfCoverImage { get; set; }
 
     // One Coach → Many Clients
     public ICollection<Client> Clients { get; set; } = new List<Client>();

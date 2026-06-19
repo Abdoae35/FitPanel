@@ -655,6 +655,30 @@
                     }
 
                     <div class="fp-input-group">
+                        <label>PDF Cover Image <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Classic theme only)</span></label>
+                        <div class="fp-upload-zone">
+                            @if (!string.IsNullOrEmpty(pdfCoverImage))
+                            {
+                                <img src="@pdfCoverImage" class="fp-upload-preview" alt="Cover Image Preview" style="object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <div class="fp-upload-placeholder">
+                                    <i class="fa fa-image"></i>
+                                </div>
+                            }
+                            <InputFile OnChange="OnCoverImageUpload" style="flex: 1; font-size: 13px; color: var(--fp-text-secondary);" />
+                            @if (!string.IsNullOrEmpty(pdfCoverImage))
+                            {
+                                <button type="button" class="fp-upload-remove" @onclick="RemoveCoverImage">
+                                    <i class="fa fa-trash"></i> Remove
+                                </button>
+                            }
+                        </div>
+                        <span class="fp-upload-hint">Upload a custom cover image for your Classic PDF theme (JPEG, PNG). Max size: 5MB. If not set, your profile photo is used; if neither is set, a default fitness image is shown.</span>
+                    </div>
+
+                    <div class="fp-input-group">
                         <label>Coach Introduction</label>
                         <textarea @bind="pdfIntroduction" rows="8" placeholder="Write your coaching background, philosophy, certifications, and experience. This text will appear as a dedicated page in all your client PDFs..."></textarea>
                         <span class="fp-upload-hint">Leave empty to skip the intro page. When filled, an "About Your Coach" page is automatically inserted after the cover in every PDF you generate for clients.</span>
@@ -829,6 +853,7 @@
     private string instagramUsername = string.Empty;
     private string instagramLink = string.Empty;
     private string profilePicture = string.Empty;
+    private string pdfCoverImage = string.Empty;
 
     private string pdfIntroduction = string.Empty;
     private int pdfTheme = 1;
@@ -866,6 +891,7 @@
             instagramUsername = coach.InstagramUsername ?? string.Empty;
             instagramLink = coach.InstagramLink ?? string.Empty;
             profilePicture = coach.ProfilePicture ?? string.Empty;
+            pdfCoverImage = coach.PdfCoverImage ?? string.Empty;
             pdfIntroduction = coach.PdfIntroduction ?? string.Empty;
             pdfTheme = coach.PdfTheme < 1 ? 1 : coach.PdfTheme;
 
@@ -1018,6 +1044,7 @@
         {
             coach.PdfIntroduction = string.IsNullOrWhiteSpace(pdfIntroduction) ? null : pdfIntroduction.Trim();
             coach.PdfTheme = coach.CanChangePdfTheme ? pdfTheme : 1;
+            coach.PdfCoverImage = string.IsNullOrEmpty(pdfCoverImage) ? null : pdfCoverImage;
             var result = await UserManager.UpdateAsync(coach);
             if (result.Succeeded)
             {
@@ -1098,5 +1125,61 @@
         {
             errorMessage = $"Failed to update database profile record: {ex.Message}";
         }
+    }
+
+    private async Task OnCoverImageUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            pdfErrorMessage = string.Empty;
+            var file = e.File;
+            if (file == null) return;
+
+            if (file.Size > 5 * 1024 * 1024)
+            {
+                pdfErrorMessage = "Cover image exceeds the 5MB limit.";
+                return;
+            }
+
+            var ext = Path.GetExtension(file.Name).ToLower();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+            {
+                pdfErrorMessage = "Only JPG, JPEG, and PNG files are allowed.";
+                return;
+            }
+
+            var uploadsFolder = Path.Combine(Env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"cover_{coach?.Id ?? Guid.NewGuid().ToString()}{ext}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var fs = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+
+            pdfCoverImage = $"/uploads/{fileName}";
+        }
+        catch (Exception ex)
+        {
+            pdfErrorMessage = $"Failed to upload cover image: {ex.Message}";
+        }
+    }
+
+    private void RemoveCoverImage()
+    {
+        if (!string.IsNullOrEmpty(pdfCoverImage))
+        {
+            try
+            {
+                var relativePath = pdfCoverImage.TrimStart('/');
+                var filePath = Path.Combine(Env.WebRootPath, relativePath);
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+            }
+            catch { }
+        }
+        pdfCoverImage = string.Empty;
     }
 }

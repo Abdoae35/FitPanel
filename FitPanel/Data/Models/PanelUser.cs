@@ -25,6 +25,7 @@ public class PanelUser : IdentityUser
 
     // PDF customization
     public string? PdfIntroduction { get; set; }
+    public string? PdfCertificates { get; set; }
     public int PdfTheme { get; set; } = 1;
     public bool CanChangePdfTheme { get; set; } = false;
     public string? PdfCoverImage { get; set; }

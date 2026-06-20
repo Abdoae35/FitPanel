@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personalized Protocol — Ahmed Khalil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --charcoal:      #0f1117;
+      --charcoal-mid:  #1a1d27;
+      --charcoal-soft: #252836;
+      --charcoal-line: #2e3245;
+      --accent:        #c9f21d;   /* Volt Green — swap to #f0c040 for Gold */
+      --accent-dim:    rgba(201,242,29,.12);
+      --accent-glow:   rgba(201,242,29,.35);
+      --white:         #ffffff;
+      --off-white:     #f4f5f8;
+      --muted:         #8b91a7;
+      --text-main:     #1a1d27;
+      --text-body:     #3d4158;
+      --border:        #e2e5ef;
+      --card-bg:       #ffffff;
+      --tag-bg:        #eef0f8;
+
+      --font-head:  'Montserrat', sans-serif;
+      --font-body:  'Inter', sans-serif;
+
+      --radius-sm:  6px;
+      --radius-md:  12px;
+      --radius-lg:  20px;
+    }
+
+    html, body {
+      width: 210mm;
+      background: #dde0ea;
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ============================================================
+       PRINT / A4 PAGE RULES
+    ============================================================ */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    @media print {
+      html, body { width: 210mm; background: transparent; }
+      .page {
+        box-shadow: none !important;
+        margin: 0 auto !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* ============================================================
+       PAGE SHELL
+       Each .page = one A4 sheet (297mm × 210mm landscape not used here)
+    ============================================================ */
+    .page {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      background: var(--white);
+      overflow: hidden;
+      page-break-after: always;
+      page-break-inside: avoid;
+      box-shadow: 0 8px 40px rgba(0,0,0,.18);
+      margin: 0 auto 12mm;
+    }
+
+    /* ============================================================
+       ── PAGE 1 · COVER ──────────────────────────────────────────
+    ============================================================ */
+    .cover {
+      background: var(--charcoal);
+      display: flex;
+      flex-direction: column;
+      height: 297mm;
+    }
+
+    /* ---- top stripe ---- */
+    .cover__stripe {
+      height: 5px;
+      background: linear-gradient(90deg, var(--accent) 0%, #7ded00 50%, transparent 100%);
+    }
+
+    /* ---- hero area ---- */
+    .cover__hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 18mm 16mm 10mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* coach photo — right-side portrait */
+    .cover__coach-photo {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 95mm;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .cover__coach-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+    /* gradient fade: photo blends into the dark background on the left */
+    .cover__coach-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        var(--charcoal) 0%,
+        rgba(15,17,23,.55) 35%,
+        transparent 100%
+      );
+    }
+    /* subtle accent vignette at bottom */
+    .cover__coach-photo::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(to top, rgba(15,17,23,.8) 0%, transparent 100%);
+      z-index: 1;
+    }
+
+    /* fallback placeholder when no image is provided */
+    .cover__coach-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(160deg, var(--charcoal-soft) 0%, var(--charcoal) 100%);
+    }
+    .cover__coach-photo-placeholder svg {
+      width: 60px; height: 60px;
+      fill: rgba(255,255,255,.12);
+    }
+    .cover__coach-photo-placeholder span {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,.2);
+      text-transform: uppercase;
+    }
+
+    /* decorative accent ring overlay on top of photo */
+    .cover__photo-ring {
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: 50px solid rgba(201,242,29,.06);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* plan-type badge */
+    .cover__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 100px;
+      padding: 6px 18px;
+      margin-bottom: 24px;
+    }
+    .cover__badge-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .cover__badge-text {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    /* main headline */
+    .cover__headline {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      max-width: 130mm;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .cover__headline em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .cover__sub {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 36px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* divider line */
+    .cover__divider {
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-bottom: 36px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* client meta card */
+    .cover__meta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 120mm;
+      position: relative;
+      z-index: 1;
+    }
+    .cover__meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cover__meta-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(201,242,29,.25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cover__meta-icon svg { width: 15px; height: 15px; fill: var(--accent); }
+    .cover__meta-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .cover__meta-value {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    /* ---- cover footer ---- */
+    .cover__footer {
+      padding: 0 16mm 10mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cover__brand {
+      display: flex;
+      flex-direction: column;
+    }
+    .cover__brand-name {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: 0.3px;
+    }
+    .cover__brand-title {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .cover__logo-mark {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cover__logo-mark svg { width: 24px; height: 24px; fill: var(--charcoal); }
+
+    /* ---- cover bottom bar ---- */
+    .cover__bar {
+      height: 4px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       ── PAGE 2 · COACH PROFILE ──────────────────────────────────
+    ============================================================ */
+    .profile-page {
+      display: flex;
+      flex-direction: column;
+      height: 297mm;
+    }
+
+    .page-topbar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, #7ded00 60%, transparent 100%);
+      flex-shrink: 0;
+    }
+
+    .page-header {
+      padding: 10mm 14mm 6mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .page-header__section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-header__dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .page-header__title {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .page-header__brand {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .profile-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 72mm 1fr;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* left column */
+    .profile-left {
+      background: var(--charcoal);
+      padding: 12mm 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8mm;
+    }
+
+    .coach-avatar {
+      width: 44mm;
+      height: 44mm;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 0 6px var(--accent-dim);
+      overflow: hidden;
+      background: var(--charcoal-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .coach-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .coach-avatar-placeholder {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%;
+    }
+    .coach-avatar-placeholder svg { width: 28mm; height: 28mm; fill: var(--muted); }
+
+    .coach-name-block { text-align: center; }
+    .coach-name-block h2 {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .coach-name-block p {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .contact-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .contact-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-icon svg { width: 13px; height: 13px; fill: var(--accent); }
+    .contact-detail { min-width: 0; }
+    .contact-detail .lbl {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .contact-detail .val {
+      font-size: 10px;
+      color: var(--white);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .stat-chip {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .stat-chip .n {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-chip .l {
+      font-size: 8px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+    }
+
+    /* right column */
+    .profile-right {
+      padding: 10mm 10mm 8mm;
+      display: flex;
+      flex-direction: column;
+      gap: 7mm;
+      overflow: hidden;
+    }
+
+    .section-eyebrow {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--charcoal);
+      margin-bottom: 8px;
+    }
+    .section-body {
+      font-size: 10.5px;
+      line-height: 1.65;
+      color: var(--text-body);
+    }
+
+    .cert-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .cert-tag {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-body);
+      letter-spacing: 0.3px;
+    }
+    .cert-tag--accent {
+      background: var(--accent-dim);
+      border-color: rgba(201,242,29,.4);
+      color: #6a8000;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bullet-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 10.5px;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+    .bullet-list li::before {
+      content: '';
+      flex-shrink: 0;
+      margin-top: 6px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .profile-divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ============================================================
+       ── PAGE 3+ · SHARED CONTENT STYLES ─────────────────────────
+    ============================================================ */
+    .content-page {
+      display: flex;
+      flex-direction: column;
+      min-height: 297mm;
+    }
+
+    .content-body {
+      flex: 1;
+      padding: 8mm 14mm 10mm;
+      display: flex;
+      flex-direction: column;
+      gap: 6mm;
+    }
+
+    /* ---- Section header ---- */
+    .s-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+    .s-header__bar {
+      width: 4px;
+      height: 22px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+    .s-header__text h2 {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--charcoal);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .s-header__text p {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 1px;
+    }
+
+    /* ============================================================
+       ── DIET PLAN COMPONENTS ─────────────────────────────────────
+    ============================================================ */
+
+    /* -- Coaching Notes Grid -- */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .note-card {
+      background: var(--charcoal);
+      border-radius: var(--radius-md);
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+    .note-card__icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(201,242,29,.3);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .note-card__icon svg { width: 18px; height: 18px; fill: var(--accent); }
+    .note-card__value {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .note-card__label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .note-card__sub {
+      font-size: 9px;
+      color: rgba(255,255,255,.45);
+      line-height: 1.4;
+    }
+
+    /* -- Meal Card -- */
+    .meal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    .meal-card__head {
+      background: var(--charcoal);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .meal-card__head-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .meal-number {
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .meal-name {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .meal-macros {
+      display: flex;
+      gap: 10px;
+    }
+    .macro-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255,255,255,.07);
+      border-radius: 6px;
+      padding: 4px 9px;
+      min-width: 38px;
+    }
+    .macro-pill .mv {
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1;
+    }
+    .macro-pill .ml {
+      font-size: 7px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .macro-pill--kcal { background: rgba(201,242,29,.12); }
+    .macro-pill--kcal .mv { color: var(--accent); }
+
+    .meal-card__body { padding: 0; }
+
+    /* ingredient table */
+    .ing-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    .ing-table thead tr {
+      background: var(--off-white);
+      border-bottom: 1px solid var(--border);
+    }
+    .ing-table thead th {
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .ing-table thead th:not(:first-child) { text-align: center; }
+    .ing-table tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+    .ing-table tbody tr:last-child { border-bottom: none; }
+    .ing-table tbody tr:hover { background: var(--off-white); }
+    .ing-table tbody td {
+      padding: 7px 10px;
+      color: var(--text-body);
+      font-size: 10px;
+    }
+    .ing-table tbody td:not(:first-child) { text-align: center; }
+    .ing-table .ing-name { font-weight: 600; color: var(--text-main); }
+    .ing-table .ing-weight { font-weight: 700; color: var(--charcoal); }
+    .ing-table .num-p { color: #3f7fcc; font-weight: 600; }
+    .ing-table .num-c { color: #cf8f2c; font-weight: 600; }
+    .ing-table .num-f { color: #cf5d4d; font-weight: 600; }
+    .ing-table .num-k { color: var(--charcoal); font-weight: 700; }
+
+    /* meals grid: 2-col layout */
+    .meals-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .meals-grid .meal-card { width: 100%; }
+
+    /* -- Daily Nutrition Summary -- */
+    .nutrition-summary {
+      background: var(--charcoal);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      page-break-inside: avoid;
+    }
+    .nutrition-summary__title {
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .nutrition-summary__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .nutr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,.04);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 14px 8px;
+    }
+    .nutr-block__ring {
+      position: relative;
+      width: 52px; height: 52px;
+      margin-bottom: 4px;
+    }
+    .nutr-block__ring svg {
+      width: 52px; height: 52px;
+      transform: rotate(-90deg);
+    }
+    .nutr-block__ring .ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,.08);
+      stroke-width: 5;
+    }
+    .nutr-block__ring .ring-fill {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 138.2; /* 2π×22 */
+      transition: stroke-dashoffset .4s;
+    }
+    .ring-fill--cal  { stroke: var(--accent); }
+    .ring-fill--prot { stroke: #4a86d4; }
+    .ring-fill--carb { stroke: #d9962e; }
+    .ring-fill--fat  { stroke: #d4604f; }
+
+    .nutr-block__center {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .nutr-block__value {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1;
+    }
+    .nutr-block__unit {
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .nutr-block__label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .nutr-block__pct {
+      font-size: 8px;
+      color: rgba(255,255,255,.4);
+    }
+
+    /* ============================================================
+       ── WORKOUT PLAN COMPONENTS ──────────────────────────────────
+    ============================================================ */
+
+    /* -- Day Header -- */
+    .day-header {
+      background: var(--charcoal);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      page-break-after: avoid;
+    }
+    .day-header__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .day-badge {
+      background: var(--accent);
+      color: var(--charcoal);
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+    .day-title {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+    .day-subtitle {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+    .day-chip-row {
+      display: flex;
+      gap: 6px;
+    }
+    .day-chip {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 9px;
+      font-weight: 600;
+      color: rgba(255,255,255,.7);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .day-chip svg { width: 10px; height: 10px; fill: var(--accent); }
+
+    /* -- Exercise Table -- */
+    .exercise-block {
+      page-break-inside: avoid;
+    }
+    .ex-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    .ex-table thead tr {
+      background: var(--off-white);
+      border-bottom: 2px solid var(--border);
+    }
+    .ex-table thead th {
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .ex-table thead th:not(:first-child) { text-align: center; }
+    .ex-table tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+    .ex-table tbody tr:last-child { border-bottom: none; }
+    .ex-table tbody tr:nth-child(even) { background: rgba(0,0,0,.02); }
+    .ex-table tbody td {
+      padding: 8px 10px;
+      color: var(--text-body);
+    }
+    .ex-table tbody td:not(:first-child) { text-align: center; }
+    .ex-name { font-weight: 700; color: var(--text-main); font-size: 10.5px; }
+    .ex-pattern {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 8.5px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .ex-sets, .ex-reps {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--charcoal);
+    }
+    .ex-rest {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .ex-note-inline {
+      font-size: 8.5px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* superset indicator */
+    .ex-table .superset-row td:first-child {
+      border-left: 3px solid var(--accent);
+    }
+
+    /* -- Day Notes Callout -- */
+    .day-notes {
+      background: linear-gradient(135deg, #fffbe6 0%, #fff8d6 100%);
+      border: 1px solid #f0d060;
+      border-left: 4px solid #f0c040;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      page-break-inside: avoid;
+    }
+    .day-notes__head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .day-notes__head svg { width: 14px; height: 14px; fill: #b8860b; }
+    .day-notes__head span {
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #8b6914;
+      text-transform: uppercase;
+    }
+    .day-notes__body {
+      font-size: 10px;
+      color: #5a4a00;
+      line-height: 1.6;
+    }
+    .day-notes__body ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .day-notes__body ul li::before {
+      content: '→ ';
+      color: #b8860b;
+      font-weight: 700;
+    }
+
+    /* workout day container */
+    .workout-day {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      page-break-inside: avoid;
+    }
+
+    /* ============================================================
+       ── PAGE FOOTER ──────────────────────────────────────────────
+    ============================================================ */
+    .page-footer {
+      padding: 5mm 14mm;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .page-footer__left {
+      font-size: 8px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .page-footer__left strong { color: var(--charcoal); }
+    .page-footer__right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .page-num {
+      font-family: var(--font-head);
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .page-num span { color: var(--accent); }
+
+    /* ============================================================
+       UTILITY
+    ============================================================ */
+    .mt-1 { margin-top: 4px; }
+    .mt-2 { margin-top: 8px; }
+    .gap-row { display: flex; gap: 10px; }
+
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     PAGE 1 · COVER
+================================================================ -->
+<div class="page cover">
+  <div class="cover__stripe"></div>
+
+  <div class="cover__hero">
+
+    <!-- ============================================================
+         COACH PHOTO (right-side portrait, full cover height)
+         ▸ Option A — real image: replace src with {{coach_photo_url}}
+         ▸ Option B — no image: remove <img> and keep the placeholder div
+    ============================================================ -->
+    <div class="cover__coach-photo">
+      <!-- Replace this monogram block with <img src="COACH_PHOTO_URL" /> when a real portrait is available -->
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(120% 90% at 70% 25%, #2a2e3e 0%, #15171f 55%, #0c0e14 100%);position:relative;">
+        <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(201,242,29,.05) 1px, transparent 1px);background-size:14px 14px;"></div>
+        <div style="font-family:var(--font-head);font-size:84px;font-weight:900;line-height:1;letter-spacing:-2px;color:transparent;-webkit-text-stroke:1.5px rgba(201,242,29,.55);position:relative;">MT</div>
+        <div style="font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.32);text-transform:uppercase;position:relative;">Dr. Mostafa Tolba</div>
+      </div>
+    </div>
+    <!-- decorative ring on top of photo -->
+    <div class="cover__photo-ring"></div>
+
+    <!-- PLAN TYPE BADGE — toggle "DIET" or "WORKOUT" in your app -->
+    <div class="cover__badge">
+      <div class="cover__badge-dot"></div>
+      <span class="cover__badge-text">Personalized Protocol</span>
+      <!-- plan_type: "PERSONALIZED DIET PLAN" | "PERSONALIZED WORKOUT PLAN" -->
+    </div>
+
+    <h1 class="cover__headline">
+      Every Workout Is A<br/>
+      <em>Step Forward</em><br/>
+      To Your Goal
+    </h1>
+    <p class="cover__sub">Elite Coaching Protocol · Designed Exclusively for You</p>
+
+    <div class="cover__divider"></div>
+
+    <div class="cover__meta">
+      <!-- Client Name -->
+      <div class="cover__meta-row">
+        <div class="cover__meta-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        </div>
+        <div>
+          <div class="cover__meta-label">Client Name</div>
+          <div class="cover__meta-value">Ahmed Khalil</div>
+          <!-- e.g. "Ahmed Khalil" -->
+        </div>
+      </div>
+      <!-- Plan Start Date -->
+      <div class="cover__meta-row">
+        <div class="cover__meta-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1zM7 11h5v5H7z"/></svg>
+        </div>
+        <div>
+          <div class="cover__meta-label">Plan Start Date</div>
+          <div class="cover__meta-value">01 July 2025</div>
+          <!-- e.g. "01 July 2025" -->
+        </div>
+      </div>
+      <!-- Plan Duration -->
+      <div class="cover__meta-row">
+        <div class="cover__meta-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+        </div>
+        <div>
+          <div class="cover__meta-label">Plan Duration</div>
+          <div class="cover__meta-value">12 Weeks</div>
+          <!-- e.g. "12 Weeks" -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover__footer">
+    <div class="cover__brand">
+      <div class="cover__brand-name">Dr. Mostafa Tolba</div>
+      <div class="cover__brand-title">Strength &amp; Conditioning Coach</div>
+    </div>
+    <div class="cover__logo-mark">
+      <!-- Logo mark / initials mark -->
+      <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+    </div>
+  </div>
+
+  <div class="cover__bar"></div>
+</div><!-- /cover -->
+
+
+<!-- ================================================================
+     PAGE 2 · COACH PROFILE
+================================================================ -->
+<div class="page profile-page">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__section">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Coach Profile &amp; Introduction</span>
+    </div>
+    <span class="page-header__brand">Dr. Mostafa Tolba · Personalized Protocol</span>
+  </div>
+
+  <div class="profile-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="profile-left">
+      <!-- Avatar -->
+      <div class="coach-avatar">
+        <!-- Replace src with actual coach photo URL, or keep placeholder -->
+        <!-- <img src="{{coach_photo_url}}" alt="Coach Photo" /> -->
+        <div class="coach-avatar-placeholder" style="background:radial-gradient(120% 120% at 50% 30%, #2a2e3e 0%, #15171f 70%);">
+          <span style="font-family:var(--font-head);font-size:34px;font-weight:900;letter-spacing:-1px;color:transparent;-webkit-text-stroke:1.5px var(--accent);">MT</span>
+        </div>
+      </div>
+
+      <div class="coach-name-block">
+        <h2>Dr. Mostafa Tolba</h2>
+        <p>Strength &amp; Conditioning</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="n">12+</div>
+          <!-- e.g. "12" -->
+          <div class="l">Years Exp.</div>
+        </div>
+        <div class="stat-chip">
+          <div class="n">300+</div>
+          <!-- e.g. "300" -->
+          <div class="l">Clients</div>
+        </div>
+        <div class="stat-chip">
+          <div class="n">7</div>
+          <!-- e.g. "7" -->
+          <div class="l">Certs</div>
+        </div>
+        <div class="stat-chip">
+          <div class="n">4</div>
+          <!-- e.g. "4" -->
+          <div class="l">Titles</div>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          </div>
+          <div class="contact-detail">
+            <div class="lbl">Email</div>
+            <div class="val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a6c5c9c7c5cee6c2d4cbc9d5d2c7c0c7d2c9cac4c788c5c9cb">[email&#160;protected]</a></div>
+            <!-- e.g. "coach@drmostafa.com" -->
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </div>
+          <div class="contact-detail">
+            <div class="lbl">Instagram</div>
+            <div class="val">@dr.mostafatolba</div>
+            <!-- e.g. "@dr.mostafatolba" -->
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+          </div>
+          <div class="contact-detail">
+            <div class="lbl">X / Twitter</div>
+            <div class="val">@drmostafatolba</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
+          <div class="contact-detail">
+            <div class="lbl">WhatsApp</div>
+            <div class="val">+20 100 123 4567</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="profile-right">
+
+      <div>
+        <div class="section-eyebrow">About Your Coach</div>
+        <div class="section-title">Meet Dr. Mostafa Tolba</div>
+        <p class="section-body">With over 12 years coaching elite and everyday athletes, Dr. Mostafa Tolba blends evidence-based programming with hands-on, real-world experience. He has guided national-level powerlifters, physique competitors, and busy professionals to sustainable, measurable results — building every plan around your physiology, your schedule, and your goals.</p>
+        <!-- e.g. "With over 12 years of hands-on experience in elite strength and conditioning, Dr. Mostafa Tolba has coached national and international athletes across powerlifting, bodybuilding, and functional fitness disciplines. His science-backed methodology combines evidence-based programming with real-world application." -->
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Certifications</div>
+        <div class="cert-tags">
+          <!-- Loop {{coach_certifications}} in your app and render each as a tag -->
+          <span class="cert-tag cert-tag--accent">CSCS — NSCA</span>
+          <!-- e.g. "CSCS – NSCA" -->
+          <span class="cert-tag">CISSN — Sports Nutrition</span>
+          <!-- e.g. "CISSN – Sports Nutrition" -->
+          <span class="cert-tag">Precision Nutrition L1</span>
+          <span class="cert-tag">FMS Level 2</span>
+          <span class="cert-tag">USA Weightlifting L2</span>
+          <span class="cert-tag">IFBB Pro Coach</span>
+        </div>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Experience Highlights</div>
+        <ul class="bullet-list">
+          <!-- Loop {{coach_experience}} -->
+          <li>Head Strength Coach — Egyptian National Powerlifting Team (2018–2023)</li>
+          <!-- e.g. "Head Strength Coach — Egyptian National Powerlifting Team (2018–2023)" -->
+          <li>Performance consultant to 12+ IFBB physique competitors</li>
+          <li>Author of the “Foundations of Strength” coaching curriculum</li>
+          <li>300+ online clients coached across 14 countries</li>
+        </ul>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Specializations</div>
+        <div class="cert-tags">
+          <!-- Loop {{coach_specializations}} -->
+          <span class="cert-tag">Powerlifting</span>
+          <!-- e.g. "Powerlifting" -->
+          <span class="cert-tag">Hypertrophy</span>
+          <span class="cert-tag">Body Recomposition</span>
+          <span class="cert-tag">Contest Prep</span>
+          <span class="cert-tag">Injury-Resilient Training</span>
+        </div>
+      </div>
+
+    </div><!-- /profile-right -->
+  </div><!-- /profile-body -->
+
+  <div class="page-footer">
+    <div class="page-footer__left">
+      <strong>Ahmed Khalil</strong> · Personalized Protocol · 01 July 2025
+    </div>
+    <div class="page-footer__right">
+      <span class="page-num">Page <span>02</span></span>
+    </div>
+  </div>
+</div><!-- /profile-page -->
+
+
+<!-- ================================================================
+     PAGE 3 · DIET PLAN — COACHING NOTES & MEALS 1–2
+     (Hide this entire page block when rendering Workout plan)
+================================================================ -->
+<div class="page content-page diet-page" id="diet-page-1">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__section">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Diet Plan</span>
+    </div>
+    <span class="page-header__brand">Ahmed Khalil · Week 1</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- COACHING NOTES -->
+    <div>
+      <div class="s-header">
+        <div class="s-header__bar"></div>
+        <div class="s-header__text">
+          <h2>Daily Coaching Notes</h2>
+          <p>Non-negotiable daily targets</p>
+        </div>
+      </div>
+
+      <div class="notes-grid">
+        <!-- Card 1: Water -->
+        <div class="note-card">
+          <div class="note-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" style="display:none"/><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2C20 10.48 17.33 6.55 12 2z"/></svg>
+          </div>
+          <div class="note-card__value">5L</div>
+          <!-- e.g. "5L" -->
+          <div class="note-card__label">Water</div>
+          <div class="note-card__sub">Minimum daily intake</div>
+          <!-- e.g. "Minimum daily intake" -->
+        </div>
+
+        <!-- Card 2: Salt -->
+        <div class="note-card">
+          <div class="note-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="note-card__value">8g</div>
+          <!-- e.g. "10g" -->
+          <div class="note-card__label">Salt</div>
+          <div class="note-card__sub">Added across meals</div>
+          <!-- e.g. "Added to meals" -->
+        </div>
+
+        <!-- Card 3: Supplements -->
+        <div class="note-card">
+          <div class="note-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M4.5 10.5v3c0 3.87 3.13 7 7 7s7-3.13 7-7v-3h-14zm7 8c-2.76 0-5-2.24-5-5v-1h10v1c0 2.76-2.24 5-5 5zM16 4H8C6.34 4 5 5.34 5 7v2h14V7c0-1.66-1.34-3-3-3z"/></svg>
+          </div>
+          <div class="note-card__value">AM + PM</div>
+          <!-- e.g. "AM+PM" or a short label -->
+          <div class="note-card__label">Supplements</div>
+          <div class="note-card__sub">Creatine · Fish Oil · Vit D</div>
+          <!-- e.g. "Creatine · Fish Oil · VitD" -->
+        </div>
+
+        <!-- Card 4: Snacks -->
+        <div class="note-card">
+          <div class="note-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-6.67-15.03-4-15.03-4v3h15.03v1z"/></svg>
+          </div>
+          <div class="note-card__value">2×</div>
+          <!-- e.g. "2x" -->
+          <div class="note-card__label">Snacks</div>
+          <div class="note-card__sub">Between main meals</div>
+          <!-- e.g. "Between main meals" -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MEAL 1 -->
+    <div class="s-header">
+      <div class="s-header__bar"></div>
+      <div class="s-header__text">
+        <h2>Meals Breakdown</h2>
+        <p>All weights in grams · uncooked unless stated</p>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 01</span>
+          <span class="meal-name">Pre-Workout Breakfast</span>
+          <!-- e.g. "Pre-Workout Breakfast" -->
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill"><span class="mv">41g</span><span class="ml">Protein</span></div>
+          <div class="macro-pill"><span class="mv">62g</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill"><span class="mv">16g</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--kcal"><span class="mv">589</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <div class="meal-card__body">
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Weight (g)</th>
+              <th>P (g)</th>
+              <th>C (g)</th>
+              <th>F (g)</th>
+              <th>kcal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loop {{meal_1_ingredients}} — render one <tr> per ingredient -->
+            <tr>
+              <td class="ing-name">Rolled Oats</td>
+              <td class="ing-weight">80</td>
+              <td class="num-p">11</td>
+              <td class="num-c">46</td>
+              <td class="num-f">6</td>
+              <td class="num-k">311</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Whole Eggs</td>
+              <td class="ing-weight">100</td>
+              <td class="num-p">13</td>
+              <td class="num-c">1</td>
+              <td class="num-f">10</td>
+              <td class="num-k">143</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Egg Whites</td>
+              <td class="ing-weight">150</td>
+              <td class="num-p">17</td>
+              <td class="num-c">1</td>
+              <td class="num-f">0</td>
+              <td class="num-k">78</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Blueberries</td>
+              <td class="ing-weight">100</td>
+              <td class="num-p">1</td>
+              <td class="num-c">14</td>
+              <td class="num-f">0</td>
+              <td class="num-k">57</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MEAL 2 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 02</span>
+          <span class="meal-name">Post-Workout Lunch</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill"><span class="mv">73g</span><span class="ml">Protein</span></div>
+          <div class="macro-pill"><span class="mv">89g</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill"><span class="mv">9g</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--kcal"><span class="mv">741</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <div class="meal-card__body">
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Weight (g)</th>
+              <th>P (g)</th>
+              <th>C (g)</th>
+              <th>F (g)</th>
+              <th>kcal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ing-name">Chicken Breast</td>
+              <td class="ing-weight">200</td>
+              <td class="num-p">62</td>
+              <td class="num-c">0</td>
+              <td class="num-f">7</td>
+              <td class="num-k">330</td>
+            </tr>
+            <tr>
+              <td class="ing-name">White Rice (dry)</td>
+              <td class="ing-weight">100</td>
+              <td class="num-p">7</td>
+              <td class="num-c">78</td>
+              <td class="num-f">1</td>
+              <td class="num-k">360</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Broccoli</td>
+              <td class="ing-weight">150</td>
+              <td class="num-p">4</td>
+              <td class="num-c">11</td>
+              <td class="num-f">1</td>
+              <td class="num-k">51</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content-body -->
+
+  <div class="page-footer">
+    <div class="page-footer__left">
+      <strong>Ahmed Khalil</strong> · Diet Plan · 01 July 2025
+    </div>
+    <div class="page-footer__right">
+      <span class="page-num">Page <span>03</span></span>
+    </div>
+  </div>
+</div><!-- /diet-page-1 -->
+
+
+<!-- ================================================================
+     PAGE 4 · DIET PLAN — MEALS 3–4 & NUTRITION SUMMARY
+================================================================ -->
+<div class="page content-page diet-page" id="diet-page-2">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__section">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Diet Plan</span>
+    </div>
+    <span class="page-header__brand">Ahmed Khalil · Week 1</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- MEAL 3 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 03</span>
+          <span class="meal-name">Afternoon Meal</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill"><span class="mv">58g</span><span class="ml">Protein</span></div>
+          <div class="macro-pill"><span class="mv">55g</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill"><span class="mv">30g</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--kcal"><span class="mv">703</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <div class="meal-card__body">
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ing-name">Lean Beef 90/10</td><td class="ing-weight">200</td>
+              <td class="num-p">52</td><td class="num-c">0</td>
+              <td class="num-f">20</td><td class="num-k">368</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Sweet Potato</td><td class="ing-weight">250</td>
+              <td class="num-p">4</td><td class="num-c">50</td>
+              <td class="num-f">0</td><td class="num-k">215</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Mixed Greens</td><td class="ing-weight">150</td>
+              <td class="num-p">2</td><td class="num-c">5</td>
+              <td class="num-f">0</td><td class="num-k">30</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Olive Oil</td><td class="ing-weight">10</td>
+              <td class="num-p">0</td><td class="num-c">0</td>
+              <td class="num-f">10</td><td class="num-k">90</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MEAL 4 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 04</span>
+          <span class="meal-name">Dinner</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill"><span class="mv">50g</span><span class="ml">Protein</span></div>
+          <div class="macro-pill"><span class="mv">57g</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill"><span class="mv">28g</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--kcal"><span class="mv">698</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <div class="meal-card__body">
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ing-name">Salmon Fillet</td><td class="ing-weight">180</td>
+              <td class="num-p">36</td><td class="num-c">0</td>
+              <td class="num-f">23</td><td class="num-k">374</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Quinoa (dry)</td><td class="ing-weight">80</td>
+              <td class="num-p">11</td><td class="num-c">51</td>
+              <td class="num-f">5</td><td class="num-k">294</td>
+            </tr>
+            <tr>
+              <td class="ing-name">Asparagus</td><td class="ing-weight">150</td>
+              <td class="num-p">3</td><td class="num-c">6</td>
+              <td class="num-f">0</td><td class="num-k">30</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DAILY NUTRITION SUMMARY -->
+    <div>
+      <div class="s-header">
+        <div class="s-header__bar"></div>
+        <div class="s-header__text">
+          <h2>Daily Nutrition Summary</h2>
+          <p>Combined totals across all meals</p>
+        </div>
+      </div>
+
+      <div class="nutrition-summary">
+        <div class="nutrition-summary__title">Total Daily Macros</div>
+        <div class="nutrition-summary__grid">
+
+          <!-- Calories -->
+          <div class="nutr-block">
+            <div class="nutr-block__ring">
+              <svg viewBox="0 0 44 44">
+                <circle class="ring-bg" cx="22" cy="22" r="18"/>
+                <!-- stroke-dashoffset = 113.1 × (1 - pct/100); set via inline style or JS -->
+                <circle class="ring-fill ring-fill--cal" cx="22" cy="22" r="18"
+                  style="stroke-dashoffset: 2"/>
+                <!-- total_kcal_ring_offset = 113.1 * (1 - total_kcal/max_kcal) -->
+              </svg>
+              <div class="nutr-block__center">101%</div>
+            </div>
+            <div class="nutr-block__value">2,731</div>
+            <div class="nutr-block__unit">kcal</div>
+            <div class="nutr-block__label">Calories</div>
+            <div class="nutr-block__pct">Daily Target: 2,700</div>
+          </div>
+
+          <!-- Protein -->
+          <div class="nutr-block">
+            <div class="nutr-block__ring">
+              <svg viewBox="0 0 44 44">
+                <circle class="ring-bg" cx="22" cy="22" r="18"/>
+                <circle class="ring-fill ring-fill--prot" cx="22" cy="22" r="18"
+                  style="stroke-dashoffset: 75.8"/>
+              </svg>
+              <div class="nutr-block__center">33%</div>
+            </div>
+            <div class="nutr-block__value">222</div>
+            <div class="nutr-block__unit">grams</div>
+            <div class="nutr-block__label">Protein</div>
+            <div class="nutr-block__pct">33% of Calories</div>
+          </div>
+
+          <!-- Carbs -->
+          <div class="nutr-block">
+            <div class="nutr-block__ring">
+              <svg viewBox="0 0 44 44">
+                <circle class="ring-bg" cx="22" cy="22" r="18"/>
+                <circle class="ring-fill ring-fill--carb" cx="22" cy="22" r="18"
+                  style="stroke-dashoffset: 69"/>
+              </svg>
+              <div class="nutr-block__center">39%</div>
+            </div>
+            <div class="nutr-block__value">263</div>
+            <div class="nutr-block__unit">grams</div>
+            <div class="nutr-block__label">Carbs</div>
+            <div class="nutr-block__pct">39% of Calories</div>
+          </div>
+
+          <!-- Fats -->
+          <div class="nutr-block">
+            <div class="nutr-block__ring">
+              <svg viewBox="0 0 44 44">
+                <circle class="ring-bg" cx="22" cy="22" r="18"/>
+                <circle class="ring-fill ring-fill--fat" cx="22" cy="22" r="18"
+                  style="stroke-dashoffset: 82.6"/>
+              </svg>
+              <div class="nutr-block__center">27%</div>
+            </div>
+            <div class="nutr-block__value">83</div>
+            <div class="nutr-block__unit">grams</div>
+            <div class="nutr-block__label">Fat</div>
+            <div class="nutr-block__pct">27% of Calories</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-body -->
+
+  <div class="page-footer">
+    <div class="page-footer__left">
+      <strong>Ahmed Khalil</strong> · Diet Plan · 01 July 2025
+    </div>
+    <div class="page-footer__right">
+      <span class="page-num">Page <span>04</span></span>
+    </div>
+  </div>
+</div><!-- /diet-page-2 -->
+
+
+<!-- ================================================================
+     PAGE 5 · WORKOUT PLAN — DAYS 1 & 2
+     (Hide this block when rendering Diet plan)
+================================================================ -->
+<div class="page content-page workout-page" id="workout-page-1">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__section">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Workout Plan</span>
+    </div>
+    <span class="page-header__brand">Ahmed Khalil · Week 1</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- ── DAY 1 ── -->
+    <div class="workout-day">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 01</span>
+          <div>
+            <div class="day-title">Upper Body — Push</div>
+            <!-- e.g. "Upper Body — Push" -->
+            <div class="day-subtitle">Chest · Shoulders · Triceps</div>
+            <!-- e.g. "Chest · Shoulders · Triceps" -->
+          </div>
+        </div>
+        <div class="day-chip-row">
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            75 min
+            <!-- e.g. "75 min" -->
+          </div>
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            High
+            <!-- e.g. "High" -->
+          </div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th style="width:44%">Movement &amp; Pattern</th>
+              <th>Sets</th>
+              <th>Reps</th>
+              <th>Rest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loop {{day_1_exercises}} -->
+            <tr>
+              <td>
+                <div class="ex-name">Barbell Bench Press</div>
+                <!-- e.g. "Barbell Bench Press" -->
+                <span class="ex-pattern">Horizontal Push · Compound</span>
+                <!-- e.g. "Horizontal Push · Compound" -->
+              </td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">6–8</span></td>
+              <td><span class="ex-rest">150s</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="ex-name">Incline Dumbbell Press</div>
+                <span class="ex-pattern">Horizontal Push · Compound</span>
+                <span class="ex-note-inline">Control the eccentric — 3 sec down</span>
+                <!-- optional inline note e.g. "Control the eccentric — 3 sec down" -->
+              </td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">8–10</span></td>
+              <td><span class="ex-rest">120s</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="ex-name">Seated DB Shoulder Press</div>
+                <span class="ex-pattern">Vertical Push · Compound</span>
+              </td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">8–10</span></td>
+              <td><span class="ex-rest">120s</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="ex-name">Weighted Dips</div>
+                <span class="ex-pattern">Horizontal Push</span>
+              </td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">8–12</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="ex-name">Cable Lateral Raise</div>
+                <span class="ex-pattern">Shoulder Isolation</span>
+              </td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12–15</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="ex-name">Overhead Rope Triceps Ext</div>
+                <span class="ex-pattern">Triceps Isolation</span>
+              </td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12–15</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 01</span>
+        </div>
+        <div class="day-notes__body">
+          <ul>
+            <!-- Loop {{day_1_notes}} -->
+            <li>Work up to a top set of 6 on Bench Press — leave 1–2 reps in reserve.</li>
+            <!-- e.g. "Work up to a 3RM on Bench Press — do not exceed 95% 1RM" -->
+            <li>Keep shoulder blades retracted and depressed on every pressing movement.</li>
+            <li>Log each working weight in the app — load progresses weekly.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DAY 2 ── -->
+    <div class="workout-day" style="margin-top: 4mm;">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 02</span>
+          <div>
+            <div class="day-title">Lower Body — Squat Focus</div>
+            <div class="day-subtitle">Quads · Glutes · Hamstrings</div>
+          </div>
+        </div>
+        <div class="day-chip-row">
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            80 min
+          </div>
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            High
+          </div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th style="width:44%">Movement &amp; Pattern</th>
+              <th>Sets</th>
+              <th>Reps</th>
+              <th>Rest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="ex-name">Back Squat</div><span class="ex-pattern">Knee Dominant · Compound</span></td>
+              <td><span class="ex-sets">5</span></td>
+              <td><span class="ex-reps">5</span></td>
+              <td><span class="ex-rest">180s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Romanian Deadlift</div><span class="ex-pattern">Hip Hinge · Compound</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">8</span></td>
+              <td><span class="ex-rest">150s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Leg Press</div><span class="ex-pattern">Knee Dominant</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">120s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Walking Lunges</div><span class="ex-pattern">Unilateral</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12 / leg</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Seated Calf Raise</div><span class="ex-pattern">Isolation</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">15–20</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 02</span>
+        </div>
+        <div class="day-notes__body">
+          <ul>
+            <li>Brace hard and hit full depth on every squat — quality over load.</li>
+            <li>RDLs: feel the hamstring stretch, stop just short of lower-back rounding.</li>
+            <li>Add 2.5kg only when all 5 sets hit the top rep target.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-body -->
+
+  <div class="page-footer">
+    <div class="page-footer__left">
+      <strong>Ahmed Khalil</strong> · Workout Plan · 01 July 2025
+    </div>
+    <div class="page-footer__right">
+      <span class="page-num">Page <span>05</span></span>
+    </div>
+  </div>
+</div><!-- /workout-page-1 -->
+
+
+<!-- ================================================================
+     PAGE 6 · WORKOUT PLAN — DAYS 3, 4 & 5
+================================================================ -->
+<div class="page content-page workout-page" id="workout-page-2">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__section">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Workout Plan</span>
+    </div>
+    <span class="page-header__brand">Ahmed Khalil · Week 1</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- ── DAY 3 ── -->
+    <div class="workout-day">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 03</span>
+          <div>
+            <div class="day-title">Pull — Back & Biceps</div>
+            <div class="day-subtitle">Lats · Traps · Biceps</div>
+          </div>
+        </div>
+        <div class="day-chip-row">
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            70 min
+          </div>
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            Moderate
+          </div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th style="width:44%">Movement &amp; Pattern</th>
+              <th>Sets</th>
+              <th>Reps</th>
+              <th>Rest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="ex-name">Weighted Pull-Up</div><span class="ex-pattern">Vertical Pull · Compound</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">6–8</span></td>
+              <td><span class="ex-rest">150s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Barbell Row</div><span class="ex-pattern">Horizontal Pull · Compound</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">8–10</span></td>
+              <td><span class="ex-rest">120s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Lat Pulldown</div><span class="ex-pattern">Vertical Pull</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Seated Cable Row</div><span class="ex-pattern">Horizontal Pull</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">EZ-Bar Curl</div><span class="ex-pattern">Biceps Isolation</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 03</span>
+        </div>
+        <div class="day-notes__body">
+          <ul>
+            <li>Initiate every pull from the elbows — drive them down and back.</li>
+            <li>Full stretch at the top of each rep, no momentum on the way up.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DAY 4 ── -->
+    <div class="workout-day" style="margin-top: 4mm;">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 04</span>
+          <div>
+            <div class="day-title">Conditioning & Core</div>
+            <div class="day-subtitle">Engine · Midline Stability</div>
+          </div>
+        </div>
+        <div class="day-chip-row">
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            45 min
+          </div>
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            Moderate
+          </div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th style="width:44%">Movement &amp; Pattern</th>
+              <th>Sets</th>
+              <th>Reps</th>
+              <th>Rest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="ex-name">Assault Bike Intervals</div><span class="ex-pattern">Conditioning</span></td>
+              <td><span class="ex-sets">6</span></td>
+              <td><span class="ex-reps">30s on</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Heavy Sled Push</div><span class="ex-pattern">Conditioning</span></td>
+              <td><span class="ex-sets">5</span></td>
+              <td><span class="ex-reps">20 m</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Hanging Leg Raise</div><span class="ex-pattern">Core</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">12–15</span></td>
+              <td><span class="ex-rest">60s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Cable Woodchop</div><span class="ex-pattern">Core</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12 / side</span></td>
+              <td><span class="ex-rest">45s</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 04</span>
+        </div>
+        <div class="day-notes__body">
+          <ul>
+            <li>Keep intervals honest — hold a consistent wattage across all rounds.</li>
+            <li>Core work is slow and controlled; no swinging on the leg raises.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DAY 5 ── -->
+    <div class="workout-day" style="margin-top: 4mm;">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 05</span>
+          <div>
+            <div class="day-title">Upper Body — Volume</div>
+            <div class="day-subtitle">Hypertrophy Pump</div>
+          </div>
+        </div>
+        <div class="day-chip-row">
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            65 min
+          </div>
+          <div class="day-chip">
+            <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            Moderate
+          </div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th style="width:44%">Movement &amp; Pattern</th>
+              <th>Sets</th>
+              <th>Reps</th>
+              <th>Rest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="ex-name">Incline Barbell Press</div><span class="ex-pattern">Horizontal Push</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Chest-Supported Row</div><span class="ex-pattern">Horizontal Pull</span></td>
+              <td><span class="ex-sets">4</span></td>
+              <td><span class="ex-reps">10–12</span></td>
+              <td><span class="ex-rest">90s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Arnold Press</div><span class="ex-pattern">Vertical Push</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12</span></td>
+              <td><span class="ex-rest">75s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Cable Fly</div><span class="ex-pattern">Chest Isolation</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">15</span></td>
+              <td><span class="ex-rest">45s</span></td>
+            </tr>
+            <tr>
+              <td><div class="ex-name">Hammer Curl</div><span class="ex-pattern">Biceps Isolation</span></td>
+              <td><span class="ex-sets">3</span></td>
+              <td><span class="ex-reps">12–15</span></td>
+              <td><span class="ex-rest">45s</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 05</span>
+        </div>
+        <div class="day-notes__body">
+          <ul>
+            <li>Chase the pump — shorten rest if your heart rate allows.</li>
+            <li>Squeeze and hold the peak contraction for a full second each rep.</li>
+            <li>Finish feeling worked, not wrecked — this is a growth day.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-body -->
+
+  <div class="page-footer">
+    <div class="page-footer__left">
+      <strong>Ahmed Khalil</strong> · Workout Plan · 01 July 2025
+    </div>
+    <div class="page-footer__right">
+      <span class="page-num">Page <span>06</span></span>
+    </div>
+  </div>
+</div><!-- /workout-page-2 -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

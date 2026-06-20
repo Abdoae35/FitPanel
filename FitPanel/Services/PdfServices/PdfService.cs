@@ -115,15 +115,21 @@ public class PdfService : IPdfService
         if (theme < 1) theme = 1;
 
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
-        var photoBase64 = (theme == 1 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
+        var photoBase64 = (theme == 1 || theme == 4 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
         // Classic theme uses a dedicated cover image; falls back to profile photo then embedded default
         var coverImageBase64 = theme == 1
             ? GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage)
             : photoBase64;
 
-        var introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
-            ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
-            : "";
+        string introPage;
+        if (theme == 4)
+            introPage = (!string.IsNullOrWhiteSpace(coach?.PdfIntroduction) || !string.IsNullOrWhiteSpace(coach?.PdfCertificates))
+                ? BuildProfilePageTheme4(coach!, photoBase64, hasPhoto, instagram, instagramLink)
+                : "";
+        else
+            introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
+                ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
+                : "";
 
         var days = workout.WorkOutDays.OrderBy(d => d.Id).ToList();
         var pagesBuilder = new StringBuilder();
@@ -140,6 +146,10 @@ public class PdfService : IPdfService
             case 3:
                 css = SharedCss("#F97316", "rgba(249,115,22,0.25)", "#FBBF24", "#080808", "#111111", "#000000");
                 cover = WorkoutCoverTheme3(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto);
+                break;
+            case 4:
+                css = SharedCss("#c9f21d", "rgba(201,242,29,0.15)", "#7ded00", "#0f1117", "#1a1d27", "#000000");
+                cover = WorkoutCoverTheme4(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto);
                 break;
             default:
                 css = SharedCss("#ea2127", "rgba(234, 33, 39, 0.25)", "#ff0066");
@@ -180,15 +190,21 @@ public class PdfService : IPdfService
         if (theme < 1) theme = 1;
 
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
-        var photoBase64 = (theme == 1 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
+        var photoBase64 = (theme == 1 || theme == 4 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
         // Classic theme uses a dedicated cover image; falls back to profile photo then embedded default
         var coverImageBase64 = theme == 1
             ? GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage)
             : photoBase64;
 
-        var introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
-            ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
-            : "";
+        string introPage;
+        if (theme == 4)
+            introPage = (!string.IsNullOrWhiteSpace(coach?.PdfIntroduction) || !string.IsNullOrWhiteSpace(coach?.PdfCertificates))
+                ? BuildProfilePageTheme4(coach!, photoBase64, hasPhoto, instagram, instagramLink)
+                : "";
+        else
+            introPage = !string.IsNullOrWhiteSpace(coach?.PdfIntroduction)
+                ? BuildIntroPage(coach!, photoBase64, hasPhoto, instagram, instagramLink)
+                : "";
 
         var meals = diet.DietMeals.SelectMany(dm => dm.MealItems).ToList();
         int totalCal     = meals.Sum(m => m.Calories);
@@ -214,6 +230,10 @@ public class PdfService : IPdfService
             case 3:
                 css = SharedCss("#F97316", "rgba(249,115,22,0.25)", "#FBBF24", "#080808", "#111111", "#000000");
                 cover = DietCoverTheme3(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto);
+                break;
+            case 4:
+                css = SharedCss("#c9f21d", "rgba(201,242,29,0.15)", "#7ded00", "#0f1117", "#1a1d27", "#000000");
+                cover = DietCoverTheme4(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto);
                 break;
             default:
                 css = SharedCss("#00FF88", "rgba(0, 255, 136, 0.25)", "#FF0066");
@@ -1333,20 +1353,20 @@ public class PdfService : IPdfService
             </header>
 
             <div style="display:flex;gap:24px;margin-bottom:24px;align-items:flex-start;flex-shrink:0;">
-              {(hasPhoto ? $"""<div style="flex-shrink:0;width:110px;height:130px;border-radius:6px;overflow:hidden;border:2px solid var(--coach-primary);"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach Photo"></div>""" : "")}
+              {(hasPhoto ? $"""<div style="flex-shrink:0;width:120px;height:140px;border-radius:6px;overflow:hidden;border:2px solid var(--coach-primary);"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach Photo"></div>""" : "")}
               <div style="flex:1;">
-                <div style="font-size:24px;font-weight:900;color:var(--coach-white);margin-bottom:4px;">{coach.FullName}</div>
-                {(!string.IsNullOrEmpty(coach.Specialization) ? $"""<div style="font-size:12px;color:var(--coach-primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">{coach.Specialization}</div>""" : "")}
-                <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
-                  {(!string.IsNullOrEmpty(coach.Email) ? $"""<div style="font-size:12px;color:var(--coach-gray-light);display:flex;align-items:center;gap:6px;"><svg style="width:12px;height:12px;fill:var(--coach-gray-light);flex-shrink:0;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>{coach.Email}</div>""" : "")}
-                  {(!string.IsNullOrEmpty(instagram) ? $"""<div style="font-size:12px;color:var(--coach-gray-light);display:flex;align-items:center;gap:6px;"><svg style="width:12px;height:12px;fill:var(--coach-gray-light);flex-shrink:0;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>@{instagram}</div>""" : "")}
+                <div style="font-size:28px;font-weight:900;color:var(--coach-white);margin-bottom:6px;">{coach.FullName}</div>
+                {(!string.IsNullOrEmpty(coach.Specialization) ? $"""<div style="font-size:14px;color:var(--coach-primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">{coach.Specialization}</div>""" : "")}
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+                  {(!string.IsNullOrEmpty(coach.Email) ? $"""<div style="font-size:14px;color:var(--coach-gray-light);display:flex;align-items:center;gap:8px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);flex-shrink:0;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>{coach.Email}</div>""" : "")}
+                  {(!string.IsNullOrEmpty(instagram) ? $"""<div style="font-size:14px;color:var(--coach-gray-light);display:flex;align-items:center;gap:8px;"><svg style="width:14px;height:14px;fill:var(--coach-gray-light);flex-shrink:0;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>@{instagram}</div>""" : "")}
                 </div>
               </div>
             </div>
 
             <div style="padding:24px 28px;background:rgba(255,255,255,0.04);border-left:4px solid var(--coach-primary);border-radius:4px;flex:1;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-              <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:14px;">INTRODUCTION</div>
-              <div style="font-size:14px;line-height:1.85;color:#f0f0f0;white-space:pre-wrap;font-weight:400;">{coach.PdfIntroduction}</div>
+              <div style="font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:14px;">INTRODUCTION</div>
+              <div style="font-size:17px;line-height:1.85;color:#f0f0f0;white-space:pre-wrap;font-weight:400;">{coach.PdfIntroduction}</div>
             </div>
           </div>
 
@@ -1357,6 +1377,228 @@ public class PdfService : IPdfService
           </footer>
         </div>
         """;
+
+    // ── THEME 4: COACHING PLAN (Volt Green) ────────────────────────
+    private static string WorkoutCoverTheme4(
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink,
+        string photoBase64, bool hasPhoto) =>
+        CoachingPlanCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto,
+            "PERSONALIZED WORKOUT PLAN", "EVERY WORKOUT IS A STEP FORWARD TO YOUR GOAL");
+
+    private static string DietCoverTheme4(
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink,
+        string photoBase64, bool hasPhoto) =>
+        CoachingPlanCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, photoBase64, hasPhoto,
+            "PERSONALIZED DIET PLAN", "EVERY MEAL IS A STEP FORWARD TO YOUR GOAL");
+
+    private static string CoachingPlanCover(
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink,
+        string photoBase64, bool hasPhoto, string planLabel, string headline)
+    {
+        var initials = string.Concat(coachName.Split(' ', 2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : ""));
+        var photoSection = hasPhoto
+            ? $"<img src=\"{photoBase64}\" style=\"width:100%;height:100%;object-fit:cover;object-position:top center;display:block;\" alt=\"Coach\"/>"
+              + "<div style=\"position:absolute;inset:0;background:linear-gradient(to right,#0f1117 0%,rgba(15,17,23,.45) 38%,transparent 100%);\"></div>"
+              + "<div style=\"position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(to top,rgba(15,17,23,.75) 0%,transparent 100%);\"></div>"
+            : "<div style=\"width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(120% 90% at 70% 25%,#2a2e3e 0%,#15171f 55%,#0c0e14 100%);\">"
+              + $"<div style=\"font-size:84px;font-weight:900;line-height:1;letter-spacing:-2px;color:transparent;-webkit-text-stroke:1.5px rgba(201,242,29,.45);\">{initials}</div>"
+              + $"<div style=\"font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.3);text-transform:uppercase;\">{coachName}</div>"
+              + "</div>";
+
+        return $"""
+        <div class="a4-page" style="background:#0f1117;position:relative;overflow:hidden;">
+          <div style="height:5px;background:linear-gradient(90deg,#c9f21d 0%,#7ded00 50%,transparent 100%);"></div>
+
+          <div style="position:absolute;top:5px;right:0;width:48%;height:calc(100% - 65px);overflow:hidden;pointer-events:none;z-index:1;">
+            {photoSection}
+          </div>
+          <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;border:50px solid rgba(201,242,29,.05);pointer-events:none;z-index:2;"></div>
+
+          <div style="position:relative;z-index:3;padding:14mm 16mm 0;display:flex;flex-direction:column;height:calc(100% - 65px - 5px);box-sizing:border-box;">
+
+            <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,242,29,.1);border:1px solid #c9f21d;border-radius:100px;padding:6px 18px;margin-bottom:24px;width:fit-content;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#c9f21d;box-shadow:0 0 8px rgba(201,242,29,.5);"></div>
+              <span style="font-size:10px;font-weight:700;letter-spacing:2.5px;color:#c9f21d;text-transform:uppercase;">{planLabel}</span>
+            </div>
+
+            <h1 style="font-size:36px;font-weight:900;line-height:1.1;color:#ffffff;text-transform:uppercase;letter-spacing:-0.5px;max-width:130mm;margin:0 0 10px 0;">{headline}</h1>
+            <p style="font-size:12px;color:#8b91a7;letter-spacing:0.5px;margin:0 0 36px 0;">Elite Coaching Protocol · Designed Exclusively for You</p>
+
+            <div style="width:60px;height:3px;background:#c9f21d;border-radius:2px;margin-bottom:36px;"></div>
+
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px 24px;max-width:120mm;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(201,242,29,.1);border:1px solid rgba(201,242,29,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#c9f21d"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;color:#8b91a7;text-transform:uppercase;margin-bottom:2px;">Client Name</div>
+                  <div style="font-size:14px;font-weight:700;color:#ffffff;">{client.Name}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(201,242,29,.1);border:1px solid rgba(201,242,29,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#c9f21d"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;color:#8b91a7;text-transform:uppercase;margin-bottom:2px;">Plan Start Date</div>
+                  <div style="font-size:14px;font-weight:700;color:#ffffff;">{client.StartDate:dd MMMM yyyy}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;bottom:65px;left:0;right:0;z-index:3;padding:0 16mm 10mm;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:#ffffff;letter-spacing:0.3px;">{coachName}</div>
+              <div style="font-size:10px;color:#8b91a7;letter-spacing:0.5px;">Fitness Coach</div>
+            </div>
+            <div style="width:44px;height:44px;border-radius:12px;background:#c9f21d;display:flex;align-items:center;justify-content:center;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#0f1117"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+            </div>
+          </div>
+
+          <footer class="footer" style="background:#000000;border-top:2px solid #c9f21d;">
+            <div><a href="{instagramLink}" target="_blank" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#8b91a7;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
+            <div><a href="mailto:{coachEmail}" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#8b91a7;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{coachEmail}</span></a></div>
+            <div><a href="{FormatWhatsAppLink(coachPhone)}" target="_blank" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#25D366;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg><span>{coachPhone}</span></a></div>
+          </footer>
+        </div>
+        """;
+    }
+
+    private static string BuildProfilePageTheme4(PanelUser coach, string photoBase64, bool hasPhoto,
+        string instagram, string instagramLink)
+    {
+        var certTags = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(coach.PdfCertificates))
+        {
+            bool first = true;
+            foreach (var line in coach.PdfCertificates.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var cert = line.Trim();
+                if (string.IsNullOrEmpty(cert)) continue;
+                if (first)
+                {
+                    certTags.Append($"<span style=\"background:rgba(201,242,29,.15);border:1px solid rgba(201,242,29,.5);border-radius:100px;padding:5px 14px;font-size:10px;font-weight:700;color:#6a8000;letter-spacing:0.3px;white-space:nowrap;\">{cert}</span>");
+                    first = false;
+                }
+                else
+                {
+                    certTags.Append($"<span style=\"background:#eef0f8;border:1px solid #e2e5ef;border-radius:100px;padding:5px 14px;font-size:10px;font-weight:600;color:#3d4158;letter-spacing:0.3px;white-space:nowrap;\">{cert}</span>");
+                }
+            }
+        }
+
+        var initials = string.Concat(coach.FullName.Split(' ', 2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : ""));
+        var avatarHtml = hasPhoto
+            ? $"<img src=\"{photoBase64}\" style=\"width:100%;height:100%;object-fit:cover;border-radius:50%;\" alt=\"Coach\"/>"
+            : $"<span style=\"font-size:34px;font-weight:900;letter-spacing:-1px;color:transparent;-webkit-text-stroke:1.5px #c9f21d;\">{initials}</span>";
+
+        var certSection = certTags.Length > 0 ? $"""
+            <div style="height:1px;background:#e2e5ef;margin:14px 0;"></div>
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#c9f21d;text-transform:uppercase;margin-bottom:8px;">Certifications</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">{certTags}</div>
+            </div>
+            """ : "";
+
+        var specHtmlAccent = !string.IsNullOrEmpty(coach.Specialization)
+            ? $"<div style=\"font-size:10px;color:#c9f21d;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;\">{coach.Specialization}</div>"
+            : "";
+        var specHtmlPlain = !string.IsNullOrEmpty(coach.Specialization)
+            ? $"<div style=\"font-size:10px;color:#c9f21d;font-weight:700;letter-spacing:1px;text-transform:uppercase;\">{coach.Specialization}</div>"
+            : "";
+
+        var introSection = !string.IsNullOrWhiteSpace(coach.PdfIntroduction) ? $"""
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#c9f21d;text-transform:uppercase;margin-bottom:6px;">About Your Coach</div>
+              <div style="font-size:24px;font-weight:800;color:#1a1d27;margin-bottom:8px;">{coach.FullName}</div>
+              {specHtmlAccent}
+              <div style="font-size:11px;line-height:1.75;color:#3d4158;white-space:pre-wrap;">{coach.PdfIntroduction}</div>
+            </div>
+            """ : $"""
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#c9f21d;text-transform:uppercase;margin-bottom:6px;">Your Coach</div>
+              <div style="font-size:24px;font-weight:800;color:#1a1d27;margin-bottom:8px;">{coach.FullName}</div>
+              {specHtmlPlain}
+            </div>
+            """;
+
+        var leftColSpecHtml = !string.IsNullOrEmpty(coach.Specialization)
+            ? $"<div style=\"font-size:10px;color:#c9f21d;font-weight:600;letter-spacing:1px;\">{coach.Specialization}</div>"
+            : "";
+
+        var emailRowHtml = !string.IsNullOrEmpty(coach.Email) ? $"""
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#c9f21d"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                  </div>
+                  <div><div style="font-size:8px;font-weight:600;letter-spacing:1px;color:#8b91a7;text-transform:uppercase;">Email</div><div style="font-size:10px;color:#ffffff;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:48mm;">{coach.Email}</div></div>
+                </div>
+                """ : "";
+
+        var igRowHtml = !string.IsNullOrEmpty(instagram) ? $"""
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#c9f21d"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                  </div>
+                  <div><div style="font-size:8px;font-weight:600;letter-spacing:1px;color:#8b91a7;text-transform:uppercase;">Instagram</div><div style="font-size:10px;color:#ffffff;font-weight:500;">@{instagram}</div></div>
+                </div>
+                """ : "";
+
+        var phoneRowHtml = !string.IsNullOrEmpty(coach.PhoneNumber) ? $"""
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                  </div>
+                  <div><div style="font-size:8px;font-weight:600;letter-spacing:1px;color:#8b91a7;text-transform:uppercase;">WhatsApp</div><div style="font-size:10px;color:#ffffff;font-weight:500;">{coach.PhoneNumber}</div></div>
+                </div>
+                """ : "";
+
+        return $"""
+        <div class="a4-page" style="background:#ffffff;position:relative;">
+          <div style="height:4px;background:linear-gradient(90deg,#c9f21d 0%,#7ded00 60%,transparent 100%);"></div>
+
+          <div style="padding:8mm 14mm 6mm;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e5ef;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:10px;height:10px;border-radius:50%;background:#c9f21d;box-shadow:0 0 8px rgba(201,242,29,.5);"></div>
+              <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#8b91a7;text-transform:uppercase;">Coach Profile &amp; Introduction</span>
+            </div>
+            <span style="font-size:10px;font-weight:700;color:#8b91a7;letter-spacing:1px;">{coach.FullName} · Coaching Plan</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:72mm 1fr;flex:1;overflow:hidden;height:calc(297mm - 4px - 44px - 60px);">
+
+            <div style="background:#0f1117;padding:12mm 8mm 10mm;display:flex;flex-direction:column;align-items:center;gap:8mm;">
+              <div style="width:44mm;height:44mm;border-radius:50%;border:3px solid #c9f21d;box-shadow:0 0 0 6px rgba(201,242,29,.1);overflow:hidden;background:#252836;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                {avatarHtml}
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:15px;font-weight:800;color:#ffffff;margin-bottom:4px;">{coach.FullName}</div>
+                {leftColSpecHtml}
+              </div>
+              <div style="width:100%;display:flex;flex-direction:column;gap:10px;">
+                {emailRowHtml}
+                {igRowHtml}
+                {phoneRowHtml}
+              </div>
+            </div>
+
+            <div style="padding:10mm 10mm 8mm;display:flex;flex-direction:column;gap:7mm;overflow:hidden;background:#ffffff;">
+              {introSection}
+              {certSection}
+            </div>
+          </div>
+
+          <footer class="footer" style="background:#000000;border-top:1px solid #e2e5ef;">
+            <div><a href="{instagramLink}" target="_blank" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#8b91a7;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg><span>@{instagram}</span></a></div>
+            <div><a href="mailto:{coach.Email}" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#8b91a7;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg><span>{coach.Email}</span></a></div>
+            <div><a href="{FormatWhatsAppLink(coach.PhoneNumber ?? string.Empty)}" target="_blank" style="color:#8b91a7;text-decoration:none;display:flex;align-items:center;gap:6px;"><svg style="width:14px;height:14px;fill:#25D366;" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.117 1.528 5.845L0 24l6.337-1.501A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm5.894 16.396c-.246.693-1.425 1.32-1.955 1.375-.53.055-1.034.247-3.49-.732-2.92-1.175-4.793-4.17-4.94-4.363-.147-.195-1.197-1.593-1.197-3.04 0-1.447.755-2.16 1.027-2.455.272-.296.593-.37.79-.37.197 0 .394.002.567.01.18.01.424-.068.663.505.246.587.835 2.025.908 2.172.073.147.122.32.024.515-.098.196-.147.317-.294.49-.147.17-.309.38-.44.51-.147.147-.3.307-.128.6.17.295.757 1.248 1.625 2.02 1.116.996 2.056 1.304 2.35 1.45.294.147.466.123.637-.073.17-.196.73-.852.924-1.147.196-.294.39-.245.66-.147.27.097 1.71.806 2.004.953.294.147.49.22.563.343.073.122.073.71-.173 1.403z"/></svg><span>{coach.PhoneNumber}</span></a></div>
+          </footer>
+        </div>
+        """;
+    }
 
     // ── THEME 2: PROFESSIONAL NAVY ─────────────────────────────────
     private static string WorkoutCoverTheme2(
@@ -1452,31 +1694,31 @@ public class PdfService : IPdfService
         <div class="a4-page">
           <div style="position:absolute;top:0;left:0;right:0;height:6px;background:var(--coach-primary);z-index:10;"></div>
           <div class="content-wrapper" style="padding:40px;padding-top:46px;padding-bottom:84px;">
-            <div style="margin-bottom:60px;display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="margin-bottom:48px;display:flex;justify-content:space-between;align-items:flex-start;">
               <div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:8px;">COACHED BY</div>
-                <div style="font-size:22px;font-weight:800;color:var(--coach-white);">{coachName}</div>
+                <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:8px;">COACHED BY</div>
+                <div style="font-size:28px;font-weight:800;color:var(--coach-white);">{coachName}</div>
               </div>
-              {(hasPhoto ? $"""<div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--coach-primary);flex-shrink:0;"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach"></div>""" : "")}
+              {(hasPhoto ? $"""<div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--coach-primary);flex-shrink:0;"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach"></div>""" : "")}
             </div>
 
             <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-              <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:14px;">YOUR PERSONALIZED</div>
-              <div style="font-size:80px;font-weight:900;line-height:0.9;color:var(--coach-white);text-transform:uppercase;margin-bottom:4px;">WORK</div>
-              <div style="font-size:80px;font-weight:900;line-height:0.9;color:var(--coach-primary);text-transform:uppercase;margin-bottom:22px;">OUT</div>
+              <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:14px;">YOUR PERSONALIZED</div>
+              <div style="font-size:80px;font-weight:900;line-height:1;color:var(--coach-white);text-transform:uppercase;margin-bottom:2px;">WORK</div>
+              <div style="font-size:80px;font-weight:900;line-height:1;color:var(--coach-primary);text-transform:uppercase;margin-bottom:20px;">OUT</div>
               <div style="width:100px;height:5px;background:var(--coach-primary);border-radius:2px;margin-bottom:20px;"></div>
-              <div style="font-size:13px;color:var(--coach-gray-light);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">PUSH YOUR LIMITS. EXCEED YOUR GOALS.</div>
+              <div style="font-size:15px;color:var(--coach-gray-light);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">PUSH YOUR LIMITS. EXCEED YOUR GOALS.</div>
             </div>
 
             <div style="margin-top:auto;padding:20px 0;border-top:2px solid var(--coach-primary);">
               <div style="display:flex;justify-content:space-between;align-items:flex-end;">
                 <div>
-                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">ATHLETE</div>
-                  <div style="font-size:28px;font-weight:900;color:var(--coach-white);text-transform:uppercase;">{client.Name}</div>
+                  <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">ATHLETE</div>
+                  <div style="font-size:32px;font-weight:900;color:var(--coach-white);text-transform:uppercase;">{client.Name}</div>
                 </div>
                 <div style="text-align:right;">
-                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">START DATE</div>
-                  <div style="font-size:22px;font-weight:900;color:var(--coach-primary);">{client.StartDate:MMM dd, yyyy}</div>
+                  <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">START DATE</div>
+                  <div style="font-size:26px;font-weight:900;color:var(--coach-primary);">{client.StartDate:MMM dd, yyyy}</div>
                 </div>
               </div>
             </div>
@@ -1496,31 +1738,31 @@ public class PdfService : IPdfService
         <div class="a4-page">
           <div style="position:absolute;top:0;left:0;right:0;height:6px;background:var(--coach-primary);z-index:10;"></div>
           <div class="content-wrapper" style="padding:40px;padding-top:46px;padding-bottom:84px;">
-            <div style="margin-bottom:60px;display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="margin-bottom:48px;display:flex;justify-content:space-between;align-items:flex-start;">
               <div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:8px;">COACHED BY</div>
-                <div style="font-size:22px;font-weight:800;color:var(--coach-white);">{coachName}</div>
+                <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-primary);margin-bottom:8px;">COACHED BY</div>
+                <div style="font-size:28px;font-weight:800;color:var(--coach-white);">{coachName}</div>
               </div>
-              {(hasPhoto ? $"""<div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--coach-primary);flex-shrink:0;"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach"></div>""" : "")}
+              {(hasPhoto ? $"""<div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--coach-primary);flex-shrink:0;"><img src="{photoBase64}" style="width:100%;height:100%;object-fit:cover;object-position:25% center;" alt="Coach"></div>""" : "")}
             </div>
 
             <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-              <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:14px;">YOUR PERSONALIZED</div>
-              <div style="font-size:72px;font-weight:900;line-height:0.9;color:var(--coach-white);text-transform:uppercase;margin-bottom:4px;">NUTRI</div>
-              <div style="font-size:72px;font-weight:900;line-height:0.9;color:var(--coach-primary);text-transform:uppercase;margin-bottom:22px;">TION</div>
+              <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:14px;">YOUR PERSONALIZED</div>
+              <div style="font-size:72px;font-weight:900;line-height:1;color:var(--coach-white);text-transform:uppercase;margin-bottom:2px;">NUTRI</div>
+              <div style="font-size:72px;font-weight:900;line-height:1;color:var(--coach-primary);text-transform:uppercase;margin-bottom:20px;">TION</div>
               <div style="width:100px;height:5px;background:var(--coach-primary);border-radius:2px;margin-bottom:20px;"></div>
-              <div style="font-size:13px;color:var(--coach-gray-light);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">FUEL YOUR BODY. TRANSFORM YOUR LIFE.</div>
+              <div style="font-size:15px;color:var(--coach-gray-light);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">FUEL YOUR BODY. TRANSFORM YOUR LIFE.</div>
             </div>
 
             <div style="margin-top:auto;padding:20px 0;border-top:2px solid var(--coach-primary);">
               <div style="display:flex;justify-content:space-between;align-items:flex-end;">
                 <div>
-                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">ATHLETE</div>
-                  <div style="font-size:28px;font-weight:900;color:var(--coach-white);text-transform:uppercase;">{client.Name}</div>
+                  <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">ATHLETE</div>
+                  <div style="font-size:32px;font-weight:900;color:var(--coach-white);text-transform:uppercase;">{client.Name}</div>
                 </div>
                 <div style="text-align:right;">
-                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">START DATE</div>
-                  <div style="font-size:22px;font-weight:900;color:var(--coach-primary);">{client.StartDate:MMM dd, yyyy}</div>
+                  <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coach-gray-light);margin-bottom:6px;">START DATE</div>
+                  <div style="font-size:26px;font-weight:900;color:var(--coach-primary);">{client.StartDate:MMM dd, yyyy}</div>
                 </div>
               </div>
             </div>

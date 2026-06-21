@@ -659,7 +659,7 @@
                     }
 
                     <div class="fp-input-group">
-                        <label>PDF Cover Image <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Classic theme only)</span></label>
+                        <label>PDF Cover Image <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Classic &amp; Coaching Plan themes)</span></label>
                         <div class="fp-upload-zone">
                             @if (!string.IsNullOrEmpty(pdfCoverImage))
                             {
@@ -679,8 +679,70 @@
                                 </button>
                             }
                         </div>
-                        <span class="fp-upload-hint">Upload a custom cover image for your Classic PDF theme (JPEG, PNG). Max size: 5MB. If not set, your profile photo is used; if neither is set, a default fitness image is shown.</span>
+                        <span class="fp-upload-hint">Upload a custom cover image (JPEG, PNG). Max size: 5MB. If not set, your profile photo is used.</span>
                     </div>
+
+                    @* ── Cover Image Position (all full-photo themes) ── *@
+                    @if (!string.IsNullOrEmpty(pdfCoverImage))
+                    {
+                        <div class="fp-input-group" style="margin-top:4px;">
+                            <label>
+                                Cover Photo Position
+                                <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">— drag to reframe without regenerating the PDF</span>
+                            </label>
+
+                            <div style="display:flex;align-items:center;gap:12px;margin:10px 0 16px;">
+                                <span style="font-size:12px;color:var(--fp-text-muted);white-space:nowrap;">◀ Left</span>
+                                <input type="range" min="0" max="100" value="@pdfCoverImageX"
+                                       @oninput="@(e => pdfCoverImageX = int.Parse(e.Value!.ToString()!))"
+                                       style="flex:1;accent-color:@ThemePreviewAccent;height:4px;cursor:pointer;" />
+                                <span style="font-size:12px;color:var(--fp-text-muted);white-space:nowrap;">Right ▶</span>
+                                <span style="font-size:13px;font-weight:700;color:@ThemePreviewAccent;min-width:38px;text-align:right;">@pdfCoverImageX%</span>
+                            </div>
+
+                            @* Live A4 cover preview *@
+                            <div style="width:100%;max-width:380px;aspect-ratio:210/297;background:@ThemePreviewBg;border-radius:10px;overflow:hidden;position:relative;border:1px solid @ThemePreviewBorder;box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+
+                                @* top accent stripe *@
+                                <div style="height:@ThemePreviewStripeH;background:linear-gradient(90deg,@ThemePreviewAccent 0%,transparent 100%);"></div>
+
+                                @* cover image — right 48%, repositioned by slider *@
+                                <div style="position:absolute;top:@ThemePreviewStripeH;right:0;width:48%;height:calc(100% - 45px);overflow:hidden;">
+                                    <img src="@pdfCoverImage"
+                                         style="width:100%;height:100%;object-fit:cover;object-position:@(pdfCoverImageX)% top;display:block;" />
+                                    <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(@ThemePreviewGradRgb,1) 0%,rgba(@ThemePreviewGradRgb,.45) 38%,transparent 100%);"></div>
+                                    <div style="position:absolute;bottom:0;left:0;right:0;height:30%;background:linear-gradient(to top,rgba(@ThemePreviewGradRgb,.7) 0%,transparent 100%);"></div>
+                                </div>
+
+                                @* left text content *@
+                                <div style="position:absolute;top:10%;left:8%;right:52%;display:flex;flex-direction:column;gap:5px;">
+                                    <div style="font-size:5px;font-weight:700;letter-spacing:2px;color:@ThemePreviewAccent;text-transform:uppercase;">PERSONALIZED PLAN</div>
+                                    <div style="font-size:8px;font-weight:800;color:#ffffff;margin-bottom:4px;">@fullName</div>
+                                    <div style="font-size:18px;font-weight:900;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.5px;">WORK</div>
+                                    <div style="font-size:18px;font-weight:900;line-height:0.9;color:@ThemePreviewAccent;text-transform:uppercase;letter-spacing:-0.5px;margin-bottom:6px;">OUT</div>
+                                    <div style="width:22px;height:2px;background:@ThemePreviewAccent;border-radius:1px;margin-bottom:8px;"></div>
+                                    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:6px 8px;display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                                        <div style="padding-right:6px;border-right:1px solid rgba(255,255,255,.08);">
+                                            <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Athlete</div>
+                                            <div style="font-size:6px;font-weight:700;color:#fff;">Ahmed Khalil</div>
+                                        </div>
+                                        <div style="padding-left:6px;">
+                                            <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Date</div>
+                                            <div style="font-size:6px;font-weight:700;color:@ThemePreviewAccent;">Jul 2025</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @* footer bar *@
+                                <div style="position:absolute;bottom:0;left:0;right:0;height:36px;background:@ThemePreviewFooterBg;border-top:2px solid @ThemePreviewAccent;display:flex;align-items:center;padding:0 8%;justify-content:space-between;">
+                                    <div style="font-size:6px;font-weight:700;color:#888;">@fullName</div>
+                                    <div style="width:14px;height:14px;border-radius:3px;background:@ThemePreviewAccent;"></div>
+                                </div>
+                            </div>
+
+                            <span class="fp-upload-hint" style="margin-top:8px;">The preview updates live. Save your PDF settings when you are happy with the position.</span>
+                        </div>
+                    }
 
                     <div class="fp-input-group">
                         <label>Coach Introduction</label>
@@ -878,12 +940,20 @@
     private string pdfIntroduction = string.Empty;
     private string pdfCertificates = string.Empty;
     private int pdfTheme = 1;
+    private int pdfCoverImageX = 50;
     private string pdfSuccessMessage = string.Empty;
     private string pdfErrorMessage = string.Empty;
     private bool isSavingPdf = false;
 
     private string ThemeOptionStyle(int themeId, string color, string rgba) =>
         $"display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid {(pdfTheme == themeId ? color : "var(--fp-border)")};border-radius:10px;cursor:pointer;background:{(pdfTheme == themeId ? $"rgba({rgba},0.08)" : "transparent")};transition:border-color 0.2s,background 0.2s;";
+
+    private string ThemePreviewAccent => pdfTheme switch { 1 => "#ea2127", 2 => "#0EA5E9", 3 => "#F97316", _ => "#c9f21d" };
+    private string ThemePreviewBg => pdfTheme switch { 2 => "#0F172A", 3 => "#080808", _ => "#0f1117" };
+    private string ThemePreviewGradRgb => pdfTheme switch { 2 => "15,23,42", 3 => "8,8,8", _ => "15,17,23" };
+    private string ThemePreviewBorder => pdfTheme switch { 1 => "rgba(234,33,39,.25)", 2 => "rgba(14,165,233,.25)", 3 => "rgba(249,115,22,.25)", _ => "rgba(201,242,29,.25)" };
+    private string ThemePreviewFooterBg => pdfTheme switch { 2 => "#060D1A", _ => "#000000" };
+    private string ThemePreviewStripeH => pdfTheme switch { 3 => "6px", _ => "5px" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -916,6 +986,7 @@
             pdfIntroduction = coach.PdfIntroduction ?? string.Empty;
             pdfCertificates = coach.PdfCertificates ?? string.Empty;
             pdfTheme = coach.PdfTheme < 1 ? 1 : coach.PdfTheme;
+            pdfCoverImageX = Math.Clamp(coach.PdfCoverImageX, 0, 100);
 
             // Load clients to calculate counter
             clients = await ClientService.GetMyClientsAsync(coach.Id);
@@ -1068,6 +1139,7 @@
             coach.PdfCertificates = string.IsNullOrWhiteSpace(pdfCertificates) ? null : pdfCertificates.Trim();
             coach.PdfTheme = coach.CanChangePdfTheme ? pdfTheme : 1;
             coach.PdfCoverImage = string.IsNullOrEmpty(pdfCoverImage) ? null : pdfCoverImage;
+            coach.PdfCoverImageX = Math.Clamp(pdfCoverImageX, 0, 100);
             var result = await UserManager.UpdateAsync(coach);
             if (result.Succeeded)
             {

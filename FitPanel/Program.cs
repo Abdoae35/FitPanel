@@ -108,7 +108,13 @@ app.MapPost("/account/login", async (
         user, password, rememberMe, lockoutOnFailure: true);
 
     if (result.Succeeded)
-        return Results.Redirect(returnUrl ?? "/dashboard");
+    {
+        if (returnUrl != null)
+            return Results.Redirect(returnUrl);
+
+        var isAdmin = await userManager.IsInRoleAsync(user, "Admin");
+        return Results.Redirect(isAdmin ? "/dashboard/coaches" : "/dashboard");
+    }
     else if (result.IsLockedOut)
         return Results.Redirect("/login?error=locked");
     else

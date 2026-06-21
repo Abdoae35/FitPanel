@@ -42,10 +42,15 @@
             <div class="fp-nav-group">
                 <span class="fp-nav-label">MAIN</span>
 
-                <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" onclick="fpCloseSidebar()">
-                    <i class="fa fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </NavLink>
+                @* Coach only *@
+                <AuthorizeView Roles="Coach" Context="dashCtx">
+                    <Authorized>
+                        <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" onclick="fpCloseSidebar()">
+                            <i class="fa fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </NavLink>
+                    </Authorized>
+                </AuthorizeView>
 
                 @* Admin only *@
                 <AuthorizeView Roles="Admin" Context="adminCtx">

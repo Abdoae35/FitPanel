@@ -4,145 +4,346 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject UserManager<PanelUser> UserManager
 @inject IAuthService AuthService
+@inject IClientService ClientService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject INotificationService NotificationService
+@inject FitPanelDbContext DbContext
 @using FitPanel.Data
 @using FitPanel.Data.Models
-@inject FitPanelDbContext DbContext
+@using FitPanel.DTOs.Client
+@using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 
-<PageTitle>Coaches — FitPanel</PageTitle>
+<PageTitle>Coaches — FitPanel Admin</PageTitle>
 
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ── Coaches Management — Premium Overhaul ──────────────────────── */
-        .fp-coaches-page {
+        .fp-admin-page {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Card container */
-        .fp-card {
+        /* ── Page Header ── */
+        .fp-admin-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .fp-admin-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--fp-text);
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+        }
+        .fp-admin-header p {
+            font-size: 14px;
+            color: var(--fp-text-muted);
+            margin: 0;
+        }
+
+        /* ── Stats Row ── */
+        .fp-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .fp-stat-tile {
+            background: var(--fp-surface);
+            border: 1px solid var(--fp-border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
+        }
+        .fp-stat-tile:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .fp-stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .fp-stat-icon.red   { background: rgba(234,33,39,0.1);  color: #ea2127; }
+        .fp-stat-icon.green { background: rgba(34,197,94,0.1);  color: #22c55e; }
+        .fp-stat-icon.blue  { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .fp-stat-icon.orange{ background: rgba(249,115,22,0.1); color: #f97316; }
+        .fp-stat-body {}
+        .fp-stat-num {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--fp-text);
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+        .fp-stat-lbl {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-top: 2px;
+        }
+
+        /* ── Coach Cards ── */
+        .fp-coach-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .fp-coach-card {
             background: var(--fp-surface);
             border: 1px solid var(--fp-border);
             border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.03);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: box-shadow 0.25s, border-color 0.25s;
         }
-        .fp-card-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--fp-text);
+        .fp-coach-card:hover { border-color: rgba(234,33,39,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .fp-coach-card.expanded { border-color: rgba(234,33,39,0.3); }
+
+        .fp-coach-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 16px;
+            padding: 18px 22px;
+            cursor: default;
         }
 
-        /* Coaches table styling overrides: 19px as requested */
-        .fp-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .fp-table th {
-            text-align: left;
-            padding: 12px 16px;
-            font-family: 'Inter', sans-serif;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--fp-text-muted);
-            border-bottom: 2px solid var(--fp-border);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .fp-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--fp-border);
-            font-family: 'Inter', sans-serif;
-            font-size: 19px; /* EXACTLY 19px as requested */
-            color: var(--fp-text);
-            vertical-align: middle;
-            line-height: 1.5;
-        }
-        .fp-table tr:hover td {
-            background: var(--fp-surface2);
-        }
-
-        /* Avatar styles */
-        .fp-client-avatar {
-            width: 38px;
-            height: 38px;
-            background: rgba(234, 33, 39, 0.08);
-            border: 1px solid rgba(234, 33, 39, 0.15);
+        /* Avatar */
+        .fp-coach-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(234,33,39,0.08);
+            border: 1px solid rgba(234,33,39,0.15);
             color: var(--fp-accent);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            border-radius: 50%;
+            overflow: hidden;
+        }
+        .fp-coach-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+
+        /* Coach info section */
+        .fp-coach-info { flex: 1; min-width: 0; }
+        .fp-coach-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--fp-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .fp-coach-email {
+            font-size: 12.5px;
+            color: var(--fp-text-muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Badges */
+        /* Specialization chip (in coach-info area) */
+        .fp-spec-chip {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 4px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            background: rgba(59,130,246,0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59,130,246,0.15);
+        }
+
+        /* Status + Expiry column — fixed width so every row is the same height */
+        .fp-coach-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            width: 130px;
+            flex-shrink: 0;
+        }
+
+        /* Client slot bar */
+        .fp-slot-bar-wrapper {
+            min-width: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .fp-slot-bar-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--fp-text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        .fp-slot-bar-track {
+            height: 5px;
+            background: var(--fp-border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .fp-slot-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--fp-accent), #ff4757);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        /* Actions */
+        .fp-coach-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .fp-act-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--fp-border);
+            background: transparent;
+            color: var(--fp-text-secondary);
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+            gap: 5px;
+        }
+        .fp-act-btn:hover { border-color: var(--fp-accent); color: var(--fp-accent); background: rgba(234,33,39,0.05); }
+        .fp-act-btn.active-perm { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.05); }
+        .fp-act-btn.danger:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); }
+        .fp-act-btn.expand-btn {
+            width: 34px;
+            padding: 0;
+            border-radius: 8px;
+        }
+        .fp-act-btn.expand-btn i { transition: transform 0.25s; }
+        .fp-act-btn.expand-btn.open i { transform: rotate(180deg); }
+
+        /* ── Clients Sub-panel ── */
+        .fp-clients-panel {
+            border-top: 1px solid var(--fp-border);
+            background: var(--fp-surface2);
+            padding: 0 22px 20px;
+        }
+        .fp-clients-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0 12px;
+            border-bottom: 1px solid var(--fp-border);
+            margin-bottom: 4px;
+        }
+        .fp-clients-panel-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--fp-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fp-clients-panel-title i { color: var(--fp-accent); }
+
+        /* Client table */
+        .fp-cl-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .fp-cl-table th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--fp-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            border-bottom: 1px solid var(--fp-border);
+        }
+        .fp-cl-table td {
+            padding: 12px 14px;
+            font-size: 13.5px;
+            color: var(--fp-text);
+            border-bottom: 1px solid var(--fp-border);
+            vertical-align: middle;
+        }
+        .fp-cl-table tr:last-child td { border-bottom: none; }
+        .fp-cl-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .fp-cl-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.15);
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ── Badges ── */
         .fp-badge {
             display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
-            font-size: 12px;
+            min-height: 22px;
+            padding: 3px 10px;
+            font-size: 11px;
             font-weight: 600;
             border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            box-sizing: border-box;
         }
-        .fp-badge-green {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.15);
+        /* Status column badges fill the column width so every row is identical */
+        .fp-coach-meta .fp-badge {
+            width: 100%;
+            justify-content: flex-start;
         }
-        .fp-badge-gray {
-            background: var(--fp-surface2);
-            color: var(--fp-text-muted);
-            border: 1px solid var(--fp-border);
-        }
-        .fp-badge-red {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.15);
-        }
+        .fp-badge-green  { background: rgba(34,197,94,0.1);  color: #22c55e; border: 1px solid rgba(34,197,94,0.15); }
+        .fp-badge-gray   { background: var(--fp-surface2);   color: var(--fp-text-muted); border: 1px solid var(--fp-border); }
+        .fp-badge-red    { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.15); }
+        .fp-badge-blue   { background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.15); }
+        .fp-badge-orange { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.15); }
 
-        /* Buttons overrides */
-        .fp-btn-outline {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 13.5px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            background: transparent;
-            border: 1px solid var(--fp-border);
-            color: var(--fp-text-secondary);
-            cursor: pointer;
-        }
-        .fp-btn-outline:hover {
-            border-color: var(--fp-accent);
-            color: var(--fp-accent);
-            background: rgba(234, 33, 39, 0.05);
-        }
-
-        /* ── Modals & Popups ── */
+        /* ── Modals ── */
         .fp-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(8px);
             z-index: 1000;
             display: flex;
@@ -153,14 +354,15 @@
         .fp-modal {
             background: var(--fp-surface);
             border: 1px solid var(--fp-border);
+            border-top: 4px solid var(--fp-accent);
             border-radius: 16px;
             width: 100%;
             max-width: 580px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
-            border-top: 4px solid var(--fp-accent);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
+        .fp-modal-sm { max-width: 460px; }
         .fp-modal-header {
             display: flex;
             align-items: center;
@@ -169,19 +371,17 @@
             border-bottom: 1px solid var(--fp-border);
         }
         .fp-modal-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 18px; /* standard readable instead of Teko 24px */
+            font-size: 16px;
             font-weight: 700;
             color: var(--fp-text);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .fp-modal-title i { color: var(--fp-accent); }
         .fp-modal-close {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             background: var(--fp-surface2);
             border: 1px solid var(--fp-border);
             color: var(--fp-text-muted);
@@ -190,114 +390,72 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
-        .fp-modal-close:hover {
-            border-color: var(--fp-accent);
-            color: var(--fp-accent);
-        }
-        .fp-modal-body {
-            padding: 24px;
-        }
+        .fp-modal-close:hover { border-color: var(--fp-accent); color: var(--fp-accent); }
+        .fp-modal-body { padding: 24px; }
         .fp-modal-footer {
             padding: 16px 24px;
             border-top: 1px solid var(--fp-border);
             display: flex;
-            align-items: center;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 10px;
             background: var(--fp-surface2);
             border-bottom-left-radius: 16px;
             border-bottom-right-radius: 16px;
         }
 
-        /* Grid utilities for Modals */
-        .fp-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .fp-input-group {
-            margin-bottom: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .fp-input-group label {
+        /* ── Alert ── */
+        .fp-alert {
+            padding: 12px 16px;
             font-size: 13.5px;
-            font-weight: 600;
-            color: var(--fp-text-secondary);
-            text-transform: none;
-            letter-spacing: 0px;
+            font-weight: 500;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
         }
-        .fp-input-group input,
-        .fp-input-group select,
-        .fp-input-group textarea {
-            width: 100%;
+        .fp-alert-danger { background: rgba(234,33,39,0.08); color: #ff6b6b; border: 1px solid rgba(234,33,39,0.2); }
+        .fp-alert-success { background: rgba(34,197,94,0.08); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+
+        /* ── Form inputs in modals ── */
+        .fp-ig { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+        .fp-ig label { font-size: 12px; font-weight: 600; color: var(--fp-text-secondary); text-transform: uppercase; letter-spacing: 0.7px; }
+        .fp-ig input, .fp-ig select, .fp-ig textarea {
             background: var(--fp-surface2);
             border: 1px solid var(--fp-border);
             border-radius: 10px;
             padding: 10px 14px;
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            font-size: 14px;
             color: var(--fp-text);
+            font-family: 'Inter', sans-serif;
             outline: none;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
             box-sizing: border-box;
         }
-        .fp-input-group input:focus,
-        .fp-input-group select:focus,
-        .fp-input-group textarea:focus {
+        .fp-ig input:focus, .fp-ig select:focus, .fp-ig textarea:focus {
             border-color: var(--fp-accent);
-            box-shadow: 0 0 0 3px rgba(234, 33, 39, 0.12);
-            background: var(--fp-surface);
+            box-shadow: 0 0 0 3px rgba(234,33,39,0.1);
         }
-        .fp-input-group input::placeholder,
-        .fp-input-group textarea::placeholder {
-            color: var(--fp-text-muted);
-            opacity: 0.7;
-        }
+        .fp-ig textarea { min-height: 90px; resize: vertical; }
+        .fp-ig-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        /* Alert Box */
-        .fp-alert {
-            margin: 16px 24px 0;
-            padding: 12px 16px;
-            font-size: 14px;
-            border-left: 3px solid #ea2127;
-            font-family: 'Inter', sans-serif;
-            border-radius: 0 8px 8px 0;
-        }
-        .fp-alert-danger {
-            background: rgba(234, 33, 39, 0.08);
-            color: #ff6b6b;
-            border-color: #ea2127;
-        }
-        .fp-alert-success {
-            background: rgba(34, 197, 94, 0.08);
-            color: #22c55e;
-            border-color: #22c55e;
-        }
-
-        /* Loading & Spinners */
+        /* ── Loading / empty ── */
         .fp-loading {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 40px 0;
-            color: var(--fp-text-muted);
-            font-size: 15px;
+            display: flex; align-items: center; gap: 16px;
+            padding: 60px 0; color: var(--fp-text-muted); font-size: 15px;
         }
         .fp-spinner-lg {
-            width: 28px;
-            height: 28px;
+            width: 28px; height: 28px;
             border: 3px solid var(--fp-border);
             border-top-color: var(--fp-accent);
             border-radius: 50%;
             animation: fp-spin 0.8s linear infinite;
         }
         .fp-spinner-sm {
-            width: 16px;
-            height: 16px;
+            width: 15px; height: 15px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top-color: #fff;
             border-radius: 50%;
@@ -305,218 +463,315 @@
             display: inline-block;
         }
         .fp-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            padding: 60px 0;
-            color: var(--fp-text-muted);
-            font-size: 15px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px; padding: 48px 0; color: var(--fp-text-muted); font-size: 14px;
         }
-        .fp-empty i {
-            font-size: 40px;
-            opacity: 0.2;
+        .fp-empty i { font-size: 38px; opacity: 0.2; }
+        .fp-clients-empty {
+            padding: 28px 0;
+            text-align: center;
+            color: var(--fp-text-muted);
+            font-size: 13.5px;
+            font-style: italic;
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 1100px) {
+            .fp-stats-row { grid-template-columns: repeat(2, 1fr); }
+            .fp-coach-meta { display: none; }
+        }
+        @@media (max-width: 768px) {
+            .fp-stats-row { grid-template-columns: repeat(2, 1fr); }
+            .fp-coach-row { flex-wrap: wrap; gap: 12px; }
+            .fp-slot-bar-wrapper { display: none; }
+            .fp-cl-table { display: block; overflow-x: auto; }
+            .fp-modal { max-height: 95vh; }
+            .fp-modal-body { padding: 16px; }
+            .fp-modal-footer { flex-direction: column-reverse; }
+            .fp-modal-footer button { width: 100%; justify-content: center; }
+            .fp-ig-grid2 { grid-template-columns: 1fr; }
+        }
+        @@media (max-width: 500px) {
+            .fp-stats-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 
-<div class="fp-coaches-page">
-</div>
-@* ── Header ── *@
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
-    <div>
-        <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:var(--fp-text);margin:0;line-height:1.2;letter-spacing:-0.5px;">
-            Coaches
-        </h1>
-        <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
-            Manage coach accounts
-        </p>
-    </div>
-    <button class="fp-btn-primary" @onclick="() => showModal = true">
-        <i class="fa fa-plus"></i> New Coach
-    </button>
-</div>
+<div class="fp-admin-page">
 
-@* ── Coaches Table ── *@
-<div class="fp-card">
-    <div class="fp-card-title">
-        <i class="fa fa-user-tie" style="color:var(--fp-accent);font-size:20px;"></i>
-        All Coaches
+    @* ── Page Header ── *@
+    <div class="fp-admin-header">
+        <div>
+            <h1>Coach Management</h1>
+            <p>Full oversight — manage coaches, view their clients, and control subscriptions</p>
+        </div>
+        <button class="fp-btn-primary" @onclick="() => { showCreateModal = true; ClearForm(); }">
+            <i class="fa fa-plus"></i> New Coach
+        </button>
     </div>
 
     @if (isLoading)
     {
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
-            <span>Loading coaches...</span>
-        </div>
-    }
-    else if (!coaches.Any())
-    {
-        <div class="fp-empty">
-            <i class="fa fa-user-tie"></i>
-            <p>No coaches yet.</p>
+            <span>Loading coaches and clients...</span>
         </div>
     }
     else
     {
-        <table class="fp-table">
-            <thead>
-                <tr>
-                    <th>Coach</th>
-                    <th>Email</th>
-                    <th>Specialization</th>
-                    <th>Status</th>
-                    <th>Subscription</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+        @* ── Stats Row ── *@
+        <div class="fp-stats-row">
+            <div class="fp-stat-tile">
+                <div class="fp-stat-icon red"><i class="fa fa-user-tie"></i></div>
+                <div class="fp-stat-body">
+                    <div class="fp-stat-num">@coaches.Count</div>
+                    <div class="fp-stat-lbl">Total Coaches</div>
+                </div>
+            </div>
+            <div class="fp-stat-tile">
+                <div class="fp-stat-icon green"><i class="fa fa-check-circle"></i></div>
+                <div class="fp-stat-body">
+                    <div class="fp-stat-num">@coaches.Count(c => c.IsActive)</div>
+                    <div class="fp-stat-lbl">Active Coaches</div>
+                </div>
+            </div>
+            <div class="fp-stat-tile">
+                <div class="fp-stat-icon blue"><i class="fa fa-users"></i></div>
+                <div class="fp-stat-body">
+                    <div class="fp-stat-num">@coachClients.Values.Sum(l => l.Count)</div>
+                    <div class="fp-stat-lbl">Total Clients</div>
+                </div>
+            </div>
+            <div class="fp-stat-tile">
+                <div class="fp-stat-icon orange"><i class="fa fa-clock"></i></div>
+                <div class="fp-stat-body">
+                    <div class="fp-stat-num">@coaches.Count(c => c.SubscriptionEndDate < DateTime.UtcNow)</div>
+                    <div class="fp-stat-lbl">Expired Subs</div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Coach List ── *@
+        @if (!coaches.Any())
+        {
+            <div class="fp-empty">
+                <i class="fa fa-user-tie"></i>
+                <p>No coaches yet. Create your first coach.</p>
+            </div>
+        }
+        else
+        {
+            <div class="fp-coach-list">
                 @foreach (var coach in coaches)
                 {
-                    <tr>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div class="fp-client-avatar">
+                    var clients = coachClients.TryGetValue(coach.Id, out var cl) ? cl : new List<ClientResponseDto>();
+                    var fillPct = coach.MaxClients > 0 ? (int)Math.Min(100, (double)clients.Count / coach.MaxClients * 100) : 0;
+                    var isExpanded = expandedCoachIds.Contains(coach.Id);
+
+                    <div class="fp-coach-card @(isExpanded ? "expanded" : "")">
+
+                        @* ── Coach Summary Row ── *@
+                        <div class="fp-coach-row">
+
+                            @* Avatar *@
+                            <div class="fp-coach-avatar">
+                                @if (!string.IsNullOrEmpty(coach.ProfilePicture))
+                                {
+                                    <img src="@coach.ProfilePicture" alt="@coach.FullName" />
+                                }
+                                else
+                                {
                                     @coach.FullName[..1].ToUpper()
+                                }
+                            </div>
+
+                            @* Name + Email + optional Specialization chip *@
+                            <div class="fp-coach-info">
+                                <div class="fp-coach-name">@coach.FullName</div>
+                                <div class="fp-coach-email">@coach.Email</div>
+                                @if (!string.IsNullOrEmpty(coach.Specialization))
+                                {
+                                    <span class="fp-spec-chip">@coach.Specialization</span>
+                                }
+                            </div>
+
+                            @* Status + Subscription — always exactly 2 items → consistent height *@
+                            <div class="fp-coach-meta">
+                                <span class="fp-badge @(coach.IsActive ? "fp-badge-green" : "fp-badge-gray")">
+                                    @(coach.IsActive ? "Active" : "Inactive")
+                                </span>
+                                @if (coach.SubscriptionEndDate < DateTime.UtcNow)
+                                {
+                                    <span class="fp-badge fp-badge-red">Expired</span>
+                                }
+                                else
+                                {
+                                    <span style="display:block;font-size:11px;color:var(--fp-text-muted);line-height:22px;white-space:nowrap;">Exp: @coach.SubscriptionEndDate.ToString("MMM dd, yyyy")</span>
+                                }
+                            </div>
+
+                            @* Client Slot Bar *@
+                            <div class="fp-slot-bar-wrapper">
+                                <div class="fp-slot-bar-label">
+                                    <span>Clients</span>
+                                    <span style="font-weight:700;color:var(--fp-text);">@clients.Count / @coach.MaxClients</span>
                                 </div>
-                                <div>
-                                    <div style="font-weight:600;color:var(--fp-text);">@coach.FullName</div>
-                                    @if (!string.IsNullOrEmpty(coach.Bio))
-                                    {
-                                        <div style="font-size:12px;color:var(--fp-text-muted);">@coach.Bio[..(Math.Min(40, coach.Bio.Length))]...</div>
-                                    }
+                                <div class="fp-slot-bar-track">
+                                    <div class="fp-slot-bar-fill" style="width:@(fillPct)%;"></div>
                                 </div>
                             </div>
-                        </td>
-                        <td style="color:var(--fp-text-muted);font-size:13px;">@coach.Email</td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(coach.Specialization))
-                            {
-                                <span class="fp-badge fp-badge-gray">@coach.Specialization</span>
-                            }
-                            else
-                            {
-                                <span style="color:var(--fp-text-muted);font-size:13px;">—</span>
-                            }
-                        </td>
-                        <td>
-                            <span class="fp-badge @(coach.IsActive ? "fp-badge-green" : "fp-badge-gray")">
-                                @(coach.IsActive ? "Active" : "Inactive")
-                            </span>
-                        </td>
-                        <td style="color:var(--fp-text-muted);font-size:13px;">
-                            @if (coach.SubscriptionEndDate < DateTime.UtcNow) {
-                                <span class="fp-badge fp-badge-red">Expired (@coach.SubscriptionEndDate.ToString("MMM dd, yyyy"))</span>
-                            } else {
-                                <span class="fp-badge fp-badge-green">Valid till @coach.SubscriptionEndDate.ToString("MMM dd, yyyy")</span>
-                            }
-                        </td>
-                        <td>
-                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px;" @onclick="() => OpenEditModal(coach)">Edit</button>
-                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px;" @onclick="() => RenewSubscription(coach)">Renew</button>
-                            <button class="fp-btn-outline" title="@(coach.CanChangePdfTheme ? "Revoke PDF theme access" : "Grant PDF theme access")"
-                                style="padding: 6px 12px; font-size: 11px; margin-left: 8px; border-color: @(coach.CanChangePdfTheme ? "#10B981" : "var(--fp-border)"); color: @(coach.CanChangePdfTheme ? "#10B981" : "var(--fp-text-muted)");"
-                                @onclick="() => TogglePdfThemePermission(coach)">
-                                <i class="fa fa-palette"></i> @(coach.CanChangePdfTheme ? "Theme ✓" : "Theme")
-                            </button>
-                            <button class="fp-btn-outline" style="padding: 6px 12px; font-size: 11px; margin-left: 8px; border-color: var(--fp-accent); color: var(--fp-accent);" @onclick="() => PromptDeleteCoach(coach)">Delete</button>
-                        </td>
-                    </tr>
+
+                            @* Actions *@
+                            <div class="fp-coach-actions">
+                                <button class="fp-act-btn" title="Edit" @onclick="() => OpenEditModal(coach)">
+                                    <i class="fa fa-pen"></i> Edit
+                                </button>
+                                <button class="fp-act-btn" title="Renew subscription" @onclick="() => RenewSubscription(coach)">
+                                    <i class="fa fa-rotate"></i> Renew
+                                </button>
+                                <button class="fp-act-btn @(coach.CanChangePdfTheme ? "active-perm" : "")"
+                                        title="@(coach.CanChangePdfTheme ? "Revoke PDF theme access" : "Grant PDF theme access")"
+                                        @onclick="() => TogglePdfThemePermission(coach)">
+                                    <i class="fa fa-palette"></i> Theme @(coach.CanChangePdfTheme ? "✓" : "")
+                                </button>
+                                <button class="fp-act-btn danger" title="Delete coach" @onclick="() => PromptDeleteCoach(coach)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                @* Expand / collapse clients *@
+                                <button class="fp-act-btn expand-btn @(isExpanded ? "open" : "")"
+                                        title="@(isExpanded ? "Collapse clients" : "Show clients")"
+                                        @onclick="() => ToggleExpand(coach.Id)">
+                                    <i class="fa fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        @* ── Clients Sub-panel ── *@
+                        @if (isExpanded)
+                        {
+                            <div class="fp-clients-panel">
+                                <div class="fp-clients-panel-header">
+                                    <div class="fp-clients-panel-title">
+                                        <i class="fa fa-users"></i>
+                                        Clients of @coach.FullName
+                                        <span class="fp-badge fp-badge-blue" style="margin-left:4px;">@clients.Count</span>
+                                    </div>
+                                </div>
+
+                                @if (!clients.Any())
+                                {
+                                    <div class="fp-clients-empty">
+                                        <i class="fa fa-user-slash" style="margin-right:8px;opacity:0.4;"></i>
+                                        This coach has no clients yet.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <table class="fp-cl-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Client</th>
+                                                <th>Goal</th>
+                                                <th>Weight</th>
+                                                <th>Phone</th>
+                                                <th>Plan Ends</th>
+                                                <th>Status</th>
+                                                <th style="text-align:right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var client in clients)
+                                            {
+                                                var isActive = client.EndDate >= DateTime.UtcNow;
+                                                <tr>
+                                                    <td>
+                                                        <div style="display:flex;align-items:center;gap:10px;">
+                                                            <div class="fp-cl-avatar">@client.Name[..1].ToUpper()</div>
+                                                            <div>
+                                                                <div style="font-weight:600;">@client.Name</div>
+                                                                <div style="font-size:11px;color:var(--fp-text-muted);">@client.SubscriptionDurationPerMonth mo plan</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(client.Goal))
+                                                        {
+                                                            <span class="fp-badge fp-badge-orange" style="font-size:10.5px;">@client.Goal</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="color:var(--fp-text-muted);">—</span>
+                                                        }
+                                                    </td>
+                                                    <td style="color:var(--fp-text-secondary);">@client.Weight kg</td>
+                                                    <td style="color:var(--fp-text-secondary);font-size:13px;">@(client.PhoneNumber ?? "—")</td>
+                                                    <td style="color:var(--fp-text-secondary);font-size:13px;">@client.EndDate.ToString("MMM dd, yyyy")</td>
+                                                    <td>
+                                                        <span class="fp-badge @(isActive ? "fp-badge-green" : "fp-badge-red")">
+                                                            @(isActive ? "Active" : "Expired")
+                                                        </span>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <button class="fp-act-btn danger"
+                                                                title="Delete client"
+                                                                @onclick="() => PromptDeleteClient(client, coach.Id)">
+                                                            <i class="fa fa-trash"></i> Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
+                        }
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        }
     }
 </div>
 
+@* ══════════ MODALS ══════════ *@
+
 @* ── Create Coach Modal ── *@
-@if (showModal)
+@if (showCreateModal)
 {
-    <div class="fp-modal-overlay" @onclick="CloseModal">
+    <div class="fp-modal-overlay" @onclick="() => showCreateModal = false">
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <div class="fp-modal-title">
-                    <i class="fa fa-user-plus" style="color:var(--fp-accent);"></i>
-                    NEW COACH
-                </div>
-                <button class="fp-modal-close" @onclick="CloseModal">
-                    <i class="fa fa-times"></i>
-                </button>
+                <div class="fp-modal-title"><i class="fa fa-user-plus"></i> New Coach</div>
+                <button class="fp-modal-close" @onclick="() => showCreateModal = false"><i class="fa fa-times"></i></button>
             </div>
 
-            @if (!string.IsNullOrEmpty(formError))
-            {
-                <div class="fp-alert fp-alert-danger" style="margin:16px 24px 0;">
-                    <i class="fa fa-exclamation-circle"></i> @formError
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(successMsg))
-            {
-                <div class="fp-alert fp-alert-success" style="margin:16px 24px 0;">
-                    <i class="fa fa-check-circle"></i> @successMsg
-                </div>
-            }
-
             <div class="fp-modal-body">
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Full Name *</label>
-                        <input @bind="dto.FullName" placeholder="John Coach" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Email *</label>
-                        <input type="email" @bind="dto.Email" placeholder="coach@fitpanel.com" />
-                    </div>
+                @if (!string.IsNullOrEmpty(formError))   { <div class="fp-alert fp-alert-danger"><i class="fa fa-exclamation-circle"></i> @formError</div> }
+                @if (!string.IsNullOrEmpty(successMsg))  { <div class="fp-alert fp-alert-success"><i class="fa fa-check-circle"></i> @successMsg</div> }
+
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Full Name *</label><input @bind="dto.FullName" placeholder="Coach Name" /></div>
+                    <div class="fp-ig"><label>Email *</label><input type="email" @bind="dto.Email" placeholder="coach@example.com" /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Phone Number</label>
-                        <input @bind="dto.PhoneNumber" placeholder="+1234567890" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Max Clients</label>
-                        <input type="number" @bind="dto.MaxClients" min="1" />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Phone</label><input @bind="dto.PhoneNumber" placeholder="+1234567890" /></div>
+                    <div class="fp-ig"><label>Max Clients</label><input type="number" @bind="dto.MaxClients" min="1" /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Instagram Username</label>
-                        <input @bind="dto.InstagramUsername" placeholder="e.g. john_coach" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Instagram Link</label>
-                        <input type="url" @bind="dto.InstagramLink" placeholder="https://instagram.com/..." />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Instagram Username</label><input @bind="dto.InstagramUsername" placeholder="@@handle" /></div>
+                    <div class="fp-ig"><label>Instagram Link</label><input @bind="dto.InstagramLink" placeholder="https://instagram.com/..." /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Password *</label>
-                        <input type="password" @bind="dto.Password" placeholder="Min 8 chars" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Specialization</label>
-                        <input @bind="dto.Specialization" placeholder="e.g. Strength & Conditioning" />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Password *</label><input type="password" @bind="dto.Password" placeholder="Min 8 chars" /></div>
+                    <div class="fp-ig"><label>Specialization</label><input @bind="dto.Specialization" placeholder="Strength & Conditioning" /></div>
                 </div>
-                <div class="fp-input-group">
-                    <label>Bio (optional)</label>
-                    <textarea @bind="dto.Bio" placeholder="Short bio about the coach..."></textarea>
-                </div>
+                <div class="fp-ig"><label>Bio</label><textarea @bind="dto.Bio" placeholder="Short bio..."></textarea></div>
             </div>
 
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseModal">Cancel</button>
+                <button class="fp-btn-outline" @onclick="() => showCreateModal = false">Cancel</button>
                 <button class="fp-btn-primary" @onclick="CreateCoach" disabled="@isSaving">
-                    @if (isSaving)
-                    {
-                        <span class="fp-spinner-sm"></span>
-                        <span>Creating...</span>
-                    }
-                    else
-                    {
-                        <i class="fa fa-check"></i>
-                        <span>Create Coach</span>
-                    }
+                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>Creating...</span> }
+                    else { <i class="fa fa-check"></i> <span>Create Coach</span> }
                 </button>
             </div>
         </div>
@@ -524,232 +779,175 @@
 }
 
 @* ── Edit Coach Modal ── *@
-@if (showEditModal)
+@if (showEditModal && editingCoach != null)
 {
     <div class="fp-modal-overlay" @onclick="CloseEditModal">
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <div class="fp-modal-title">
-                    <i class="fa fa-user-edit" style="color:var(--fp-accent);"></i>
-                    EDIT COACH
-                </div>
-                <button class="fp-modal-close" @onclick="CloseEditModal">
-                    <i class="fa fa-times"></i>
-                </button>
+                <div class="fp-modal-title"><i class="fa fa-pen"></i> Edit — @editingCoach.FullName</div>
+                <button class="fp-modal-close" @onclick="CloseEditModal"><i class="fa fa-times"></i></button>
             </div>
 
-            @if (!string.IsNullOrEmpty(formError))
-            {
-                <div class="fp-alert fp-alert-danger" style="margin:16px 24px 0;">
-                    <i class="fa fa-exclamation-circle"></i> @formError
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(successMsg))
-            {
-                <div class="fp-alert fp-alert-success" style="margin:16px 24px 0;">
-                    <i class="fa fa-check-circle"></i> @successMsg
-                </div>
-            }
-
             <div class="fp-modal-body">
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Full Name *</label>
-                        <input @bind="editingCoach.FullName" placeholder="John Coach" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Email *</label>
-                        <input type="email" @bind="editingCoach.Email" disabled />
-                    </div>
+                @if (!string.IsNullOrEmpty(formError))  { <div class="fp-alert fp-alert-danger"><i class="fa fa-exclamation-circle"></i> @formError</div> }
+                @if (!string.IsNullOrEmpty(successMsg)) { <div class="fp-alert fp-alert-success"><i class="fa fa-check-circle"></i> @successMsg</div> }
+
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Full Name *</label><input @bind="editingCoach.FullName" /></div>
+                    <div class="fp-ig"><label>Email</label><input disabled value="@editingCoach.Email" /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Phone Number</label>
-                        <input @bind="editingCoach.PhoneNumber" placeholder="+1234567890" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Max Clients</label>
-                        <input type="number" @bind="editingCoach.MaxClients" min="1" />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Phone</label><input @bind="editingCoach.PhoneNumber" /></div>
+                    <div class="fp-ig"><label>Max Clients</label><input type="number" @bind="editingCoach.MaxClients" min="1" /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Instagram Username</label>
-                        <input @bind="editingCoach.InstagramUsername" placeholder="e.g. john_coach" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>Instagram Link</label>
-                        <input type="url" @bind="editingCoach.InstagramLink" placeholder="https://instagram.com/..." />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Instagram Username</label><input @bind="editingCoach.InstagramUsername" /></div>
+                    <div class="fp-ig"><label>Instagram Link</label><input @bind="editingCoach.InstagramLink" /></div>
                 </div>
-                <div class="fp-grid-2">
-                    <div class="fp-input-group">
-                        <label>Specialization</label>
-                        <input @bind="editingCoach.Specialization" placeholder="e.g. Strength & Conditioning" />
-                    </div>
-                    <div class="fp-input-group">
-                        <label>New Password (optional)</label>
-                        <input type="password" @bind="newCoachPassword" placeholder="Leave blank to keep current" />
-                    </div>
+                <div class="fp-ig-grid2">
+                    <div class="fp-ig"><label>Specialization</label><input @bind="editingCoach.Specialization" /></div>
+                    <div class="fp-ig"><label>New Password <span style="font-weight:400;font-size:11px;">(leave blank to keep)</span></label><input type="password" @bind="newCoachPassword" placeholder="••••••••" /></div>
                 </div>
-                <div class="fp-input-group" style="display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 4px 0;">
-                    <input type="checkbox" @bind="editingCoach.IsActive" id="editCoachIsActive" style="width: auto; height: 18px; cursor: pointer;" />
-                    <label for="editCoachIsActive" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--fp-text);">Account Active / Enabled</label>
+                <div class="fp-ig" style="flex-direction:row;align-items:center;gap:10px;margin-top:4px;">
+                    <input type="checkbox" @bind="editingCoach.IsActive" id="chkActive" style="width:18px;height:18px;cursor:pointer;accent-color:var(--fp-accent);" />
+                    <label for="chkActive" style="margin:0;cursor:pointer;font-size:14px;font-weight:600;color:var(--fp-text);text-transform:none;letter-spacing:0;">Account Active</label>
                 </div>
             </div>
 
             <div class="fp-modal-footer">
                 <button class="fp-btn-outline" @onclick="CloseEditModal">Cancel</button>
                 <button class="fp-btn-primary" @onclick="SaveEditCoach" disabled="@isSaving">
-                    @if (isSaving)
-                    {
-                        <span class="fp-spinner-sm"></span>
-                        <span>Saving...</span>
-                    }
-                    else
-                    {
-                        <i class="fa fa-save"></i>
-                        <span>Save Changes</span>
-                    }
+                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>Saving...</span> }
+                    else { <i class="fa fa-save"></i> <span>Save Changes</span> }
                 </button>
             </div>
         </div>
     </div>
 }
 
-@if (showDeleteModal && coachToDelete != null)
+@* ── Delete Coach Confirm ── *@
+@if (showDeleteCoachModal && coachToDelete != null)
 {
     <div class="fp-modal-overlay">
-        <div class="fp-modal" style="max-width: 520px;">
-            <div class="fp-modal-header" style="border-top: 3px solid var(--fp-accent);">
-                <div class="fp-modal-title">
-                    <i class="fa fa-exclamation-triangle" style="color: var(--fp-accent);"></i>
-                    <span>Delete Coach</span>
-                </div>
-                <button class="fp-modal-close" @onclick="CloseDeleteModal">&times;</button>
+        <div class="fp-modal fp-modal-sm">
+            <div class="fp-modal-header">
+                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-exclamation-triangle" style="color:#ef4444;"></i> Delete Coach</div>
+                <button class="fp-modal-close" @onclick="CloseDeleteCoachModal"><i class="fa fa-times"></i></button>
             </div>
-            
-            <div class="fp-modal-body" style="color: var(--fp-text); font-size: 15px; line-height: 1.6;">
-                <p>Are you sure you want to permanently delete coach <strong>@coachToDelete.FullName</strong> (@coachToDelete.Email)?</p>
-                <p style="color: var(--fp-accent); font-size: 13px; font-weight: 600; margin-top: 10px;">
-                    ⚠️ This action cannot be undone. All client accounts, meal templates, and workout schedules managed by this coach will be permanently removed.
+            <div class="fp-modal-body">
+                <p style="font-size:15px;color:var(--fp-text);line-height:1.6;">
+                    Permanently delete <strong>@coachToDelete.FullName</strong> (@coachToDelete.Email)?
                 </p>
-                
-                @if (!string.IsNullOrEmpty(deleteError))
-                {
-                    <div class="fp-alert fp-alert-danger" style="margin-top: 15px;">
-                        @deleteError
-                    </div>
-                }
+                <p style="font-size:13px;color:#ef4444;font-weight:600;margin-top:10px;">
+                    This will remove all their clients, plans, templates, and dictionaries. This cannot be undone.
+                </p>
+                @if (!string.IsNullOrEmpty(deleteError)) { <div class="fp-alert fp-alert-danger" style="margin-top:14px;"><i class="fa fa-exclamation-circle"></i> @deleteError</div> }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseDeleteModal" disabled="@isDeleting">Cancel</button>
-                <button class="fp-btn-primary" @onclick="DeleteCoach" disabled="@isDeleting" style="background: var(--fp-accent); border-color: var(--fp-accent);">
-                    @if (isDeleting)
-                    {
-                        <span class="fp-spinner-sm"></span>
-                        <span>Deleting...</span>
-                    }
-                    else
-                    {
-                        <i class="fa fa-trash"></i>
-                        <span>Delete Coach</span>
-                    }
+                <button class="fp-btn-outline" @onclick="CloseDeleteCoachModal" disabled="@isDeleting">Cancel</button>
+                <button class="fp-btn-primary" @onclick="DeleteCoach" disabled="@isDeleting" style="background:#ef4444;border-color:#ef4444;">
+                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>Deleting...</span> }
+                    else { <i class="fa fa-trash"></i> <span>Delete Coach</span> }
                 </button>
             </div>
         </div>
     </div>
 }
 
-<style>
-    /* Mobile responsive overrides */
-    @@media (max-width: 768px) {
-        .fp-coaches-page > div:first-child {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 16px;
-        }
-        .fp-coaches-page > div:first-child .fp-btn-primary {
-            width: 100%;
-            justify-content: center;
-        }
-        .fp-table {
-            display: block;
-            overflow-x: auto;
-        }
-        .fp-modal-overlay {
-            padding: 12px;
-            align-items: flex-end;
-        }
-        .fp-modal {
-            max-height: 92vh;
-        }
-        .fp-modal-body {
-            padding: 16px;
-        }
-        .fp-modal-footer {
-            padding: 12px 16px;
-            flex-direction: column-reverse;
-            gap: 8px;
-        }
-        .fp-modal-footer .fp-btn-primary,
-        .fp-modal-footer .fp-btn-outline {
-            width: 100%;
-            justify-content: center;
-        }
-        .fp-grid-2 {
-            grid-template-columns: 1fr;
-        }
-    }
-    .fp-input-group textarea { height: 100px; }
-</style>
+@* ── Delete Client Confirm ── *@
+@if (showDeleteClientModal && clientToDelete != null)
+{
+    <div class="fp-modal-overlay">
+        <div class="fp-modal fp-modal-sm">
+            <div class="fp-modal-header">
+                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-user-minus" style="color:#ef4444;"></i> Delete Client</div>
+                <button class="fp-modal-close" @onclick="CloseDeleteClientModal"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="fp-modal-body">
+                <p style="font-size:15px;color:var(--fp-text);line-height:1.6;">
+                    Delete client <strong>@clientToDelete.Name</strong>? All their diets, workouts, and data will be permanently removed.
+                </p>
+                @if (!string.IsNullOrEmpty(deleteError)) { <div class="fp-alert fp-alert-danger" style="margin-top:14px;"><i class="fa fa-exclamation-circle"></i> @deleteError</div> }
+            </div>
+            <div class="fp-modal-footer">
+                <button class="fp-btn-outline" @onclick="CloseDeleteClientModal" disabled="@isDeleting">Cancel</button>
+                <button class="fp-btn-primary" @onclick="DeleteClient" disabled="@isDeleting" style="background:#ef4444;border-color:#ef4444;">
+                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>Deleting...</span> }
+                    else { <i class="fa fa-trash"></i> <span>Delete Client</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
+    // ── Data ──────────────────────────────────────────────────────────────
     private List<PanelUser> coaches = new();
+    private Dictionary<string, List<ClientResponseDto>> coachClients = new();
+    private HashSet<string> expandedCoachIds = new();
     private bool isLoading = true;
-    private bool showModal = false;
-    private bool isSaving = false;
+
+    // ── Form state ────────────────────────────────────────────────────────
+    private bool isSaving;
     private string formError = string.Empty;
     private string successMsg = string.Empty;
 
+    // ── Create coach ──────────────────────────────────────────────────────
+    private bool showCreateModal;
     private CreateCoachDto dto = new();
-    
-    private bool showEditModal = false;
-    private PanelUser editingCoach = new();
+
+    // ── Edit coach ────────────────────────────────────────────────────────
+    private bool showEditModal;
+    private PanelUser? editingCoach;
     private string newCoachPassword = string.Empty;
 
-    // Delete coach state
-    private bool showDeleteModal = false;
-    private PanelUser? coachToDelete = null;
-    private bool isDeleting = false;
-    private string deleteError = "";
+    // ── Delete coach ──────────────────────────────────────────────────────
+    private bool showDeleteCoachModal;
+    private PanelUser? coachToDelete;
+    private bool isDeleting;
+    private string deleteError = string.Empty;
 
+    // ── Delete client ─────────────────────────────────────────────────────
+    private bool showDeleteClientModal;
+    private ClientResponseDto? clientToDelete;
+    private string clientDeleteCoachId = string.Empty;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
-        var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
-        coaches = allCoaches.ToList();
+        await LoadAll();
         isLoading = false;
     }
 
-    private void CloseModal()
+    private async Task LoadAll()
     {
-        showModal = false;
-        formError = string.Empty;
-        successMsg = string.Empty;
-       dto = new();
+        var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
+        coaches = allCoaches.OrderBy(c => c.FullName).ToList();
+
+        coachClients.Clear();
+        foreach (var coach in coaches)
+        {
+            var clients = await ClientService.GetMyClientsAsync(coach.Id);
+            coachClients[coach.Id] = clients;
+        }
     }
+
+    private void ToggleExpand(string coachId)
+    {
+        if (expandedCoachIds.Contains(coachId)) expandedCoachIds.Remove(coachId);
+        else expandedCoachIds.Add(coachId);
+    }
+
+    // ── Create Coach ──────────────────────────────────────────────────────
+    private void ClearForm() { dto = new(); formError = string.Empty; successMsg = string.Empty; }
 
     private async Task CreateCoach()
     {
-        formError = string.Empty;
-        successMsg = string.Empty;
+        formError = string.Empty; successMsg = string.Empty;
 
-        if (string.IsNullOrWhiteSpace(dto.FullName))
-        { formError = "Full name is required."; return; }
-        if (string.IsNullOrWhiteSpace(dto.Email))
-        { formError = "Email is required."; return; }
-        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
-        { formError = "Password must be at least 8 characters."; return; }
+        if (string.IsNullOrWhiteSpace(dto.FullName)) { formError = "Full name is required."; return; }
+        if (string.IsNullOrWhiteSpace(dto.Email))    { formError = "Email is required."; return; }
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8) { formError = "Password must be at least 8 characters."; return; }
 
         isSaving = true;
         var (success, message) = await AuthService.CreateCoachAsync(dto);
@@ -758,250 +956,188 @@
         if (success)
         {
             successMsg = "Coach created successfully!";
-            var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
-            coaches = allCoaches.ToList();
-
-            // Send welcome notification to the new coach
             var newCoach = await UserManager.FindByEmailAsync(dto.Email);
             if (newCoach != null)
-            {
                 await NotificationService.CreateNotificationAsync(newCoach.Id,
                     "👋 Welcome to FitPanel!",
                     "Your coach account has been created. Head to your profile to set up your photo, bio, and PDF introduction — then start managing your clients!");
-            }
 
-            await Task.Delay(1500);
-            CloseModal();
+            await LoadAll();
+            await Task.Delay(1200);
+            showCreateModal = false;
+            ClearForm();
         }
-        else
-        {
-            formError = message;
-        }
+        else { formError = message; }
     }
 
+    // ── Edit Coach ────────────────────────────────────────────────────────
     private void OpenEditModal(PanelUser coach)
     {
         editingCoach = coach;
         newCoachPassword = string.Empty;
-        showEditModal = true;
         formError = string.Empty;
         successMsg = string.Empty;
+        showEditModal = true;
     }
 
     private async Task CloseEditModal()
     {
         showEditModal = false;
         newCoachPassword = string.Empty;
-        var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
-        coaches = allCoaches.ToList();
+        await LoadAll();
     }
 
     private async Task SaveEditCoach()
     {
-        formError = string.Empty;
-        successMsg = string.Empty;
-        isSaving = true;
+        if (editingCoach == null) return;
+        formError = string.Empty; successMsg = string.Empty; isSaving = true;
 
-        // Capture original values for change-detection
-        var originalCoach = await UserManager.FindByIdAsync(editingCoach.Id);
-        int? oldMaxClients = originalCoach?.MaxClients;
-        bool? oldIsActive = originalCoach?.IsActive;
-        string? oldFullName = originalCoach?.FullName;
-        string? oldSpecialization = originalCoach?.Specialization;
-        string? oldPhone = originalCoach?.PhoneNumber;
-        string? oldInstagram = originalCoach?.InstagramUsername;
-        bool passwordWasChanged = false;
+        var original = await UserManager.FindByIdAsync(editingCoach.Id);
+        var oldMaxClients  = original?.MaxClients;
+        var oldIsActive    = original?.IsActive;
+        var oldFullName    = original?.FullName;
+        var oldSpec        = original?.Specialization;
+        var oldPhone       = original?.PhoneNumber;
+        var oldInstagram   = original?.InstagramUsername;
+        bool pwdChanged    = false;
 
         if (!string.IsNullOrWhiteSpace(newCoachPassword))
         {
-            if (newCoachPassword.Length < 8)
-            {
-                formError = "New password must be at least 8 characters.";
-                isSaving = false;
-                return;
-            }
-
-            var token = await UserManager.GeneratePasswordResetTokenAsync(editingCoach);
-            var resetResult = await UserManager.ResetPasswordAsync(editingCoach, token, newCoachPassword);
-            if (!resetResult.Succeeded)
-            {
-                formError = "Failed to update password: " + string.Join(", ", resetResult.Errors.Select(e => e.Description));
-                isSaving = false;
-                return;
-            }
-            passwordWasChanged = true;
+            if (newCoachPassword.Length < 8) { formError = "Password must be at least 8 characters."; isSaving = false; return; }
+            var token  = await UserManager.GeneratePasswordResetTokenAsync(editingCoach);
+            var result = await UserManager.ResetPasswordAsync(editingCoach, token, newCoachPassword);
+            if (!result.Succeeded) { formError = string.Join(", ", result.Errors.Select(e => e.Description)); isSaving = false; return; }
+            pwdChanged = true;
         }
 
         if (!editingCoach.IsActive)
-        {
             await UserManager.UpdateSecurityStampAsync(editingCoach);
-        }
 
-        var result = await UserManager.UpdateAsync(editingCoach);
+        var updateResult = await UserManager.UpdateAsync(editingCoach);
         isSaving = false;
 
-        if (result.Succeeded)
+        if (updateResult.Succeeded)
         {
-            // Max clients changed
             if (oldMaxClients != null && oldMaxClients != editingCoach.MaxClients)
-            {
                 await NotificationService.CreateNotificationAsync(editingCoach.Id,
                     "🔒 Client Limit Updated",
-                    $"An administrator has updated your maximum client limit to {editingCoach.MaxClients}. You can now manage up to {editingCoach.MaxClients} clients.");
-            }
+                    $"An administrator has updated your maximum client limit to {editingCoach.MaxClients}.");
 
-            // Account status changed
             if (oldIsActive.HasValue && oldIsActive != editingCoach.IsActive)
-            {
-                if (editingCoach.IsActive)
-                    await NotificationService.CreateNotificationAsync(editingCoach.Id,
-                        "✅ Account Activated",
-                        "Your account has been reactivated by an administrator. You can now log in and manage your clients.");
-                else
-                    await NotificationService.CreateNotificationAsync(editingCoach.Id,
-                        "⛔ Account Deactivated",
-                        "Your account has been deactivated by an administrator. Contact support if you believe this is a mistake.");
-            }
+                await NotificationService.CreateNotificationAsync(editingCoach.Id,
+                    editingCoach.IsActive ? "✅ Account Activated" : "⛔ Account Deactivated",
+                    editingCoach.IsActive
+                        ? "Your account has been reactivated by an administrator."
+                        : "Your account has been deactivated by an administrator. Contact support if this is a mistake.");
 
-            // Password was reset
-            if (passwordWasChanged)
-            {
+            if (pwdChanged)
                 await NotificationService.CreateNotificationAsync(editingCoach.Id,
                     "🔑 Password Reset",
-                    "Your account password has been changed by an administrator. If you did not request this, please contact support immediately.");
-            }
+                    "Your account password has been changed by an administrator.");
 
-            // General profile fields changed
-            bool profileChanged = oldFullName != editingCoach.FullName
-                || oldSpecialization != editingCoach.Specialization
-                || oldPhone != editingCoach.PhoneNumber
-                || oldInstagram != editingCoach.InstagramUsername;
-            if (profileChanged)
-            {
-                await NotificationService.CreateNotificationAsync(editingCoach.Id,
-                    "📝 Profile Updated",
-                    "Your coach profile information has been updated by an administrator.");
-            }
+            if (oldFullName != editingCoach.FullName || oldSpec != editingCoach.Specialization
+                || oldPhone != editingCoach.PhoneNumber || oldInstagram != editingCoach.InstagramUsername)
+                await NotificationService.CreateNotificationAsync(editingCoach.Id, "📝 Profile Updated",
+                    "Your coach profile has been updated by an administrator.");
 
-            successMsg = "Coach updated successfully!";
-            await Task.Delay(1500);
+            successMsg = "Changes saved!";
+            await Task.Delay(1000);
             await CloseEditModal();
         }
-        else
-        {
-            formError = string.Join(", ", result.Errors.Select(e => e.Description));
-        }
+        else { formError = string.Join(", ", updateResult.Errors.Select(e => e.Description)); }
     }
 
+    // ── Renew Subscription ────────────────────────────────────────────────
     private async Task RenewSubscription(PanelUser coach)
     {
         coach.SubscriptionEndDate = DateTime.UtcNow.AddYears(1);
         var result = await UserManager.UpdateAsync(coach);
         if (result.Succeeded)
-        {
-            await NotificationService.CreateNotificationAsync(coach.Id,
-                "🎉 Subscription Renewed",
-                $"Your subscription has been renewed by an administrator and is now valid until {coach.SubscriptionEndDate:MMMM dd, yyyy}.");
-        }
+            await NotificationService.CreateNotificationAsync(coach.Id, "🎉 Subscription Renewed",
+                $"Your subscription has been renewed until {coach.SubscriptionEndDate:MMMM dd, yyyy}.");
+        StateHasChanged();
     }
 
+    // ── PDF Theme Toggle ──────────────────────────────────────────────────
     private async Task TogglePdfThemePermission(PanelUser coach)
     {
         coach.CanChangePdfTheme = !coach.CanChangePdfTheme;
         var result = await UserManager.UpdateAsync(coach);
         if (result.Succeeded)
-        {
-            if (coach.CanChangePdfTheme)
-                await NotificationService.CreateNotificationAsync(coach.Id,
-                    "🎨 PDF Theme Access Granted",
-                    "An administrator has granted you access to customize your PDF template theme. You can now choose from multiple designs in your Profile → PDF Branding section.");
-            else
-                await NotificationService.CreateNotificationAsync(coach.Id,
-                    "🎨 PDF Theme Access Revoked",
-                    "Your PDF theme customization access has been revoked. Your PDFs will continue using the Classic theme.");
-        }
+            await NotificationService.CreateNotificationAsync(coach.Id,
+                "🎨 PDF Theme " + (coach.CanChangePdfTheme ? "Access Granted" : "Access Revoked"),
+                coach.CanChangePdfTheme
+                    ? "You can now customize your PDF theme in Profile → PDF Branding."
+                    : "Your PDF theme customization access has been revoked.");
         StateHasChanged();
     }
 
-    private void PromptDeleteCoach(PanelUser coach)
-    {
-        coachToDelete = coach;
-        deleteError = "";
-        showDeleteModal = true;
-    }
-
-    private void CloseDeleteModal()
-    {
-        showDeleteModal = false;
-        coachToDelete = null;
-        isDeleting = false;
-        deleteError = "";
-    }
+    // ── Delete Coach ──────────────────────────────────────────────────────
+    private void PromptDeleteCoach(PanelUser coach) { coachToDelete = coach; deleteError = string.Empty; showDeleteCoachModal = true; }
+    private void CloseDeleteCoachModal() { showDeleteCoachModal = false; coachToDelete = null; isDeleting = false; deleteError = string.Empty; }
 
     private async Task DeleteCoach()
     {
         if (coachToDelete == null) return;
-        isDeleting = true;
-        deleteError = "";
-
+        isDeleting = true; deleteError = string.Empty;
         try
         {
-            // 1. Delete associated clients first to prevent Restrict foreign key violation
             var clientsToDelete = DbContext.Clients.Where(c => c.CoachId == coachToDelete.Id).ToList();
-            if (clientsToDelete.Any())
-            {
-                DbContext.Clients.RemoveRange(clientsToDelete);
-            }
+            if (clientsToDelete.Any()) DbContext.Clients.RemoveRange(clientsToDelete);
 
-            // 2. Delete templates
             var dietTemplates = DbContext.Set<DietTemplate>().Where(dt => dt.CoachId == coachToDelete.Id).ToList();
-            if (dietTemplates.Any())
-            {
-                DbContext.Set<DietTemplate>().RemoveRange(dietTemplates);
-            }
+            if (dietTemplates.Any()) DbContext.Set<DietTemplate>().RemoveRange(dietTemplates);
 
             var workoutTemplates = DbContext.Set<WorkoutTemplate>().Where(wt => wt.CoachId == coachToDelete.Id).ToList();
-            if (workoutTemplates.Any())
-            {
-                DbContext.Set<WorkoutTemplate>().RemoveRange(workoutTemplates);
-            }
+            if (workoutTemplates.Any()) DbContext.Set<WorkoutTemplate>().RemoveRange(workoutTemplates);
 
-            // 3. Delete dictionaries
             var exerciseDict = DbContext.Set<CoachExerciseDictionary>().Where(ed => ed.CoachId == coachToDelete.Id).ToList();
-            if (exerciseDict.Any())
-            {
-                DbContext.Set<CoachExerciseDictionary>().RemoveRange(exerciseDict);
-            }
+            if (exerciseDict.Any()) DbContext.Set<CoachExerciseDictionary>().RemoveRange(exerciseDict);
 
             var mealDict = DbContext.Set<CoachMealDictionary>().Where(md => md.CoachId == coachToDelete.Id).ToList();
-            if (mealDict.Any())
-            {
-                DbContext.Set<CoachMealDictionary>().RemoveRange(mealDict);
-            }
+            if (mealDict.Any()) DbContext.Set<CoachMealDictionary>().RemoveRange(mealDict);
 
-            // Save EF Core changes
             await DbContext.SaveChangesAsync();
 
-            // 4. Finally delete the Identity user
             var result = await UserManager.DeleteAsync(coachToDelete);
             if (result.Succeeded)
             {
-                var allCoaches = await UserManager.GetUsersInRoleAsync("Coach");
-                coaches = allCoaches.ToList();
-                CloseDeleteModal();
+                await LoadAll();
+                CloseDeleteCoachModal();
             }
-            else
+            else { deleteError = string.Join(", ", result.Errors.Select(e => e.Description)); }
+        }
+        catch (Exception ex) { deleteError = "Error deleting coach: " + ex.Message; }
+        finally { isDeleting = false; }
+    }
+
+    // ── Delete Client ─────────────────────────────────────────────────────
+    private void PromptDeleteClient(ClientResponseDto client, string coachId)
+    {
+        clientToDelete    = client;
+        clientDeleteCoachId = coachId;
+        deleteError       = string.Empty;
+        showDeleteClientModal = true;
+    }
+
+    private void CloseDeleteClientModal() { showDeleteClientModal = false; clientToDelete = null; isDeleting = false; deleteError = string.Empty; }
+
+    private async Task DeleteClient()
+    {
+        if (clientToDelete == null) return;
+        isDeleting = true; deleteError = string.Empty;
+        try
+        {
+            var (success, message) = await ClientService.DeleteClientAsync(clientToDelete.Id, clientDeleteCoachId);
+            if (success)
             {
-                deleteError = string.Join(", ", result.Errors.Select(e => e.Description));
+                if (coachClients.TryGetValue(clientDeleteCoachId, out var list))
+                    list.RemoveAll(c => c.Id == clientToDelete.Id);
+                CloseDeleteClientModal();
             }
+            else { deleteError = message; }
         }
-        catch (Exception ex)
-        {
-            deleteError = "An error occurred while deleting the coach: " + ex.Message;
-        }
-        finally
-        {
-            isDeleting = false;
-        }
+        catch (Exception ex) { deleteError = "Error deleting client: " + ex.Message; }
+        finally { isDeleting = false; }
     }
 }

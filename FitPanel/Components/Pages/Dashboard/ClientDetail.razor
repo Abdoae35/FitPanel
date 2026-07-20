@@ -20,6 +20,7 @@
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ICoachDictionaryService DictionaryService
+@inject IStringLocalizer<SharedResource> L
 @rendermode InteractiveServer
 <PageTitle>Client Profile — FitPanel</PageTitle>
 
@@ -34,15 +35,15 @@
 {
     <div class="fp-loading">
         <div class="fp-spinner-lg"></div>
-        <span>Loading client...</span>
+        <span>@L["ClientDetail_Loading"]</span>
     </div>
 }
 else if (client == null)
 {
     <div class="fp-empty">
         <i class="fa fa-user-slash"></i>
-        <p>Client not found.</p>
-        <a href="/dashboard/clients" class="fp-btn-outline">← Back to Clients</a>
+        <p>@L["ClientDetail_NotFound"]</p>
+        <a href="/dashboard/clients" class="fp-btn-outline">@L["ClientDetail_BackToClients"]</a>
     </div>
 }
 else
@@ -68,7 +69,7 @@ else
             </div>
         </div>
         <button class="fp-btn-outline" @onclick="OpenEditClientModal">
-            <i class="fa fa-edit"></i> Edit Client
+            <i class="fa fa-edit"></i> @L["ClientDetail_EditClient"]
         </button>
     </div>
 
@@ -79,19 +80,19 @@ else
             @if (!string.IsNullOrEmpty(client.InbodyLink))
             {
                 <a href="@client.InbodyLink" target="_blank" class="fp-link-btn fp-link-inbody">
-                    <i class="fa fa-chart-bar"></i> Inbody Result
+                    <i class="fa fa-chart-bar"></i> @L["ClientDetail_InbodyResult"]
                 </a>
             }
             @if (!string.IsNullOrEmpty(client.FromPicLink))
             {
                 <a href="@client.FromPicLink" target="_blank" class="fp-link-btn fp-link-before">
-                    <i class="fa fa-image"></i> Before Photo
+                    <i class="fa fa-image"></i> @L["ClientDetail_BeforePhoto"]
                 </a>
             }
             @if (!string.IsNullOrEmpty(client.ToPicLink))
             {
                 <a href="@client.ToPicLink" target="_blank" class="fp-link-btn fp-link-after">
-                    <i class="fa fa-image"></i> After Photo
+                    <i class="fa fa-image"></i> @L["ClientDetail_AfterPhoto"]
                 </a>
             }
         </div>
@@ -101,26 +102,26 @@ else
     <div class="fp-sub-status">
         <div class="fp-sub-info">
             <div class="fp-sub-block">
-                <span class="fp-sub-label">START DATE</span>
+                <span class="fp-sub-label">@L["ClientDetail_StartDate"]</span>
                 <span class="fp-sub-value">@client.StartDate.ToString("MMM dd, yyyy")</span>
             </div>
             <div class="fp-sub-divider"></div>
             <div class="fp-sub-block">
-                <span class="fp-sub-label">END DATE</span>
+                <span class="fp-sub-label">@L["ClientDetail_EndDate"]</span>
                 <span class="fp-sub-value @(IsExpired ? "fp-expired" : IsExpiringSoon ? "fp-expiring" : "")">
                     @client.EndDate.ToString("MMM dd, yyyy")
                 </span>
             </div>
             <div class="fp-sub-divider"></div>
             <div class="fp-sub-block">
-                <span class="fp-sub-label">STATUS</span>
-                @if (IsExpired) { <span class="fp-badge fp-badge-danger">EXPIRED</span> }
-                else if (IsExpiringSoon) { <span class="fp-badge fp-badge-warning">EXPIRING SOON</span> }
-                else { <span class="fp-badge fp-badge-green">ACTIVE</span> }
+                <span class="fp-sub-label">@L["Table_Status"]</span>
+                @if (IsExpired) { <span class="fp-badge fp-badge-danger">@L["ClientDetail_Expired"]</span> }
+                else if (IsExpiringSoon) { <span class="fp-badge fp-badge-warning">@L["ClientDetail_ExpiringSoon"]</span> }
+                else { <span class="fp-badge fp-badge-green">@L["ClientDetail_ActiveBadge"]</span> }
             </div>
             <div class="fp-sub-divider"></div>
             <div class="fp-sub-block">
-                <span class="fp-sub-label">DAYS LEFT</span>
+                <span class="fp-sub-label">@L["ClientDetail_DaysLeft"]</span>
                 <span class="fp-sub-value @(IsExpired ? "fp-expired" : "")">
                     @(IsExpired ? "0" : DaysLeft.ToString())
                 </span>
@@ -130,13 +131,13 @@ else
             @if (IsExpired)
             {
                 <button class="fp-btn-primary" @onclick='() => showRenewModal = true'>
-                    <i class="fa fa-arrows-rotate"></i> Renew
+                    <i class="fa fa-arrows-rotate"></i> @L["Btn_Renew"]
                 </button>
             }
             @if (!string.IsNullOrEmpty(client.PhoneNumber) && (IsExpired || IsExpiringSoon))
             {
                 <button class="fp-btn-whatsapp" @onclick="SendWhatsAppReminder">
-                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Reminder
+                    <i class="fa-brands fa-whatsapp"></i> @L["ClientDetail_WhatsApp"]
                 </button>
             }
         </div>
@@ -145,10 +146,10 @@ else
     @* ── Tabs ── *@
     <div class="fp-tabs">
         <button class="fp-tab @(activeTab == "diet" ? "active" : "")" @onclick='() => activeTab = "diet"'>
-            <i class="fa fa-utensils"></i> Diet Plan
+            <i class="fa fa-utensils"></i> @L["ClientDetail_DietTab"]
         </button>
         <button class="fp-tab @(activeTab == "workout" ? "active" : "")" @onclick='() => activeTab = "workout"'>
-            <i class="fa fa-dumbbell"></i> Workout Plan
+            <i class="fa fa-dumbbell"></i> @L["ClientDetail_WorkoutTab"]
         </button>
     </div>
 
@@ -158,11 +159,11 @@ else
         <div class="fp-tab-content">
             <div class="fp-section-header">
                 <div>
-                    <h2 class="fp-section-title">Diet Plans</h2>
+                    <h2 class="fp-section-title">@L["ClientDetail_DietPlans"]</h2>
                     <p class="fp-section-sub">@diets.Count plan@(diets.Count != 1 ? "s" : "") created</p>
                 </div>
                 <button class="fp-btn-primary" @onclick='() => showDietModal = true'>
-                    <i class="fa fa-plus"></i> New Diet Plan
+                    <i class="fa fa-plus"></i> @L["ClientDetail_NewDietPlan"]
                 </button>
             </div>
 
@@ -170,15 +171,15 @@ else
             {
                 <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
                     <i class="fa fa-utensils" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
-                    <p style="margin:0; color:var(--fp-text-muted);">No diet plans yet.</p>
+                    <p style="margin:0; color:var(--fp-text-muted);">@L["ClientDetail_NoDietPlans"]</p>
                     <div style="display:flex; gap:12px; margin-top:8px;">
                         <button class="fp-btn-primary" @onclick='() => showDietModal = true'>
-                            <i class="fa fa-plus"></i> New Diet Plan
+                            <i class="fa fa-plus"></i> @L["ClientDetail_NewDietPlan"]
                         </button>
                         @if (dietTemplates.Any())
                         {
                             <button class="fp-btn-outline fp-btn-import" @onclick="OpenApplyDietTemplateModal">
-                                <i class="fa fa-folder-open"></i> Start from Template
+                                <i class="fa fa-folder-open"></i> @L["ClientDetail_StartFromTemplate"]
                             </button>
                         }
                     </div>
@@ -523,11 +524,11 @@ else
         <div class="fp-tab-content">
             <div class="fp-section-header">
                 <div>
-                    <h2 class="fp-section-title">Workout Plans</h2>
+                    <h2 class="fp-section-title">@L["ClientDetail_WorkoutPlans"]</h2>
                     <p class="fp-section-sub">@workouts.Count plan@(workouts.Count != 1 ? "s" : "") created</p>
                 </div>
                 <button class="fp-btn-primary" @onclick='() => showWorkoutModal = true'>
-                    <i class="fa fa-plus"></i> New Workout Plan
+                    <i class="fa fa-plus"></i> @L["ClientDetail_NewWorkoutPlan"]
                 </button>
             </div>
 
@@ -535,15 +536,15 @@ else
             {
                 <div class="fp-empty-card" style="display:flex; flex-direction:column; align-items:center; gap:16px; padding: 40px 20px;">
                     <i class="fa fa-dumbbell" style="font-size:48px; opacity:0.15; color:var(--fp-accent);"></i>
-                    <p style="margin:0; color:var(--fp-text-muted);">No workout plans yet.</p>
+                    <p style="margin:0; color:var(--fp-text-muted);">@L["ClientDetail_NoWorkoutPlans"]</p>
                     <div style="display:flex; gap:12px; margin-top:8px;">
                         <button class="fp-btn-primary" @onclick='() => showWorkoutModal = true'>
-                            <i class="fa fa-plus"></i> New Workout Plan
+                            <i class="fa fa-plus"></i> @L["ClientDetail_NewWorkoutPlan"]
                         </button>
                         @if (workoutTemplates.Any())
                         {
                             <button class="fp-btn-outline fp-btn-import" @onclick="OpenApplyWorkoutTemplateModal">
-                                <i class="fa fa-folder-open"></i> Start from Template
+                                <i class="fa fa-folder-open"></i> @L["ClientDetail_StartFromTemplate"]
                             </button>
                         }
                     </div>
@@ -826,7 +827,7 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditClientModal = false'>
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT CLIENT</span>
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> @L["Modal_EditClient"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditClientModal = false'><i class="fa fa-times"></i></button>
             </div>
             @if (!string.IsNullOrEmpty(editClientMessage))
@@ -837,25 +838,25 @@ else
             }
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Full Name</label><input @bind="editClient.Name" placeholder="Full name" /></div>
-                    <div class="fp-input-group"><label>Phone Number</label><input @bind="editClient.PhoneNumber" placeholder="e.g. +966500000000" /></div>
+                    <div class="fp-input-group"><label>@L["Form_FullName"]</label><input @bind="editClient.Name" placeholder="Full name" /></div>
+                    <div class="fp-input-group"><label>@L["Form_PhoneNumber"]</label><input @bind="editClient.PhoneNumber" placeholder="e.g. +966500000000" /></div>
                 </div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Weight (kg)</label><input type="number" @bind="editClient.Weight" placeholder="80" /></div>
-                    <div class="fp-input-group"><label>BMR (kcal)</label><input type="number" @bind="editClient.Bmr" placeholder="1800" /></div>
+                    <div class="fp-input-group"><label>@L["Form_WeightKg"]</label><input type="number" @bind="editClient.Weight" placeholder="80" /></div>
+                    <div class="fp-input-group"><label>@L["Form_BMR"]</label><input type="number" @bind="editClient.Bmr" placeholder="1800" /></div>
                 </div>
-                <div class="fp-input-group"><label>Inbody Link</label><input @bind="editClient.InbodyLink" placeholder="https://drive.google.com/..." /></div>
+                <div class="fp-input-group"><label>@L["Form_InbodyLink"]</label><input @bind="editClient.InbodyLink" placeholder="https://drive.google.com/..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Before Photo Link</label><input @bind="editClient.FromPicLink" placeholder="https://drive.google.com/..." /></div>
-                    <div class="fp-input-group"><label>After Photo Link</label><input @bind="editClient.ToPicLink" placeholder="https://drive.google.com/..." /></div>
+                    <div class="fp-input-group"><label>@L["Form_BeforePhoto"]</label><input @bind="editClient.FromPicLink" placeholder="https://drive.google.com/..." /></div>
+                    <div class="fp-input-group"><label>@L["Form_AfterPhoto"]</label><input @bind="editClient.ToPicLink" placeholder="https://drive.google.com/..." /></div>
                 </div>
-                <div class="fp-input-group"><label>Client Fitness Goal</label><input @bind="editClient.Goal" placeholder="Loss Weight / Gain Muscle / Recomposition" /></div>
+                <div class="fp-input-group"><label>@L["Form_GoalFitness"]</label><input @bind="editClient.Goal" placeholder="Loss Weight / Gain Muscle / Recomposition" /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditClientModal = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showEditClientModal = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveClient" disabled="@isSavingClient">
-                    @if (isSavingClient) { <span class="fp-spinner-sm"></span><span>Saving...</span> }
-                    else { <i class="fa fa-check"></i><span>Save Changes</span> }
+                    @if (isSavingClient) { <span class="fp-spinner-sm"></span><span>@L["Btn_Saving"]</span> }
+                    else { <i class="fa fa-check"></i><span>@L["Btn_SaveChanges"]</span> }
                 </button>
             </div>
         </div>
@@ -868,23 +869,23 @@ else
     <div class="fp-modal-overlay" @onclick='() => showDietModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-utensils"></i> NEW DIET PLAN</span>
+                <span class="fp-modal-title"><i class="fa fa-utensils"></i> @L["Modal_NewDietPlan"]</span>
                 <button class="fp-modal-close" @onclick='() => showDietModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Number of Meals per Day *</label>
+                    <label>@L["Form_NumberOfMeals"]</label>
                     <input type="number" @bind="newDiet.NumberOfMeals" min="1" max="10" placeholder="5" />
                 </div>
                 <div class="fp-input-group">
-                    <label>Coaching Notes / Instructions (optional — will appear as a dedicated page in the PDF)</label>
+                    <label>@L["Form_CoachingNotes"]</label>
                     <textarea @bind="newDiet.Instructions" rows="4" placeholder="e.g. Drink 3L of water daily. Take your vitamins with breakfast. Avoid processed sugars..."></textarea>
                 </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more meals than this number.</p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showDietModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="CreateDiet"><i class="fa fa-check"></i> Create</button>
+                <button class="fp-btn-outline" @onclick='() => showDietModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="CreateDiet"><i class="fa fa-check"></i> @L["Btn_Create"]</button>
             </div>
         </div>
     </div>
@@ -896,20 +897,20 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditDietNotesModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> COACHING NOTES</span>
+                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> @L["Modal_CoachingNotes"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditDietNotesModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Diet Notes &amp; Instructions</label>
+                    <label>@L["Form_DietNotes"]</label>
                     <textarea @bind="editDietInstructions" rows="8"
                               placeholder="e.g. Drink at least 3 liters of water daily.&#10;Take your multivitamin with breakfast.&#10;Avoid processed sugar and soft drinks.&#10;Do not skip meals — spacing matters."></textarea>
                 </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> These notes will appear as a dedicated page in the PDF after the cover page.</p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditDietNotesModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveDietNotes"><i class="fa fa-check"></i> Save Notes</button>
+                <button class="fp-btn-outline" @onclick='() => showEditDietNotesModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveDietNotes"><i class="fa fa-check"></i> @L["Btn_SaveNotes"]</button>
             </div>
         </div>
     </div>
@@ -921,18 +922,18 @@ else
     <div class="fp-modal-overlay" @onclick='() => showSaveDietTemplateModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE DIET TEMPLATE</span>
+                <span class="fp-modal-title"><i class="fa fa-save"></i> @L["Modal_SaveDietTemplate"]</span>
                 <button class="fp-modal-close" @onclick='() => showSaveDietTemplateModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Template Name *</label>
+                    <label>@L["Form_TemplateName"]</label>
                     <input @bind="dietTemplateName" placeholder="e.g. 2000kcal High Protein Fat Loss" />
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showSaveDietTemplateModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveDietAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+                <button class="fp-btn-outline" @onclick='() => showSaveDietTemplateModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveDietAsTemplate"><i class="fa fa-check"></i> @L["Btn_SaveTemplate"]</button>
             </div>
         </div>
     </div>
@@ -944,18 +945,18 @@ else
     <div class="fp-modal-overlay" @onclick='() => showSaveWorkoutTemplateModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-save"></i> SAVE WORKOUT TEMPLATE</span>
+                <span class="fp-modal-title"><i class="fa fa-save"></i> @L["Modal_SaveWorkoutTemplate"]</span>
                 <button class="fp-modal-close" @onclick='() => showSaveWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Template Name *</label>
+                    <label>@L["Form_TemplateName"]</label>
                     <input @bind="workoutTemplateName" placeholder="e.g. 4-Day Push/Pull/Legs Split" />
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showSaveWorkoutTemplateModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveWorkoutAsTemplate"><i class="fa fa-check"></i> Save Template</button>
+                <button class="fp-btn-outline" @onclick='() => showSaveWorkoutTemplateModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutAsTemplate"><i class="fa fa-check"></i> @L["Btn_SaveTemplate"]</button>
             </div>
         </div>
     </div>
@@ -967,12 +968,12 @@ else
     <div class="fp-modal-overlay" @onclick='() => showApplyDietTemplateModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM DIET TEMPLATE</span>
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> @L["Modal_StartFromDietTemplate"]</span>
                 <button class="fp-modal-close" @onclick='() => showApplyDietTemplateModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Select Diet Template *</label>
+                    <label>@L["Form_SelectDietTemplate"]</label>
                     <select @bind="selectedDietTemplateId">
                         <option value="0">-- Choose Template --</option>
                         @foreach (var temp in dietTemplates)
@@ -983,8 +984,8 @@ else
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showApplyDietTemplateModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="ApplyDietTemplate" disabled="@(selectedDietTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
+                <button class="fp-btn-outline" @onclick='() => showApplyDietTemplateModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="ApplyDietTemplate" disabled="@(selectedDietTemplateId == 0)"><i class="fa fa-copy"></i> @L["Btn_ClonePlan"]</button>
             </div>
         </div>
     </div>
@@ -996,12 +997,12 @@ else
     <div class="fp-modal-overlay" @onclick='() => showApplyWorkoutTemplateModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> START FROM WORKOUT TEMPLATE</span>
+                <span class="fp-modal-title"><i class="fa fa-folder-open"></i> @L["Modal_StartFromWorkoutTemplate"]</span>
                 <button class="fp-modal-close" @onclick='() => showApplyWorkoutTemplateModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Select Workout Template *</label>
+                    <label>@L["Form_SelectWorkoutTemplate"]</label>
                     <select @bind="selectedWorkoutTemplateId">
                         <option value="0">-- Choose Template --</option>
                         @foreach (var temp in workoutTemplates)
@@ -1012,8 +1013,8 @@ else
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showApplyWorkoutTemplateModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="ApplyWorkoutTemplate" disabled="@(selectedWorkoutTemplateId == 0)"><i class="fa fa-copy"></i> Clone Plan</button>
+                <button class="fp-btn-outline" @onclick='() => showApplyWorkoutTemplateModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="ApplyWorkoutTemplate" disabled="@(selectedWorkoutTemplateId == 0)"><i class="fa fa-copy"></i> @L["Btn_ClonePlan"]</button>
             </div>
         </div>
     </div>
@@ -1025,19 +1026,19 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditDietModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT MEAL COUNT</span>
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> @L["Modal_EditMealCount"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditDietModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Number of Meals per Day *</label>
+                    <label>@L["Form_NumberOfMeals"]</label>
                     <input type="number" @bind="editDietMealCount" min="@editDietCurrentCount" max="10" />
                 </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editDietCurrentCount meals — cannot set less.</p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditDietModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="UpdateDietMealCount"><i class="fa fa-check"></i> Update</button>
+                <button class="fp-btn-outline" @onclick='() => showEditDietModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="UpdateDietMealCount"><i class="fa fa-check"></i> @L["Btn_Update"]</button>
             </div>
         </div>
     </div>
@@ -1049,20 +1050,20 @@ else
     <div class="fp-modal-overlay" @onclick='() => showDietMealModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-plus"></i> ADD MEAL CATEGORY</span>
+                <span class="fp-modal-title"><i class="fa fa-plus"></i> @L["Modal_AddMealCategory"]</span>
                 <button class="fp-modal-close" @onclick='() => showDietMealModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Meal Name *</label>
+                    <label>@L["Form_MealName"]</label>
                     <input list="mealDictList" @bind="newDietMealName" @bind:after="OnDietMealNameChanged" placeholder="Chicken Pasta, Beef Rice, etc..." />
                 </div>
                 <div class="fp-input-group">
-                    <label>Video Link (optional)</label>
+                    <label>@L["Form_VideoLinkOpt"]</label>
                     <input @bind="newDietMealLink" placeholder="https://youtube.com/..." />
                 </div>
                 <div class="fp-input-group">
-                    <label>Instructions / Recipe</label>
+                    <label>@L["Form_RecipeInstructions"]</label>
                     <textarea @bind="newDietMealInstruction" rows="3" placeholder="Cook the chicken with garlic..."></textarea>
                 </div>
                 @if (newDietMealInitialItems != null && newDietMealInitialItems.Any())
@@ -1083,16 +1084,16 @@ else
                 }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showDietMealModal = false' disabled="@isSavingMeal">Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showDietMealModal = false' disabled="@isSavingMeal">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveDietMeal" disabled="@isSavingMeal">
                     @if (isSavingMeal)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Adding...</span>
+                        <span>@L["Btn_Adding"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-check"></i> <span>Add</span>
+                        <i class="fa fa-check"></i> <span>@L["Btn_Add"]</span>
                     }
                 </button>
             </div>
@@ -1106,26 +1107,26 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditDietMealModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT MEAL INFO</span>
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> @L["Modal_EditMealInfo"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditDietMealModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Meal Category Name *</label>
+                    <label>@L["Form_MealCategoryName"]</label>
                     <input @bind="editDietMealName" placeholder="e.g. Breakfast, Pre-Workout Meal" />
                 </div>
                 <div class="fp-input-group">
-                    <label>Video Tutorial Link (optional)</label>
+                    <label>@L["Form_VideoTutorialLink"]</label>
                     <input @bind="editDietMealLink" placeholder="https://youtube.com/..." />
                 </div>
                 <div class="fp-input-group">
-                    <label>Recipe Instructions (optional)</label>
+                    <label>@L["Form_RecipeInstructionsOpt"]</label>
                     <textarea @bind="editDietMealInstruction" rows="4" placeholder="Cook chicken, add rice..."></textarea>
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditDietMealModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveEditDietMeal"><i class="fa fa-save"></i> Save Changes</button>
+                <button class="fp-btn-outline" @onclick='() => showEditDietMealModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveEditDietMeal"><i class="fa fa-save"></i> @L["Btn_SaveChanges"]</button>
             </div>
         </div>
     </div>
@@ -1139,30 +1140,30 @@ else
             <div class="fp-modal-header">
                 <span class="fp-modal-title">
                     <i class="fa fa-@(editMealId > 0 ? "edit" : "plus")"></i>
-                    @(editMealId > 0 ? "EDIT FOOD ITEM" : "ADD FOOD ITEM")
+                    @(editMealId > 0 ? L["Modal_EditFoodItem"] : L["Modal_AddFoodItem"])
                 </span>
                 <button class="fp-modal-close" @onclick='() => showMealModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Food Name *</label><input list="mealDictList" @bind="newMeal.MealName" @bind:after="OnMealNameChanged" placeholder="Grilled Chicken" /></div>
+                    <div class="fp-input-group"><label>@L["Form_FoodName"]</label><input list="mealDictList" @bind="newMeal.MealName" @bind:after="OnMealNameChanged" placeholder="Grilled Chicken" /></div>
                     <div class="fp-grid-2" style="gap:10px">
-                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newMeal.Quantity" @bind:after="OnQuantityChanged" placeholder="1" /></div>
-                        <div class="fp-input-group"><label>Unit</label><input @bind="newMeal.Unit" placeholder="cup, gram, piece..." /></div>
+                        <div class="fp-input-group"><label>@L["Form_Quantity"]</label><input type="number" step="0.1" @bind="newMeal.Quantity" @bind:after="OnQuantityChanged" placeholder="1" /></div>
+                        <div class="fp-input-group"><label>@L["Form_Unit"]</label><input @bind="newMeal.Unit" placeholder="cup, gram, piece..." /></div>
                     </div>
                 </div>
 
                 <div class="fp-grid-4" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newMeal.Calories" @bind:after="OnCaloriesChanged" placeholder="220" /></div>
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newMeal.Protein" @bind:after="OnProteinChanged" placeholder="40" /></div>
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newMeal.Carbs" @bind:after="OnCarbsChanged" placeholder="0" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newMeal.Fats" @bind:after="OnFatsChanged" placeholder="5" /></div>
+                    <div class="fp-input-group"><label>@L["Form_CaloriesRequired"]</label><input type="number" @bind="newMeal.Calories" @bind:after="OnCaloriesChanged" placeholder="220" /></div>
+                    <div class="fp-input-group"><label>@L["Form_ProteinG"]</label><input type="number" @bind="newMeal.Protein" @bind:after="OnProteinChanged" placeholder="40" /></div>
+                    <div class="fp-input-group"><label>@L["Form_CarbsG"]</label><input type="number" @bind="newMeal.Carbs" @bind:after="OnCarbsChanged" placeholder="0" /></div>
+                    <div class="fp-input-group"><label>@L["Form_FatsG"]</label><input type="number" @bind="newMeal.Fats" @bind:after="OnFatsChanged" placeholder="5" /></div>
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showMealModal = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showMealModal = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveMeal">
-                    <i class="fa fa-check"></i> @(editMealId > 0 ? "Update" : "Add Meal")
+                    <i class="fa fa-check"></i> @(editMealId > 0 ? L["Btn_Update"] : L["Btn_SaveMeal"])
                 </button>
             </div>
         </div>
@@ -1177,7 +1178,7 @@ else
             <div class="fp-modal-header">
                 <span class="fp-modal-title">
                     <i class="fa fa-exchange-alt"></i>
-                    @(editAlternativeId > 0 ? "EDIT ALTERNATIVE" : "ADD ALTERNATIVE")
+                    @(editAlternativeId > 0 ? L["Modal_EditAlternative"] : L["Modal_AddAlternative"])
                 </span>
                 <button class="fp-modal-close" @onclick='() => showAlternativeModal = false'><i class="fa fa-times"></i></button>
             </div>
@@ -1187,23 +1188,23 @@ else
                     An alternative is a substitute meal with similar purpose but different ingredients.
                 </p>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label>Food Name *</label><input list="mealDictList" @bind="newAlternative.MealName" @bind:after="OnAlternativeNameChanged" placeholder="Tuna Salad" /></div>
+                    <div class="fp-input-group"><label>@L["Form_FoodName"]</label><input list="mealDictList" @bind="newAlternative.MealName" @bind:after="OnAlternativeNameChanged" placeholder="Tuna Salad" /></div>
                     <div class="fp-grid-2" style="gap:10px">
-                        <div class="fp-input-group"><label>Quantity</label><input type="number" step="0.1" @bind="newAlternative.Quantity" @bind:after="OnAlternativeQuantityChanged" placeholder="1" /></div>
-                        <div class="fp-input-group"><label>Unit</label><input @bind="newAlternative.Unit" placeholder="cup, gram, piece..." /></div>
+                        <div class="fp-input-group"><label>@L["Form_Quantity"]</label><input type="number" step="0.1" @bind="newAlternative.Quantity" @bind:after="OnAlternativeQuantityChanged" placeholder="1" /></div>
+                        <div class="fp-input-group"><label>@L["Form_Unit"]</label><input @bind="newAlternative.Unit" placeholder="cup, gram, piece..." /></div>
                     </div>
                 </div>
                 <div class="fp-grid-4" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-                    <div class="fp-input-group"><label>Calories *</label><input type="number" @bind="newAlternative.Calories" @bind:after="OnAltCaloriesChanged" placeholder="180" /></div>
-                    <div class="fp-input-group"><label>Protein (g)</label><input type="number" @bind="newAlternative.Protein" @bind:after="OnAltProteinChanged" placeholder="35" /></div>
-                    <div class="fp-input-group"><label>Carbs (g)</label><input type="number" @bind="newAlternative.Carbs" @bind:after="OnAltCarbsChanged" placeholder="2" /></div>
-                    <div class="fp-input-group"><label>Fats (g)</label><input type="number" @bind="newAlternative.Fats" @bind:after="OnAltFatsChanged" placeholder="3" /></div>
+                    <div class="fp-input-group"><label>@L["Form_CaloriesRequired"]</label><input type="number" @bind="newAlternative.Calories" @bind:after="OnAltCaloriesChanged" placeholder="180" /></div>
+                    <div class="fp-input-group"><label>@L["Form_ProteinG"]</label><input type="number" @bind="newAlternative.Protein" @bind:after="OnAltProteinChanged" placeholder="35" /></div>
+                    <div class="fp-input-group"><label>@L["Form_CarbsG"]</label><input type="number" @bind="newAlternative.Carbs" @bind:after="OnAltCarbsChanged" placeholder="2" /></div>
+                    <div class="fp-input-group"><label>@L["Form_FatsG"]</label><input type="number" @bind="newAlternative.Fats" @bind:after="OnAltFatsChanged" placeholder="3" /></div>
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showAlternativeModal = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showAlternativeModal = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveAlternative">
-                    <i class="fa fa-check"></i> @(editAlternativeId > 0 ? "Update" : "Add Alternative")
+                    <i class="fa fa-check"></i> @(editAlternativeId > 0 ? L["Btn_Update"] : L["Modal_AddAlternative"])
                 </button>
             </div>
         </div>
@@ -1216,17 +1217,17 @@ else
     <div class="fp-modal-overlay" @onclick='() => showWorkoutModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> NEW WORKOUT PLAN</span>
+                <span class="fp-modal-title"><i class="fa fa-dumbbell"></i> @L["Modal_NewWorkoutPlan"]</span>
                 <button class="fp-modal-close" @onclick='() => showWorkoutModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Split Name *</label><input @bind="newWorkout.SplitName" placeholder="Push Pull Legs / Arnold Split..." /></div>
-                <div class="fp-input-group"><label>Number of Days *</label><input type="number" @bind="newWorkout.NumberOfWorkoutDays" min="1" max="7" placeholder="5" /></div>
+                <div class="fp-input-group"><label>@L["Form_SplitName"]</label><input @bind="newWorkout.SplitName" placeholder="Push Pull Legs / Arnold Split..." /></div>
+                <div class="fp-input-group"><label>@L["Form_NumberOfDays"]</label><input type="number" @bind="newWorkout.NumberOfWorkoutDays" min="1" max="7" placeholder="5" /></div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You won't be able to add more days than this number.</p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showWorkoutModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="CreateWorkout"><i class="fa fa-check"></i> Create</button>
+                <button class="fp-btn-outline" @onclick='() => showWorkoutModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="CreateWorkout"><i class="fa fa-check"></i> @L["Btn_Create"]</button>
             </div>
         </div>
     </div>
@@ -1238,19 +1239,19 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditWorkoutModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-edit"></i> EDIT DAY COUNT</span>
+                <span class="fp-modal-title"><i class="fa fa-edit"></i> @L["Modal_EditDayCount"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditWorkoutModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Number of Workout Days *</label>
+                    <label>@L["Form_NumberOfWorkoutDays"]</label>
                     <input type="number" @bind="editWorkoutDayCount" min="@editWorkoutCurrentCount" max="7" />
                 </div>
                 <p class="fp-hint"><i class="fa fa-info-circle"></i> You already have @editWorkoutCurrentCount days — cannot set less.</p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditWorkoutModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="UpdateWorkoutDayCount"><i class="fa fa-check"></i> Update</button>
+                <button class="fp-btn-outline" @onclick='() => showEditWorkoutModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="UpdateWorkoutDayCount"><i class="fa fa-check"></i> @L["Btn_Update"]</button>
             </div>
         </div>
     </div>
@@ -1261,7 +1262,7 @@ else
     <div class="fp-modal-overlay" @onclick='() => showDayModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-calendar-plus"></i> ADD WORKOUT DAY</span>
+                <span class="fp-modal-title"><i class="fa fa-calendar-plus"></i> @L["Modal_AddWorkoutDay"]</span>
                 <button class="fp-modal-close" @onclick='() => showDayModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
@@ -1271,9 +1272,9 @@ else
                         <i class="fa fa-exclamation-triangle"></i> @dayValidationError
                     </div>
                 }
-                <div class="fp-input-group"><label>Day Name *</label><input @bind="newDay.DayName" placeholder="Push Day / Chest Day..." /></div>
+                <div class="fp-input-group"><label>@L["Form_DayName"]</label><input @bind="newDay.DayName" placeholder="Push Day / Chest Day..." /></div>
                 <div class="fp-input-group">
-                    <label>Day of Week *</label>
+                    <label>@L["Form_DayOfWeek"]</label>
                     <select @bind="newDayEnum">
                         @for (int i = 0; i < 7; i++)
                         {
@@ -1287,13 +1288,13 @@ else
                     </select>
                 </div>
                 <div class="fp-input-group">
-                    <label>Day Notes / Instructions (optional — will appear in PDF)</label>
+                    <label>@L["Form_DayNotes"]</label>
                     <textarea @bind="newDay.Notes" rows="3" placeholder="e.g. Focus on mind-muscle connection. Rest 2 min between sets..."></textarea>
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showDayModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddWorkoutDay"><i class="fa fa-check"></i> Add Day</button>
+                <button class="fp-btn-outline" @onclick='() => showDayModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="AddWorkoutDay"><i class="fa fa-check"></i> @L["Btn_AddDay"]</button>
             </div>
         </div>
     </div>
@@ -1305,7 +1306,7 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditDayModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-calendar-alt"></i> EDIT WORKOUT DAY</span>
+                <span class="fp-modal-title"><i class="fa fa-calendar-alt"></i> @L["Modal_EditWorkoutDay"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditDayModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
@@ -1315,9 +1316,9 @@ else
                         <i class="fa fa-exclamation-triangle"></i> @editDayValidationError
                     </div>
                 }
-                <div class="fp-input-group"><label>Day Name *</label><input @bind="editDayName" placeholder="Push Day / Chest Day..." /></div>
+                <div class="fp-input-group"><label>@L["Form_DayName"]</label><input @bind="editDayName" placeholder="Push Day / Chest Day..." /></div>
                 <div class="fp-input-group">
-                    <label>Day of Week *</label>
+                    <label>@L["Form_DayOfWeek"]</label>
                     <select @bind="editDayEnum">
                         @for (int i = 0; i < 7; i++)
                         {
@@ -1333,8 +1334,8 @@ else
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditDayModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="UpdateWorkoutDay"><i class="fa fa-check"></i> Save Changes</button>
+                <button class="fp-btn-outline" @onclick='() => showEditDayModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="UpdateWorkoutDay"><i class="fa fa-check"></i> @L["Btn_SaveChanges"]</button>
             </div>
         </div>
     </div>
@@ -1348,7 +1349,7 @@ else
             <div class="fp-modal-header">
                 <span class="fp-modal-title">
                     <i class="fa fa-dumbbell"></i>
-                    @(editExerciseId > 0 ? "EDIT EXERCISE" : "ADD EXERCISE")
+                    @(editExerciseId > 0 ? L["Modal_EditExercise"] : L["Modal_AddExercise"])
                 </span>
                 <button class="fp-modal-close" @onclick='() => showExerciseModal = false'><i class="fa fa-times"></i></button>
             </div>
@@ -1359,18 +1360,18 @@ else
                         <i class="fa fa-exclamation-triangle"></i> @exerciseValidationError
                     </div>
                 }
-                <div class="fp-input-group"><label>Exercise Name *</label><input list="exerciseDictList" @bind="newExercise.ExerciseName" @bind:after="OnExerciseNameChanged" placeholder="Bench Press" /></div>
+                <div class="fp-input-group"><label>@L["Form_ExerciseName"]</label><input list="exerciseDictList" @bind="newExercise.ExerciseName" @bind:after="OnExerciseNameChanged" placeholder="Bench Press" /></div>
                 <div class="fp-grid-3">
-                    <div class="fp-input-group"><label>Sets *</label><input @bind="newExercise.Sets" placeholder="4" /></div>
-                    <div class="fp-input-group"><label>Reps *</label><input @bind="newExercise.Reps" placeholder="8-10" /></div>
-                    <div class="fp-input-group"><label>Rest Time *</label><input @bind="newExercise.RestTime" placeholder="90s" /></div>
+                    <div class="fp-input-group"><label>@L["Table_Sets"]</label><input @bind="newExercise.Sets" placeholder="4" /></div>
+                    <div class="fp-input-group"><label>@L["Table_Reps"]</label><input @bind="newExercise.Reps" placeholder="8-10" /></div>
+                    <div class="fp-input-group"><label>@L["Form_RestTime"]</label><input @bind="newExercise.RestTime" placeholder="90s" /></div>
                 </div>
-                <div class="fp-input-group"><label>Video Link (optional)</label><input @bind="newExercise.ExerciseLink" placeholder="https://youtube.com/..." /></div>
+                <div class="fp-input-group"><label>@L["Form_VideoLinkOpt"]</label><input @bind="newExercise.ExerciseLink" placeholder="https://youtube.com/..." /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showExerciseModal = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showExerciseModal = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveExercise">
-                    <i class="fa fa-check"></i> @(editExerciseId > 0 ? "Update" : "Add Exercise")
+                    <i class="fa fa-check"></i> @(editExerciseId > 0 ? L["Btn_Update"] : L["Btn_AddExercise"])
                 </button>
             </div>
         </div>
@@ -1383,15 +1384,15 @@ else
     <div class="fp-modal-overlay" @onclick='() => showCardioModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-running"></i> ADD CARDIO</span>
+                <span class="fp-modal-title"><i class="fa fa-running"></i> @L["Modal_AddCardio"]</span>
                 <button class="fp-modal-close" @onclick='() => showCardioModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Cardio Type *</label><input @bind="newCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
+                <div class="fp-input-group"><label>@L["Form_CardioTypeRequired"]</label><input @bind="newCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label style="white-space: nowrap;">Duration (min) *</label><input type="number" @bind="newCardio.DurationMinutes" placeholder="20" /></div>
+                    <div class="fp-input-group"><label style="white-space: nowrap;">@L["Form_DurationMin"]</label><input type="number" @bind="newCardio.DurationMinutes" placeholder="20" /></div>
                     <div class="fp-input-group">
-                        <label style="white-space: nowrap;">Intensity *</label>
+                        <label style="white-space: nowrap;">@L["Form_IntensityRequired"]</label>
                         <select @bind="newCardioIntensity">
                             <option value="0">Low</option>
                             <option value="1">Medium</option>
@@ -1399,11 +1400,11 @@ else
                         </select>
                     </div>
                 </div>
-                <div class="fp-input-group"><label>Notes (optional)</label><input @bind="newCardio.Notes" placeholder="After session, fasted..." /></div>
+                <div class="fp-input-group"><label>@L["Form_NotesOpt"]</label><input @bind="newCardio.Notes" placeholder="After session, fasted..." /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showCardioModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="AddCardio"><i class="fa fa-check"></i> Add Cardio</button>
+                <button class="fp-btn-outline" @onclick='() => showCardioModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="AddCardio"><i class="fa fa-check"></i> @L["Btn_AddCardio"]</button>
             </div>
         </div>
     </div>
@@ -1415,15 +1416,15 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditCardioModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-running"></i> EDIT CARDIO</span>
+                <span class="fp-modal-title"><i class="fa fa-running"></i> @L["Modal_EditCardio"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditCardioModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
-                <div class="fp-input-group"><label>Cardio Type *</label><input @bind="editCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
+                <div class="fp-input-group"><label>@L["Form_CardioTypeRequired"]</label><input @bind="editCardio.CardioType" placeholder="Treadmill / Bike / Rowing..." /></div>
                 <div class="fp-grid-2">
-                    <div class="fp-input-group"><label style="white-space: nowrap;">Duration (min) *</label><input type="number" @bind="editCardio.DurationMinutes" placeholder="20" /></div>
+                    <div class="fp-input-group"><label style="white-space: nowrap;">@L["Form_DurationMin"]</label><input type="number" @bind="editCardio.DurationMinutes" placeholder="20" /></div>
                     <div class="fp-input-group">
-                        <label style="white-space: nowrap;">Intensity *</label>
+                        <label style="white-space: nowrap;">@L["Form_IntensityRequired"]</label>
                         <select @bind="editCardioIntensity">
                             <option value="0">Low</option>
                             <option value="1">Medium</option>
@@ -1431,11 +1432,11 @@ else
                         </select>
                     </div>
                 </div>
-                <div class="fp-input-group"><label>Notes (optional)</label><input @bind="editCardio.Notes" placeholder="After session, fasted..." /></div>
+                <div class="fp-input-group"><label>@L["Form_NotesOpt"]</label><input @bind="editCardio.Notes" placeholder="After session, fasted..." /></div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditCardioModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveEditCardio"><i class="fa fa-check"></i> Update Cardio</button>
+                <button class="fp-btn-outline" @onclick='() => showEditCardioModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveEditCardio"><i class="fa fa-check"></i> @L["Btn_UpdateCardio"]</button>
             </div>
         </div>
     </div>
@@ -1447,18 +1448,18 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditWorkoutDayNotesModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> EDIT DAY NOTES</span>
+                <span class="fp-modal-title"><i class="fa fa-sticky-note"></i> @L["Modal_EditDayNotes"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditWorkoutDayNotesModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Day Notes &amp; Instructions</label>
+                    <label>@L["Form_DayNotesEdit"]</label>
                     <textarea @bind="editWorkoutDayNotesText" rows="6" placeholder="e.g. Focus on tempo, keep rest under 60 seconds..."></textarea>
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditWorkoutDayNotesModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveWorkoutDayNotes"><i class="fa fa-check"></i> Save Notes</button>
+                <button class="fp-btn-outline" @onclick='() => showEditWorkoutDayNotesModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveWorkoutDayNotes"><i class="fa fa-check"></i> @L["Btn_SaveNotes"]</button>
             </div>
         </div>
     </div>
@@ -1470,22 +1471,22 @@ else
     <div class="fp-modal-overlay" @onclick='() => showEditWarmUpModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"> EDIT DAY WARM-UP</span>
+                <span class="fp-modal-title"> @L["Modal_EditDayWarmUp"]</span>
                 <button class="fp-modal-close" @onclick='() => showEditWarmUpModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <div class="fp-input-group">
-                    <label>Warm-up Name *</label>
+                    <label>@L["Form_WarmUpName"]</label>
                     <input list="warmUpDictList" @bind="editWarmUpName" @bind:after="OnWarmUpNameChanged" placeholder="e.g. Push Day Warm Up" />
                 </div>
                 <div class="fp-input-group" style="margin-top: 12px;">
-                    <label>Warm-up Link / URL (optional)</label>
+                    <label>@L["Form_WarmUpLink"]</label>
                     <input @bind="editWarmUpLink" placeholder="e.g. https://youtube.com/..." />
                 </div>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showEditWarmUpModal = false'>Cancel</button>
-                <button class="fp-btn-primary" @onclick="SaveWarmUp"><i class="fa fa-check"></i> Save Warm-up</button>
+                <button class="fp-btn-outline" @onclick='() => showEditWarmUpModal = false'>@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary" @onclick="SaveWarmUp"><i class="fa fa-check"></i> @L["Btn_SaveWarmUp"]</button>
             </div>
         </div>
     </div>
@@ -1497,7 +1498,7 @@ else
     <div class="fp-modal-overlay" @onclick='() => showRenewModal = false'>
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <span class="fp-modal-title"><i class="fa fa-refresh"></i> RENEW SUBSCRIPTION</span>
+                <span class="fp-modal-title"><i class="fa fa-refresh"></i> @L["Modal_RenewSubscription"]</span>
                 <button class="fp-modal-close" @onclick='() => showRenewModal = false'><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
@@ -1505,7 +1506,7 @@ else
                     Ends on <strong style="color:var(--fp-text);">@client!.EndDate.ToString("MMM dd, yyyy")</strong>. New subscription starts today.
                 </p>
                 <div class="fp-input-group">
-                    <label>Number of Months *</label>
+                    <label>@L["Form_NumberOfMonths"]</label>
                     <select @bind="renewMonths">
                         <option value="1">1 Month</option>
                         <option value="2">2 Months</option>
@@ -1520,10 +1521,10 @@ else
                 }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showRenewModal = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showRenewModal = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="RenewSubscription" disabled="@isRenewing">
-                    @if (isRenewing) { <span class="fp-spinner-sm"></span><span>Renewing...</span> }
-                    else { <i class="fa fa-check"></i><span>Confirm</span> }
+                    @if (isRenewing) { <span class="fp-spinner-sm"></span><span>@L["Btn_Renewing"]</span> }
+                    else { <i class="fa fa-check"></i><span>@L["Btn_Confirm"]</span> }
                 </button>
             </div>
         </div>
@@ -1547,9 +1548,9 @@ else
                 </p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick='() => showDeleteConfirm = false'>Cancel</button>
+                <button class="fp-btn-outline" @onclick='() => showDeleteConfirm = false'>@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" style="background:#c41920;border-color:#c41920;" @onclick="ExecuteDelete">
-                    <i class="fa fa-trash"></i> Delete
+                    <i class="fa fa-trash"></i> @L["Btn_Delete"]
                 </button>
             </div>
         </div>

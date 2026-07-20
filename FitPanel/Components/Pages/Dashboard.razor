@@ -13,6 +13,7 @@
 @inject IClientService ClientService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
+@inject IStringLocalizer<SharedResource> L
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard — FitPanel</PageTitle>
@@ -459,21 +460,21 @@
 @* ── Stats Row ── *@
 <div class="fp-grid-4" style="margin-bottom: 28px;">
     <div class="fp-stat-card">
-        <span class="fp-stat-card-label">Total Clients</span>
+        <span class="fp-stat-card-label">@L["Dashboard_TotalClients"]</span>
         <span class="fp-stat-card-value">@clients.Count</span>
     </div>
     <div class="fp-stat-card">
-        <span class="fp-stat-card-label">Active This Month</span>
+        <span class="fp-stat-card-label">@L["Dashboard_ActiveThisMonth"]</span>
         <span class="fp-stat-card-value">@activeClients</span>
     </div>
     <div class="fp-stat-card">
-        <span class="fp-stat-card-label">Avg. Subscription</span>
+        <span class="fp-stat-card-label">@L["Dashboard_AvgSubscription"]</span>
         <span class="fp-stat-card-value">
             @avgSub<span class="fp-stat-unit">mo</span>
         </span>
     </div>
     <div class="fp-stat-card">
-        <span class="fp-stat-card-label">New This Month</span>
+        <span class="fp-stat-card-label">@L["Dashboard_NewThisMonth"]</span>
         <span class="fp-stat-card-value">@newThisMonth</span>
     </div>
 </div>
@@ -482,15 +483,15 @@
 <div class="fp-card">
     <div class="fp-card-title">
         <i class="fa fa-users" style="color:var(--fp-accent);font-size:22px;"></i>
-        Recent Clients
+        @L["Dashboard_RecentClients"]
     </div>
-    <p class="fp-card-sub">Your most recently added clients</p>
+    <p class="fp-card-sub">@L["Dashboard_RecentClientsSub"]</p>
 
     @if (isLoading)
     {
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
-            <span>Loading clients...</span>
+            <span>@L["Dashboard_Loading"]</span>
         </div>
     }
     else if (!string.IsNullOrEmpty(errorMessage))
@@ -506,10 +507,10 @@
             <div class="fp-empty-icon-wrap">
                 <i class="fa fa-users"></i>
             </div>
-            <h3>No recent clients found</h3>
-            <p>Get started by adding a new client to your coaching panel.</p>
+            <h3>@L["Dashboard_NoClients_Title"]</h3>
+            <p>@L["Dashboard_NoClients_Desc"]</p>
             <a href="/dashboard/clients" class="fp-btn-primary-custom">
-                <i class="fa fa-user-plus"></i> Add New Client
+                <i class="fa fa-user-plus"></i> @L["Dashboard_AddNewClient"]
             </a>
         </div>
     }
@@ -520,12 +521,12 @@
             <table class="fp-table">
                 <thead>
                     <tr>
-                        <th>Client</th>
-                        <th>Weight</th>
-                        <th>Subscription</th>
-                        <th>Joined</th>
-                        <th>Expiration Date</th>
-                        <th>Action</th>
+                        <th>@L["Table_Client"]</th>
+                        <th>@L["Table_Weight"]</th>
+                        <th>@L["Table_Subscription"]</th>
+                        <th>@L["Table_Joined"]</th>
+                        <th>@L["Table_ExpirationDate"]</th>
+                        <th>@L["Table_Action"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -581,7 +582,7 @@
                             </td>
                             <td>
                                 <a href="/dashboard/clients/@client.Id" @onclick:stopPropagation class="fp-btn-secondary">
-                                    <i class="fa fa-eye"></i> View
+                                    <i class="fa fa-eye"></i> @L["Btn_View"]
                                 </a>
                             </td>
                         </tr>
@@ -627,7 +628,7 @@
                     </div>
                     <div class="fp-mobile-card-footer">
                         <div class="fp-mobile-expiry-info">
-                            <span class="fp-mobile-expiry-label">Expires:</span>
+                            <span class="fp-mobile-expiry-label">@L["Status_Expires"]</span>
                             <span class="fp-mobile-expiry-value @GetDateClass(status)">
                                 @if (status == SubscriptionStatus.Expired)
                                 {
@@ -641,7 +642,7 @@
                             </span>
                         </div>
                         <div class="fp-mobile-card-action">
-                            <span class="fp-mobile-view-link">View Details <i class="fa fa-chevron-right"></i></span>
+                            <span class="fp-mobile-view-link">@L["Btn_ViewDetails"] <i class="fa fa-chevron-right"></i></span>
                         </div>
                     </div>
                 </div>
@@ -652,7 +653,7 @@
         {
             <div class="fp-view-all-wrap">
                 <a href="/dashboard/clients" class="fp-btn-outline">
-                    View all @clients.Count clients <i class="fa fa-arrow-right"></i>
+                    @L["Dashboard_AddNewClient"] (@clients.Count) <i class="fa fa-arrow-right"></i>
                 </a>
             </div>
         }

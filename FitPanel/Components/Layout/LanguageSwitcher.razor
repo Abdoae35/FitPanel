@@ -1,0 +1,52 @@
+@using System.Globalization
+@inject NavigationManager Nav
+
+@{
+    var currentCulture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var isAr = currentCulture == "ar";
+}
+
+<div class="fp-lang-switcher">
+    <a href="/culture?culture=en&redirectUri=@Uri.EscapeDataString(Nav.Uri)"
+       class="fp-lang-btn @(!isAr ? "active" : "")"
+       title="English">EN</a>
+    <span class="fp-lang-sep">|</span>
+    <a href="/culture?culture=ar&redirectUri=@Uri.EscapeDataString(Nav.Uri)"
+       class="fp-lang-btn @(isAr ? "active" : "")"
+       title="العربية">AR</a>
+</div>
+
+<style>
+    .fp-lang-switcher {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--fp-surface2);
+        border: 1px solid var(--fp-border);
+        padding: 0 10px;
+        height: 38px;
+        border-radius: 0;
+    }
+    .fp-lang-btn {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: var(--fp-text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+        line-height: 1;
+    }
+    .fp-lang-btn.active {
+        color: var(--fp-accent);
+    }
+    .fp-lang-btn:hover {
+        color: var(--fp-text);
+        text-decoration: none;
+    }
+    .fp-lang-sep {
+        color: var(--fp-border);
+        font-size: 12px;
+        line-height: 1;
+    }
+</style>

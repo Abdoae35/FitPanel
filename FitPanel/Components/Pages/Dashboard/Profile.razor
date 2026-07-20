@@ -16,6 +16,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JS
 @inject IWebHostEnvironment Env
+@inject IStringLocalizer<SharedResource> L
 @rendermode InteractiveServer
 
 <PageTitle>My Profile — FitPanel</PageTitle>
@@ -458,22 +459,22 @@
 
     @* ── Page Header ── *@
     <div class="fp-prof-header">
-        <h1>Coach Profile</h1>
-        <p>Manage your personal brand, active client slots, and PDF configurations</p>
+        <h1>@L["Profile_Title"]</h1>
+        <p>@L["Profile_Sub"]</p>
     </div>
 
     @if (isLoading)
     {
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
-            <span>Loading your profile details...</span>
+            <span>@L["Profile_Loading"]</span>
         </div>
     }
     else if (coach == null)
     {
         <div class="fp-empty">
             <i class="fa fa-exclamation-triangle" style="color:var(--fp-accent);"></i>
-            <p>Could not load profile. Please refresh or try logging in again.</p>
+            <p>@L["Profile_LoadError"]</p>
         </div>
     }
     else
@@ -488,7 +489,7 @@
                             <div class="fp-avatar-inner">
                                 @if (!string.IsNullOrEmpty(profilePicture))
                                 {
-                                    <img src="@profilePicture" alt="Profile Picture" />
+                                    <img src="@ProfileSrc" alt="Profile Picture" />
                                 }
                                 else
                                 {
@@ -506,7 +507,7 @@
                     @* Subscription Slots *@
                     <div class="fp-slots-widget">
                         <div class="fp-slots-header">
-                            <span class="fp-slots-label">Active Clients</span>
+                            <span class="fp-slots-label">@L["Profile_ActiveClients"]</span>
                             <span class="fp-slots-count">@clients.Count / @coach.MaxClients</span>
                         </div>
                         <div class="fp-slots-track">
@@ -520,7 +521,7 @@
 
                 @* PDF Theme Status *@
                 <div class="fp-tip-card">
-                    <h4><i class="fa fa-palette" style="color:var(--fp-accent);margin-right:6px;"></i> PDF Theme</h4>
+                    <h4><i class="fa fa-palette" style="color:var(--fp-accent);margin-right:6px;"></i> @L["Profile_PDFTheme"]</h4>
                     @if (pdfTheme == 2)
                     {
                         <p>Active: <strong>Professional Navy</strong> — clean, minimal navy blue design.</p>
@@ -554,7 +555,7 @@
                 @* ── Brand Settings Card ── *@
                 <div class="fp-form-card">
                     <h3 class="fp-form-card-title">
-                        <i class="fa fa-sliders-h"></i> Brand Settings
+                        <i class="fa fa-sliders-h"></i> @L["Profile_BrandSettings"]
                     </h3>
 
                     @if (!string.IsNullOrEmpty(successMessage))
@@ -572,43 +573,43 @@
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Coach / Brand Name *</label>
+                            <label>@L["Profile_CoachBrandName"]</label>
                             <input @bind="fullName" placeholder="Coach John Doe" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Specialization</label>
+                            <label>@L["Profile_Specialization"]</label>
                             <input @bind="specialization" placeholder="e.g. Body Recomposition" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Email *</label>
+                            <label>@L["Form_Email"]</label>
                             <input @bind="email" placeholder="coach@example.com" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Phone Number *</label>
+                            <label>@L["Form_PhoneNumber"]</label>
                             <input @bind="phoneNumber" placeholder="+966500000000" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Instagram Username</label>
+                            <label>@L["Profile_InstagramUsername"]</label>
                             <input @bind="instagramUsername" placeholder="@@coach_john" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Instagram Profile Link</label>
+                            <label>@L["Profile_InstagramLink"]</label>
                             <input @bind="instagramLink" placeholder="https://instagram.com/coach_john" />
                         </div>
                     </div>
 
                     <div class="fp-input-group">
-                        <label>Profile Picture</label>
+                        <label>@L["Profile_ProfilePicture"]</label>
                         <div class="fp-upload-zone">
                             @if (!string.IsNullOrEmpty(profilePicture))
                             {
-                                <img src="@profilePicture" class="fp-upload-preview" alt="Profile Picture Preview" />
+                                <img src="@ProfileSrc" class="fp-upload-preview" alt="Profile Picture Preview" />
                             }
                             else
                             {
@@ -628,13 +629,13 @@
                     </div>
 
                     <div class="fp-input-group">
-                        <label>Biography / Coaching Philosophy</label>
+                        <label>@L["Profile_Bio"]</label>
                         <textarea @bind="bio" rows="4" placeholder="Write a short bio about yourself and your approach to coaching..."></textarea>
                     </div>
 
                     <div class="fp-form-actions">
                         <button class="fp-btn-primary" @onclick="SaveChanges">
-                            <i class="fa fa-check"></i> Save Brand Details
+                            <i class="fa fa-check"></i> @L["Profile_SaveBrandDetails"]
                         </button>
                     </div>
                 </div>
@@ -642,7 +643,7 @@
                 @* ── PDF Branding Card ── *@
                 <div class="fp-form-card">
                     <h3 class="fp-form-card-title">
-                        <i class="fa fa-file-pdf"></i> PDF Branding
+                        <i class="fa fa-file-pdf"></i> @L["Profile_PDFBranding"]
                     </h3>
 
                     @if (!string.IsNullOrEmpty(pdfSuccessMessage))
@@ -659,11 +660,11 @@
                     }
 
                     <div class="fp-input-group">
-                        <label>PDF Cover Image <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Classic &amp; Coaching Plan themes)</span></label>
+                        <label>@L["Profile_PDFCoverImage"] <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Classic &amp; Coaching Plan themes)</span></label>
                         <div class="fp-upload-zone">
                             @if (!string.IsNullOrEmpty(pdfCoverImage))
                             {
-                                <img src="@pdfCoverImage" class="fp-upload-preview" alt="Cover Image Preview" style="object-fit:cover;" />
+                                <img src="@CoverSrc" class="fp-upload-preview" alt="Cover Image Preview" style="object-fit:cover;" />
                             }
                             else
                             {
@@ -700,58 +701,101 @@
                                 <span style="font-size:13px;font-weight:700;color:@ThemePreviewAccent;min-width:38px;text-align:right;">@pdfCoverImageX%</span>
                             </div>
 
-                            @* Live A4 cover preview *@
-                            <div style="width:100%;max-width:380px;aspect-ratio:210/297;background:@ThemePreviewBg;border-radius:10px;overflow:hidden;position:relative;border:1px solid @ThemePreviewBorder;box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+                            @* Live A4 cover preview — layout matches actual PDF per theme *@
+                            @if (pdfTheme == 1)
+                            {
+                                @* Classic: image LEFT column, text RIGHT column (matches cover-grid CSS) *@
+                                <div style="width:100%;max-width:380px;aspect-ratio:210/297;background:#0f1117;border-radius:10px;overflow:hidden;position:relative;border:1px solid rgba(234,33,39,.25);box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+                                    @* accent bar top-left — 4px matches actual SharedCss .accent-bar *@
+                                    <div style="position:absolute;top:0;left:0;width:60%;height:4px;background:#ea2127;"></div>
 
-                                @* top accent stripe *@
-                                <div style="height:@ThemePreviewStripeH;background:linear-gradient(90deg,@ThemePreviewAccent 0%,transparent 100%);"></div>
+                                    @* LEFT: photo column — 45% matches grid-template-columns:1fr 1.2fr → 1/2.2 ≈ 45% *@
+                                    <div style="position:absolute;top:4px;left:0;width:45%;height:calc(100% - 40px);overflow:hidden;">
+                                        <img src="@CoverSrc"
+                                             style="width:100%;height:100%;object-fit:cover;object-position:@(pdfCoverImageX)% center;display:block;border-radius:4px;border:1px solid rgba(255,255,255,.07);" />
+                                    </div>
 
-                                @* cover image — right 48%, repositioned by slider *@
-                                <div style="position:absolute;top:@ThemePreviewStripeH;right:0;width:48%;height:calc(100% - 45px);overflow:hidden;">
-                                    <img src="@pdfCoverImage"
-                                         style="width:100%;height:100%;object-fit:cover;object-position:@(pdfCoverImageX)% top;display:block;" />
-                                    <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(@ThemePreviewGradRgb,1) 0%,rgba(@ThemePreviewGradRgb,.45) 38%,transparent 100%);"></div>
-                                    <div style="position:absolute;bottom:0;left:0;right:0;height:30%;background:linear-gradient(to top,rgba(@ThemePreviewGradRgb,.7) 0%,transparent 100%);"></div>
-                                </div>
-
-                                @* left text content *@
-                                <div style="position:absolute;top:10%;left:8%;right:52%;display:flex;flex-direction:column;gap:5px;">
-                                    <div style="font-size:5px;font-weight:700;letter-spacing:2px;color:@ThemePreviewAccent;text-transform:uppercase;">PERSONALIZED PLAN</div>
-                                    <div style="font-size:8px;font-weight:800;color:#ffffff;margin-bottom:4px;">@fullName</div>
-                                    <div style="font-size:18px;font-weight:900;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.5px;">WORK</div>
-                                    <div style="font-size:18px;font-weight:900;line-height:0.9;color:@ThemePreviewAccent;text-transform:uppercase;letter-spacing:-0.5px;margin-bottom:6px;">OUT</div>
-                                    <div style="width:22px;height:2px;background:@ThemePreviewAccent;border-radius:1px;margin-bottom:8px;"></div>
-                                    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:6px 8px;display:grid;grid-template-columns:1fr 1fr;gap:0;">
-                                        <div style="padding-right:6px;border-right:1px solid rgba(255,255,255,.08);">
-                                            <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Athlete</div>
-                                            <div style="font-size:6px;font-weight:700;color:#fff;">Ahmed Khalil</div>
-                                        </div>
-                                        <div style="padding-left:6px;">
-                                            <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Date</div>
-                                            <div style="font-size:6px;font-weight:700;color:@ThemePreviewAccent;">Jul 2025</div>
+                                    @* RIGHT: text content *@
+                                    <div style="position:absolute;top:9%;left:47%;right:3%;display:flex;flex-direction:column;gap:5px;">
+                                        <div style="font-size:7px;font-weight:800;color:#fff;letter-spacing:-0.2px;">@fullName</div>
+                                        <div style="font-size:5px;font-weight:600;color:#ea2127;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;">Personalized Plan</div>
+                                        <div style="font-size:16px;font-weight:900;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.5px;">WORK</div>
+                                        <div style="font-size:16px;font-weight:900;line-height:0.9;color:#ea2127;text-transform:uppercase;letter-spacing:-0.5px;margin-bottom:5px;">OUT</div>
+                                        <div style="width:20px;height:2px;background:#ea2127;border-radius:1px;margin-bottom:6px;"></div>
+                                        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:5px 6px;display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                                            <div style="padding-right:5px;border-right:1px solid rgba(255,255,255,.08);">
+                                                <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Athlete</div>
+                                                <div style="font-size:5.5px;font-weight:700;color:#fff;">Ahmed Khalil</div>
+                                            </div>
+                                            <div style="padding-left:5px;">
+                                                <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Date</div>
+                                                <div style="font-size:5.5px;font-weight:700;color:#ea2127;">Jul 2025</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                @* footer bar *@
-                                <div style="position:absolute;bottom:0;left:0;right:0;height:36px;background:@ThemePreviewFooterBg;border-top:2px solid @ThemePreviewAccent;display:flex;align-items:center;padding:0 8%;justify-content:space-between;">
-                                    <div style="font-size:6px;font-weight:700;color:#888;">@fullName</div>
-                                    <div style="width:14px;height:14px;border-radius:3px;background:@ThemePreviewAccent;"></div>
+                                    @* footer bar *@
+                                    <div style="position:absolute;bottom:0;left:0;right:0;height:36px;background:#000;border-top:2px solid #ea2127;display:flex;align-items:center;padding:0 8%;justify-content:space-between;">
+                                        <div style="font-size:6px;font-weight:700;color:#888;">@fullName</div>
+                                        <div style="width:14px;height:14px;border-radius:3px;background:#ea2127;"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            }
+                            else
+                            {
+                                @* Themes 2/3/4: image RIGHT column, text LEFT — matches their actual PDF layout *@
+                                <div style="width:100%;max-width:380px;aspect-ratio:210/297;background:@ThemePreviewBg;border-radius:10px;overflow:hidden;position:relative;border:1px solid @ThemePreviewBorder;box-shadow:0 4px 24px rgba(0,0,0,0.25);">
+
+                                    @* top accent stripe *@
+                                    <div style="height:@ThemePreviewStripeH;background:linear-gradient(90deg,@ThemePreviewAccent 0%,transparent 100%);"></div>
+
+                                    @* cover image — width/height/top match actual PDF per theme *@
+                                    <div style="position:absolute;top:@ThemePreviewStripeH;right:0;width:@ThemePreviewImgWidth;height:@ThemePreviewImgHeight;overflow:hidden;">
+                                        <img src="@CoverSrc"
+                                             style="width:100%;height:100%;object-fit:cover;object-position:@(pdfCoverImageX)% top;display:block;" />
+                                        <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(@ThemePreviewGradRgb,1) 0%,rgba(@ThemePreviewGradRgb,.45) 38%,transparent 100%);"></div>
+                                        <div style="position:absolute;bottom:0;left:0;right:0;height:30%;background:linear-gradient(to top,rgba(@ThemePreviewGradRgb,.7) 0%,transparent 100%);"></div>
+                                    </div>
+
+                                    @* left text content *@
+                                    <div style="position:absolute;top:10%;left:8%;right:52%;display:flex;flex-direction:column;gap:5px;">
+                                        <div style="font-size:5px;font-weight:700;letter-spacing:2px;color:@ThemePreviewAccent;text-transform:uppercase;">PERSONALIZED PLAN</div>
+                                        <div style="font-size:8px;font-weight:800;color:#ffffff;margin-bottom:4px;">@fullName</div>
+                                        <div style="font-size:18px;font-weight:900;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.5px;">WORK</div>
+                                        <div style="font-size:18px;font-weight:900;line-height:0.9;color:@ThemePreviewAccent;text-transform:uppercase;letter-spacing:-0.5px;margin-bottom:6px;">OUT</div>
+                                        <div style="width:22px;height:2px;background:@ThemePreviewAccent;border-radius:1px;margin-bottom:8px;"></div>
+                                        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:6px 8px;display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                                            <div style="padding-right:6px;border-right:1px solid rgba(255,255,255,.08);">
+                                                <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Athlete</div>
+                                                <div style="font-size:6px;font-weight:700;color:#fff;">Ahmed Khalil</div>
+                                            </div>
+                                            <div style="padding-left:6px;">
+                                                <div style="font-size:4px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Date</div>
+                                                <div style="font-size:6px;font-weight:700;color:@ThemePreviewAccent;">Jul 2025</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @* footer bar *@
+                                    <div style="position:absolute;bottom:0;left:0;right:0;height:36px;background:@ThemePreviewFooterBg;border-top:2px solid @ThemePreviewAccent;display:flex;align-items:center;padding:0 8%;justify-content:space-between;">
+                                        <div style="font-size:6px;font-weight:700;color:#888;">@fullName</div>
+                                        <div style="width:14px;height:14px;border-radius:3px;background:@ThemePreviewAccent;"></div>
+                                    </div>
+                                </div>
+                            }
 
                             <span class="fp-upload-hint" style="margin-top:8px;">The preview updates live. Save your PDF settings when you are happy with the position.</span>
                         </div>
                     }
 
                     <div class="fp-input-group">
-                        <label>Coach Introduction</label>
+                        <label>@L["Profile_CoachIntro"]</label>
                         <textarea @bind="pdfIntroduction" rows="8" placeholder="Write your coaching background, philosophy, and experience. This text will appear as a dedicated page in all your client PDFs..."></textarea>
                         <span class="fp-upload-hint">Leave empty to skip the intro page. When filled, an "About Your Coach" page is automatically inserted after the cover in every PDF you generate for clients.</span>
                     </div>
 
                     <div class="fp-input-group" style="margin-top:20px;">
-                        <label>Certifications <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Coaching Plan theme)</span></label>
+                        <label>@L["Profile_Certifications"] <span style="font-size:11px;font-weight:400;color:var(--fp-text-muted);text-transform:none;letter-spacing:0;">(Coaching Plan theme)</span></label>
                         <textarea @bind="pdfCertificates" rows="5" placeholder="Enter one certification per line, e.g.:&#10;CSCS — NSCA&#10;CISSN — Sports Nutrition&#10;Precision Nutrition L1"></textarea>
                         <span class="fp-upload-hint">Each line becomes a highlighted certificate badge on the Coach Profile page of the Coaching Plan PDF theme. Leave empty to skip this section.</span>
                     </div>
@@ -759,7 +803,7 @@
                     @if (coach.CanChangePdfTheme)
                     {
                         <div class="fp-input-group" style="margin-top:20px;">
-                            <label>PDF Theme</label>
+                            <label>@L["Profile_PDFThemeLabel"]</label>
                             <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                                 <label style="@ThemeOptionStyle(1, "#ea2127", "234,33,39")">
                                     <input type="radio" name="pdfThemeRadio" @onchange="@(_ => pdfTheme = 1)" style="display:none;" />
@@ -767,7 +811,7 @@
                                         @if (pdfTheme == 1) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
                                     </div>
                                     <div>
-                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Classic</div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">@L["Profile_Classic"]</div>
                                         <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Dark red — bold, dynamic design with coach photo on cover</div>
                                     </div>
                                 </label>
@@ -777,7 +821,7 @@
                                         @if (pdfTheme == 2) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
                                     </div>
                                     <div>
-                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Professional Navy</div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">@L["Profile_ProfessionalNavy"]</div>
                                         <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Navy blue — clean, minimal, modern layout</div>
                                     </div>
                                 </label>
@@ -787,7 +831,7 @@
                                         @if (pdfTheme == 3) { <i class="fa fa-check" style="color:white;font-size:11px;"></i> }
                                     </div>
                                     <div>
-                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Athletic Orange</div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">@L["Profile_AthleticOrange"]</div>
                                         <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Orange — bold, high-energy, athletic impact</div>
                                     </div>
                                 </label>
@@ -797,7 +841,7 @@
                                         @if (pdfTheme == 4) { <i class="fa fa-check" style="color:#0f1117;font-size:11px;"></i> }
                                     </div>
                                     <div>
-                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">Coaching Plan</div>
+                                        <div style="font-size:14px;font-weight:700;color:var(--fp-text);">@L["Profile_CoachingPlan"]</div>
                                         <div style="font-size:12px;color:var(--fp-text-muted);margin-top:2px;">Volt green — premium dark design with coach profile page &amp; certificate badges</div>
                                     </div>
                                 </label>
@@ -810,12 +854,12 @@
                             @if (isSavingPdf)
                             {
                                 <span class="fp-spinner-sm"></span>
-                                <span>Saving...</span>
+                                <span>@L["Btn_Saving"]</span>
                             }
                             else
                             {
                                 <i class="fa fa-check"></i>
-                                <span>Save PDF Settings</span>
+                                <span>@L["Profile_SavePDFSettings"]</span>
                             }
                         </button>
                     </div>
@@ -824,7 +868,7 @@
                 @* ── Change Password Card ── *@
                 <div class="fp-form-card">
                     <h3 class="fp-form-card-title">
-                        <i class="fa fa-shield-halved"></i> Change Password
+                        <i class="fa fa-shield-halved"></i> @L["Profile_ChangePassword"]
                     </h3>
 
                     @if (!string.IsNullOrEmpty(pwdSuccessMessage))
@@ -841,23 +885,23 @@
                     }
 
                     <div class="fp-input-group">
-                        <label>Current Password *</label>
+                        <label>@L["Profile_CurrentPassword"]</label>
                         <input type="password" @bind="currentPassword" placeholder="Enter your current password" />
                     </div>
 
                     <div class="fp-input-group">
-                        <label>New Password *</label>
+                        <label>@L["Form_NewPassword"]</label>
                         <input type="password" @bind="newPassword" placeholder="Min 8 characters" />
                     </div>
 
                     <div class="fp-input-group">
-                        <label>Confirm New Password *</label>
+                        <label>@L["Profile_ConfirmNewPassword"]</label>
                         <input type="password" @bind="confirmNewPassword" placeholder="Confirm your new password" />
                     </div>
 
                     <div class="fp-form-actions">
                         <button class="fp-btn-primary" @onclick="ChangePassword">
-                            <i class="fa fa-lock"></i> Change Password
+                            <i class="fa fa-lock"></i> @L["Profile_ChangePassword"]
                         </button>
                     </div>
                 </div>
@@ -944,6 +988,16 @@
     private string pdfSuccessMessage = string.Empty;
     private string pdfErrorMessage = string.Empty;
     private bool isSavingPdf = false;
+    private string _coverCacheBust = string.Empty;
+    private string _profileCacheBust = string.Empty;
+
+    private string CoverSrc => string.IsNullOrEmpty(pdfCoverImage) ? string.Empty
+        : string.IsNullOrEmpty(_coverCacheBust) ? pdfCoverImage
+        : $"{pdfCoverImage}?t={_coverCacheBust}";
+
+    private string ProfileSrc => string.IsNullOrEmpty(profilePicture) ? string.Empty
+        : string.IsNullOrEmpty(_profileCacheBust) ? profilePicture
+        : $"{profilePicture}?t={_profileCacheBust}";
 
     private string ThemeOptionStyle(int themeId, string color, string rgba) =>
         $"display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid {(pdfTheme == themeId ? color : "var(--fp-border)")};border-radius:10px;cursor:pointer;background:{(pdfTheme == themeId ? $"rgba({rgba},0.08)" : "transparent")};transition:border-color 0.2s,background 0.2s;";
@@ -953,7 +1007,12 @@
     private string ThemePreviewGradRgb => pdfTheme switch { 2 => "15,23,42", 3 => "8,8,8", _ => "15,17,23" };
     private string ThemePreviewBorder => pdfTheme switch { 1 => "rgba(234,33,39,.25)", 2 => "rgba(14,165,233,.25)", 3 => "rgba(249,115,22,.25)", _ => "rgba(201,242,29,.25)" };
     private string ThemePreviewFooterBg => pdfTheme switch { 2 => "#060D1A", _ => "#000000" };
-    private string ThemePreviewStripeH => pdfTheme switch { 3 => "6px", _ => "5px" };
+    // Stripe height matches actual PDF top accent per theme
+    private string ThemePreviewStripeH => pdfTheme switch { 2 => "3px", 3 => "6px", _ => "5px" };
+    // Image column width matches actual PDF image column per theme
+    private string ThemePreviewImgWidth => pdfTheme switch { 2 => "42%", 3 => "45%", _ => "48%" };
+    // Image column height = 100% minus (stripe + preview footer 36px)
+    private string ThemePreviewImgHeight => pdfTheme switch { 2 => "calc(100% - 39px)", 3 => "calc(100% - 42px)", _ => "calc(100% - 41px)" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -983,6 +1042,14 @@
             instagramLink = coach.InstagramLink ?? string.Empty;
             profilePicture = coach.ProfilePicture ?? string.Empty;
             pdfCoverImage = coach.PdfCoverImage ?? string.Empty;
+
+            // Always bust the cache on load so the browser fetches the current file,
+            // not a stale version it may have cached from a previous upload.
+            if (!string.IsNullOrEmpty(profilePicture))
+                _profileCacheBust = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            if (!string.IsNullOrEmpty(pdfCoverImage))
+                _coverCacheBust = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
             pdfIntroduction = coach.PdfIntroduction ?? string.Empty;
             pdfCertificates = coach.PdfCertificates ?? string.Empty;
             pdfTheme = coach.PdfTheme < 1 ? 1 : coach.PdfTheme;
@@ -1119,6 +1186,7 @@
                 await stream.CopyToAsync(fs);
 
                 profilePicture = $"/uploads/{fileName}";
+                _profileCacheBust = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
             }
         }
         catch (Exception ex)
@@ -1255,6 +1323,7 @@
             await stream.CopyToAsync(fs);
 
             pdfCoverImage = $"/uploads/{fileName}";
+            _coverCacheBust = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
         }
         catch (Exception ex)
         {
@@ -1262,8 +1331,10 @@
         }
     }
 
-    private void RemoveCoverImage()
+    private async Task RemoveCoverImage()
     {
+        if (coach == null) return;
+
         if (!string.IsNullOrEmpty(pdfCoverImage))
         {
             try
@@ -1275,6 +1346,15 @@
             }
             catch { }
         }
+
         pdfCoverImage = string.Empty;
+        _coverCacheBust = string.Empty;
+        coach.PdfCoverImage = null;
+
+        try
+        {
+            await UserManager.UpdateAsync(coach);
+        }
+        catch { }
     }
 }

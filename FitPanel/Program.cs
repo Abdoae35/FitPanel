@@ -1,7 +1,9 @@
 
 
 var builder = WebApplication.CreateBuilder(args);
-// After builder.Services.AddAuthorizationCore(...)
+
+// ── Localization ──────────────────────────────────────────────────────────
+builder.Services.AddLocalization();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -65,6 +67,13 @@ builder.Services.AddAuthorizationCore(options =>
 
 var app = builder.Build();
 
+// ── Request Localization ──────────────────────────────────────────────────
+var supportedCultures = new[] { "en", "ar" };
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture("en")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures));
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -122,6 +131,20 @@ app.MapPost("/account/login", async (
 });
 
 // Logout endpoint
+// ── Culture switcher endpoint ─────────────────────────────────────────────
+app.MapGet("/culture", (string culture, string redirectUri, HttpContext context) =>
+{
+    if (new[] { "en", "ar" }.Contains(culture))
+    {
+        context.Response.Cookies.Append(
+            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,
+            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
+                new Microsoft.AspNetCore.Localization.RequestCulture(culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true });
+    }
+    return Results.Redirect(redirectUri);
+});
+
 app.MapPost("/logout", async (HttpContext context, SignInManager<PanelUser> signInManager) =>
 {
     await signInManager.SignOutAsync();

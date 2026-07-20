@@ -8,6 +8,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject INotificationService NotificationService
 @inject FitPanelDbContext DbContext
+@inject IStringLocalizer<SharedResource> L
 @using FitPanel.Data
 @using FitPanel.Data.Models
 @using FitPanel.DTOs.Client
@@ -502,11 +503,11 @@
     @* ── Page Header ── *@
     <div class="fp-admin-header">
         <div>
-            <h1>Coach Management</h1>
-            <p>Full oversight — manage coaches, view their clients, and control subscriptions</p>
+            <h1>@L["Coaches_Title"]</h1>
+            <p>@L["Coaches_Sub"]</p>
         </div>
         <button class="fp-btn-primary" @onclick="() => { showCreateModal = true; ClearForm(); }">
-            <i class="fa fa-plus"></i> New Coach
+            <i class="fa fa-plus"></i> @L["Btn_NewCoach"]
         </button>
     </div>
 
@@ -514,7 +515,7 @@
     {
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
-            <span>Loading coaches and clients...</span>
+            <span>@L["Coaches_Loading"]</span>
         </div>
     }
     else
@@ -525,28 +526,28 @@
                 <div class="fp-stat-icon red"><i class="fa fa-user-tie"></i></div>
                 <div class="fp-stat-body">
                     <div class="fp-stat-num">@coaches.Count</div>
-                    <div class="fp-stat-lbl">Total Coaches</div>
+                    <div class="fp-stat-lbl">@L["Stat_TotalCoaches"]</div>
                 </div>
             </div>
             <div class="fp-stat-tile">
                 <div class="fp-stat-icon green"><i class="fa fa-check-circle"></i></div>
                 <div class="fp-stat-body">
                     <div class="fp-stat-num">@coaches.Count(c => c.IsActive)</div>
-                    <div class="fp-stat-lbl">Active Coaches</div>
+                    <div class="fp-stat-lbl">@L["Stat_ActiveCoaches"]</div>
                 </div>
             </div>
             <div class="fp-stat-tile">
                 <div class="fp-stat-icon blue"><i class="fa fa-users"></i></div>
                 <div class="fp-stat-body">
                     <div class="fp-stat-num">@coachClients.Values.Sum(l => l.Count)</div>
-                    <div class="fp-stat-lbl">Total Clients</div>
+                    <div class="fp-stat-lbl">@L["Stat_TotalClients"]</div>
                 </div>
             </div>
             <div class="fp-stat-tile">
                 <div class="fp-stat-icon orange"><i class="fa fa-clock"></i></div>
                 <div class="fp-stat-body">
                     <div class="fp-stat-num">@coaches.Count(c => c.SubscriptionEndDate < DateTime.UtcNow)</div>
-                    <div class="fp-stat-lbl">Expired Subs</div>
+                    <div class="fp-stat-lbl">@L["Stat_ExpiredSubs"]</div>
                 </div>
             </div>
         </div>
@@ -556,7 +557,7 @@
         {
             <div class="fp-empty">
                 <i class="fa fa-user-tie"></i>
-                <p>No coaches yet. Create your first coach.</p>
+                <p>@L["Coaches_NoCoaches"]</p>
             </div>
         }
         else
@@ -598,11 +599,11 @@
                             @* Status + Subscription — always exactly 2 items → consistent height *@
                             <div class="fp-coach-meta">
                                 <span class="fp-badge @(coach.IsActive ? "fp-badge-green" : "fp-badge-gray")">
-                                    @(coach.IsActive ? "Active" : "Inactive")
+                                    @(coach.IsActive ? L["Status_Active"].Value : L["Status_Inactive"].Value)
                                 </span>
                                 @if (coach.SubscriptionEndDate < DateTime.UtcNow)
                                 {
-                                    <span class="fp-badge fp-badge-red">Expired</span>
+                                    <span class="fp-badge fp-badge-red">@L["Status_Expired"]</span>
                                 }
                                 else
                                 {
@@ -613,7 +614,7 @@
                             @* Client Slot Bar *@
                             <div class="fp-slot-bar-wrapper">
                                 <div class="fp-slot-bar-label">
-                                    <span>Clients</span>
+                                    <span>@L["Table_Clients"]</span>
                                     <span style="font-weight:700;color:var(--fp-text);">@clients.Count / @coach.MaxClients</span>
                                 </div>
                                 <div class="fp-slot-bar-track">
@@ -623,16 +624,16 @@
 
                             @* Actions *@
                             <div class="fp-coach-actions">
-                                <button class="fp-act-btn" title="Edit" @onclick="() => OpenEditModal(coach)">
-                                    <i class="fa fa-pen"></i> Edit
+                                <button class="fp-act-btn" title="@L["Btn_Edit"]" @onclick="() => OpenEditModal(coach)">
+                                    <i class="fa fa-pen"></i> @L["Btn_Edit"]
                                 </button>
-                                <button class="fp-act-btn" title="Renew subscription" @onclick="() => RenewSubscription(coach)">
-                                    <i class="fa fa-rotate"></i> Renew
+                                <button class="fp-act-btn" title="@L["Btn_Renew"]" @onclick="() => RenewSubscription(coach)">
+                                    <i class="fa fa-rotate"></i> @L["Btn_Renew"]
                                 </button>
                                 <button class="fp-act-btn @(coach.CanChangePdfTheme ? "active-perm" : "")"
                                         title="@(coach.CanChangePdfTheme ? "Revoke PDF theme access" : "Grant PDF theme access")"
                                         @onclick="() => TogglePdfThemePermission(coach)">
-                                    <i class="fa fa-palette"></i> Theme @(coach.CanChangePdfTheme ? "✓" : "")
+                                    <i class="fa fa-palette"></i> @L["Btn_Theme"] @(coach.CanChangePdfTheme ? "✓" : "")
                                 </button>
                                 <button class="fp-act-btn danger" title="Delete coach" @onclick="() => PromptDeleteCoach(coach)">
                                     <i class="fa fa-trash"></i>
@@ -653,7 +654,7 @@
                                 <div class="fp-clients-panel-header">
                                     <div class="fp-clients-panel-title">
                                         <i class="fa fa-users"></i>
-                                        Clients of @coach.FullName
+                                        @L["Coaches_ClientsOf"] @coach.FullName
                                         <span class="fp-badge fp-badge-blue" style="margin-left:4px;">@clients.Count</span>
                                     </div>
                                 </div>
@@ -662,7 +663,7 @@
                                 {
                                     <div class="fp-clients-empty">
                                         <i class="fa fa-user-slash" style="margin-right:8px;opacity:0.4;"></i>
-                                        This coach has no clients yet.
+                                        @L["Coaches_NoClientsForCoach"]
                                     </div>
                                 }
                                 else
@@ -670,13 +671,13 @@
                                     <table class="fp-cl-table">
                                         <thead>
                                             <tr>
-                                                <th>Client</th>
-                                                <th>Goal</th>
-                                                <th>Weight</th>
-                                                <th>Phone</th>
-                                                <th>Plan Ends</th>
-                                                <th>Status</th>
-                                                <th style="text-align:right;">Action</th>
+                                                <th>@L["Table_Client"]</th>
+                                                <th>@L["Table_Goal"]</th>
+                                                <th>@L["Table_Weight"]</th>
+                                                <th>@L["Table_Phone"]</th>
+                                                <th>@L["Table_PlanEnds"]</th>
+                                                <th>@L["Table_Status"]</th>
+                                                <th style="text-align:right;">@L["Table_Action"]</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -708,7 +709,7 @@
                                                     <td style="color:var(--fp-text-secondary);font-size:13px;">@client.EndDate.ToString("MMM dd, yyyy")</td>
                                                     <td>
                                                         <span class="fp-badge @(isActive ? "fp-badge-green" : "fp-badge-red")">
-                                                            @(isActive ? "Active" : "Expired")
+                                                            @(isActive ? L["Status_Active"].Value : L["Status_Expired"].Value)
                                                         </span>
                                                     </td>
                                                     <td style="text-align:right;">
@@ -740,7 +741,7 @@
     <div class="fp-modal-overlay" @onclick="() => showCreateModal = false">
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <div class="fp-modal-title"><i class="fa fa-user-plus"></i> New Coach</div>
+                <div class="fp-modal-title"><i class="fa fa-user-plus"></i> @L["Modal_NewCoach"]</div>
                 <button class="fp-modal-close" @onclick="() => showCreateModal = false"><i class="fa fa-times"></i></button>
             </div>
 
@@ -749,29 +750,29 @@
                 @if (!string.IsNullOrEmpty(successMsg))  { <div class="fp-alert fp-alert-success"><i class="fa fa-check-circle"></i> @successMsg</div> }
 
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Full Name *</label><input @bind="dto.FullName" placeholder="Coach Name" /></div>
-                    <div class="fp-ig"><label>Email *</label><input type="email" @bind="dto.Email" placeholder="coach@example.com" /></div>
+                    <div class="fp-ig"><label>@L["Form_FullName"]</label><input @bind="dto.FullName" placeholder="Coach Name" /></div>
+                    <div class="fp-ig"><label>@L["Form_Email"]</label><input type="email" @bind="dto.Email" placeholder="coach@example.com" /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Phone</label><input @bind="dto.PhoneNumber" placeholder="+1234567890" /></div>
-                    <div class="fp-ig"><label>Max Clients</label><input type="number" @bind="dto.MaxClients" min="1" /></div>
+                    <div class="fp-ig"><label>@L["Form_PhoneNumber"]</label><input @bind="dto.PhoneNumber" placeholder="+1234567890" /></div>
+                    <div class="fp-ig"><label>@L["Form_MaxClients"]</label><input type="number" @bind="dto.MaxClients" min="1" /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Instagram Username</label><input @bind="dto.InstagramUsername" placeholder="@@handle" /></div>
-                    <div class="fp-ig"><label>Instagram Link</label><input @bind="dto.InstagramLink" placeholder="https://instagram.com/..." /></div>
+                    <div class="fp-ig"><label>@L["Form_InstagramUsername"]</label><input @bind="dto.InstagramUsername" placeholder="@@handle" /></div>
+                    <div class="fp-ig"><label>@L["Form_InstagramLink"]</label><input @bind="dto.InstagramLink" placeholder="https://instagram.com/..." /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Password *</label><input type="password" @bind="dto.Password" placeholder="Min 8 chars" /></div>
-                    <div class="fp-ig"><label>Specialization</label><input @bind="dto.Specialization" placeholder="Strength & Conditioning" /></div>
+                    <div class="fp-ig"><label>@L["Form_Password"]</label><input type="password" @bind="dto.Password" placeholder="Min 8 chars" /></div>
+                    <div class="fp-ig"><label>@L["Form_Specialization"]</label><input @bind="dto.Specialization" placeholder="Strength & Conditioning" /></div>
                 </div>
-                <div class="fp-ig"><label>Bio</label><textarea @bind="dto.Bio" placeholder="Short bio..."></textarea></div>
+                <div class="fp-ig"><label>@L["Form_Bio"]</label><textarea @bind="dto.Bio" placeholder="Short bio..."></textarea></div>
             </div>
 
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="() => showCreateModal = false">Cancel</button>
+                <button class="fp-btn-outline" @onclick="() => showCreateModal = false">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="CreateCoach" disabled="@isSaving">
-                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>Creating...</span> }
-                    else { <i class="fa fa-check"></i> <span>Create Coach</span> }
+                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>@L["Btn_Creating"]</span> }
+                    else { <i class="fa fa-check"></i> <span>@L["Btn_CreateCoach"]</span> }
                 </button>
             </div>
         </div>
@@ -784,7 +785,7 @@
     <div class="fp-modal-overlay" @onclick="CloseEditModal">
         <div class="fp-modal" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
-                <div class="fp-modal-title"><i class="fa fa-pen"></i> Edit — @editingCoach.FullName</div>
+                <div class="fp-modal-title"><i class="fa fa-pen"></i> @L["Modal_EditCoach"] — @editingCoach.FullName</div>
                 <button class="fp-modal-close" @onclick="CloseEditModal"><i class="fa fa-times"></i></button>
             </div>
 
@@ -793,32 +794,32 @@
                 @if (!string.IsNullOrEmpty(successMsg)) { <div class="fp-alert fp-alert-success"><i class="fa fa-check-circle"></i> @successMsg</div> }
 
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Full Name *</label><input @bind="editingCoach.FullName" /></div>
-                    <div class="fp-ig"><label>Email</label><input disabled value="@editingCoach.Email" /></div>
+                    <div class="fp-ig"><label>@L["Form_FullName"]</label><input @bind="editingCoach.FullName" /></div>
+                    <div class="fp-ig"><label>@L["Form_Email"]</label><input disabled value="@editingCoach.Email" /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Phone</label><input @bind="editingCoach.PhoneNumber" /></div>
-                    <div class="fp-ig"><label>Max Clients</label><input type="number" @bind="editingCoach.MaxClients" min="1" /></div>
+                    <div class="fp-ig"><label>@L["Form_PhoneNumber"]</label><input @bind="editingCoach.PhoneNumber" /></div>
+                    <div class="fp-ig"><label>@L["Form_MaxClients"]</label><input type="number" @bind="editingCoach.MaxClients" min="1" /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Instagram Username</label><input @bind="editingCoach.InstagramUsername" /></div>
-                    <div class="fp-ig"><label>Instagram Link</label><input @bind="editingCoach.InstagramLink" /></div>
+                    <div class="fp-ig"><label>@L["Form_InstagramUsername"]</label><input @bind="editingCoach.InstagramUsername" /></div>
+                    <div class="fp-ig"><label>@L["Form_InstagramLink"]</label><input @bind="editingCoach.InstagramLink" /></div>
                 </div>
                 <div class="fp-ig-grid2">
-                    <div class="fp-ig"><label>Specialization</label><input @bind="editingCoach.Specialization" /></div>
-                    <div class="fp-ig"><label>New Password <span style="font-weight:400;font-size:11px;">(leave blank to keep)</span></label><input type="password" @bind="newCoachPassword" placeholder="••••••••" /></div>
+                    <div class="fp-ig"><label>@L["Form_Specialization"]</label><input @bind="editingCoach.Specialization" /></div>
+                    <div class="fp-ig"><label>@L["Form_NewPassword"]</label><input type="password" @bind="newCoachPassword" placeholder="••••••••" /></div>
                 </div>
                 <div class="fp-ig" style="flex-direction:row;align-items:center;gap:10px;margin-top:4px;">
                     <input type="checkbox" @bind="editingCoach.IsActive" id="chkActive" style="width:18px;height:18px;cursor:pointer;accent-color:var(--fp-accent);" />
-                    <label for="chkActive" style="margin:0;cursor:pointer;font-size:14px;font-weight:600;color:var(--fp-text);text-transform:none;letter-spacing:0;">Account Active</label>
+                    <label for="chkActive" style="margin:0;cursor:pointer;font-size:14px;font-weight:600;color:var(--fp-text);text-transform:none;letter-spacing:0;">@L["Form_AccountActive"]</label>
                 </div>
             </div>
 
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseEditModal">Cancel</button>
+                <button class="fp-btn-outline" @onclick="CloseEditModal">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="SaveEditCoach" disabled="@isSaving">
-                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>Saving...</span> }
-                    else { <i class="fa fa-save"></i> <span>Save Changes</span> }
+                    @if (isSaving) { <span class="fp-spinner-sm"></span> <span>@L["Btn_Saving"]</span> }
+                    else { <i class="fa fa-save"></i> <span>@L["Btn_SaveChanges"]</span> }
                 </button>
             </div>
         </div>
@@ -831,7 +832,7 @@
     <div class="fp-modal-overlay">
         <div class="fp-modal fp-modal-sm">
             <div class="fp-modal-header">
-                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-exclamation-triangle" style="color:#ef4444;"></i> Delete Coach</div>
+                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-exclamation-triangle" style="color:#ef4444;"></i> @L["Modal_DeleteCoach_Title"]</div>
                 <button class="fp-modal-close" @onclick="CloseDeleteCoachModal"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
@@ -839,15 +840,15 @@
                     Permanently delete <strong>@coachToDelete.FullName</strong> (@coachToDelete.Email)?
                 </p>
                 <p style="font-size:13px;color:#ef4444;font-weight:600;margin-top:10px;">
-                    This will remove all their clients, plans, templates, and dictionaries. This cannot be undone.
+                    @L["Delete_CoachWarning"]
                 </p>
                 @if (!string.IsNullOrEmpty(deleteError)) { <div class="fp-alert fp-alert-danger" style="margin-top:14px;"><i class="fa fa-exclamation-circle"></i> @deleteError</div> }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseDeleteCoachModal" disabled="@isDeleting">Cancel</button>
+                <button class="fp-btn-outline" @onclick="CloseDeleteCoachModal" disabled="@isDeleting">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="DeleteCoach" disabled="@isDeleting" style="background:#ef4444;border-color:#ef4444;">
-                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>Deleting...</span> }
-                    else { <i class="fa fa-trash"></i> <span>Delete Coach</span> }
+                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>@L["Btn_Deleting"]</span> }
+                    else { <i class="fa fa-trash"></i> <span>@L["Btn_DeleteCoach"]</span> }
                 </button>
             </div>
         </div>
@@ -860,20 +861,20 @@
     <div class="fp-modal-overlay">
         <div class="fp-modal fp-modal-sm">
             <div class="fp-modal-header">
-                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-user-minus" style="color:#ef4444;"></i> Delete Client</div>
+                <div class="fp-modal-title" style="color:#ef4444;"><i class="fa fa-user-minus" style="color:#ef4444;"></i> @L["Modal_DeleteClient_Title"]</div>
                 <button class="fp-modal-close" @onclick="CloseDeleteClientModal"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-modal-body">
                 <p style="font-size:15px;color:var(--fp-text);line-height:1.6;">
-                    Delete client <strong>@clientToDelete.Name</strong>? All their diets, workouts, and data will be permanently removed.
+                    @L["Delete_AreYouSure"] <strong>@clientToDelete.Name</strong>? @L["Delete_ClientCoachWarning"]
                 </p>
                 @if (!string.IsNullOrEmpty(deleteError)) { <div class="fp-alert fp-alert-danger" style="margin-top:14px;"><i class="fa fa-exclamation-circle"></i> @deleteError</div> }
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseDeleteClientModal" disabled="@isDeleting">Cancel</button>
+                <button class="fp-btn-outline" @onclick="CloseDeleteClientModal" disabled="@isDeleting">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="DeleteClient" disabled="@isDeleting" style="background:#ef4444;border-color:#ef4444;">
-                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>Deleting...</span> }
-                    else { <i class="fa fa-trash"></i> <span>Delete Client</span> }
+                    @if (isDeleting) { <span class="fp-spinner-sm"></span> <span>@L["Btn_Deleting"]</span> }
+                    else { <i class="fa fa-trash"></i> <span>@L["Btn_DeleteClient"]</span> }
                 </button>
             </div>
         </div>

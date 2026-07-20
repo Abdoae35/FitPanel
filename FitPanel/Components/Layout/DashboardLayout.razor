@@ -1,9 +1,11 @@
 @* Components/Layout/DashboardLayout.razor *@
 
 @namespace FitPanel.Components.Layout
+@using System.Globalization
 @inject SignInManager<PanelUser> SignInManager
 @inject UserManager<PanelUser> UserManager
 @inject NavigationManager Nav
+@inject IStringLocalizer<SharedResource> L
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject IJSRuntime JS
@@ -17,7 +19,8 @@
 <!-- Loader Start -->
   <div class="preloader" id="fp-preloader" style="top: -100%;">
     <div class="loader-wrap-heading">
-      <div class="load-text"> <span>L</span> <span>o</span> <span>a</span> <span>d</span> <span>i</span> <span>n</span> <span>g</span> </div>
+      @{ var loadingText = L["Nav_Loading"].Value; }
+      <div class="load-text">@foreach(var ch in loadingText){<span>@ch</span>}</div>
     </div>
   </div>
   <!-- Loader End -->
@@ -40,14 +43,14 @@
         @* Nav *@
         <nav class="fp-nav">
             <div class="fp-nav-group">
-                <span class="fp-nav-label">MAIN</span>
+                <span class="fp-nav-label">@L["Nav_Main"]</span>
 
                 @* Coach only *@
                 <AuthorizeView Roles="Coach" Context="dashCtx">
                     <Authorized>
                         <NavLink href="/dashboard" Match="NavLinkMatch.All" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-chart-line"></i>
-                            <span>Dashboard</span>
+                            <span>@L["Nav_Dashboard"]</span>
                         </NavLink>
                     </Authorized>
                 </AuthorizeView>
@@ -57,7 +60,7 @@
                     <Authorized>
                         <NavLink href="/dashboard/coaches" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-user-tie"></i>
-                            <span>Coaches</span>
+                            <span>@L["Nav_Coaches"]</span>
                         </NavLink>
                     </Authorized>
                 </AuthorizeView>
@@ -67,15 +70,15 @@
                     <Authorized>
                         <NavLink href="/dashboard/clients" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-users"></i>
-                            <span>My Clients</span>
+                            <span>@L["Nav_MyClients"]</span>
                         </NavLink>
                         <NavLink href="/dashboard/my-data" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-database"></i>
-                            <span>My Data</span>
+                            <span>@L["Nav_MyData"]</span>
                         </NavLink>
                         <NavLink href="/dashboard/profile" class="fp-nav-item" onclick="fpCloseSidebar()">
                             <i class="fa fa-user-cog"></i>
-                            <span>My Profile</span>
+                            <span>@L["Nav_MyProfile"]</span>
                         </NavLink>
                     </Authorized>
                 </AuthorizeView>
@@ -100,7 +103,7 @@
                         <div class="fp-user-info">
                             <span class="fp-user-name">@(currentUser?.FullName ?? userCtx.User.Identity?.Name)</span>
                             <span class="fp-user-role">
-                                @(userCtx.User.IsInRole(Policies.AdminRole) ? "Administrator" : Policies.CoachRole)
+                                @(userCtx.User.IsInRole(Policies.AdminRole) ? L["Nav_Administrator"].Value : Policies.CoachRole)
                             </span>
                         </div>
                     </div>
@@ -109,9 +112,9 @@
 
             <form action="/logout" method="post" class="fp-logout-form">
                 <AntiforgeryToken />
-                <button type="submit" class="fp-logout-btn" title="Logout">
+                <button type="submit" class="fp-logout-btn" title="@L["Nav_Logout"]">
                     <i class="fa fa-sign-out-alt"></i>
-                    <span>Logout</span>
+                    <span>@L["Nav_Logout"]</span>
                 </button>
             </form>
         </div>
@@ -137,10 +140,12 @@
             </div>
 
             <div class="fp-topbar-right">
-              
+
+                @* Language Switcher *@
+                <LanguageSwitcher />
 
                 @* Settings/Profile Redirect button *@
-                <a href="/dashboard/profile" class="fp-theme-toggle" title="My Profile & Settings" style="text-decoration: none; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <a href="/dashboard/profile" class="fp-theme-toggle" title="@L["Nav_MyProfile"]" style="text-decoration: none; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                     <i class="fa fa-cog"></i>
                 </a>
 
@@ -159,7 +164,7 @@
                 <div class="fp-footer-inner">
                     <div class="fp-footer-brand">
                         <span class="fp-logo-text-footer">FIT<span class="fp-text-accent">PANEL</span></span>
-                        <span class="fp-footer-copy">&copy; @DateTime.Now.Year All rights reserved.</span>
+                        <span class="fp-footer-copy">&copy; @DateTime.Now.Year @L["Footer_AllRightsReserved"]</span>
                     </div>
                     <div class="fp-footer-links">
                         <a href="#" class="fp-social-icon" title="Facebook" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
@@ -1092,6 +1097,61 @@
     .fp-notif-action-btn.delete:hover {
         color: var(--fp-accent);
     }
+
+    /* ── RTL Overrides ── */
+    [dir="rtl"] .fp-nav-item {
+        border-left: none;
+        border-right: 3px solid transparent;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    [dir="rtl"] .fp-nav-item:hover,
+    [dir="rtl"] .fp-nav-item.active {
+        border-left: none;
+        border-right-color: var(--fp-accent);
+    }
+    [dir="rtl"] .fp-sidebar {
+        right: 0;
+        left: auto;
+        border-right: none;
+        border-left: 1px solid var(--fp-border);
+    }
+    [dir="rtl"] .fp-breadcrumb i {
+        transform: scaleX(-1);
+    }
+    [dir="rtl"] .fp-footer-inner {
+        flex-direction: row-reverse;
+    }
+    [dir="rtl"] .fp-sidebar-logo {
+        flex-direction: row-reverse;
+    }
+    [dir="rtl"] .fp-close-sidebar-mobile {
+        margin-left: 0;
+        margin-right: auto;
+    }
+    [dir="rtl"] .fp-topbar-left { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-topbar-right { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-user-card { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-sidebar-bottom { direction: rtl; }
+    [dir="rtl"] .fp-logout-btn { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-notif-item.unread {
+        border-left: none;
+        border-right: 3px solid var(--fp-accent);
+    }
+    [dir="rtl"] .fp-notification-dropdown {
+        right: auto;
+        left: 0;
+    }
+    @@media (max-width: 768px) {
+        [dir="rtl"] .fp-sidebar {
+            left: auto;
+            right: 0;
+            transform: translateX(100%);
+        }
+        [dir="rtl"] body.fp-sidebar-open .fp-sidebar {
+            transform: translateX(0);
+        }
+    }
 </style>
 
 @code {
@@ -1194,11 +1254,11 @@
 
     private void UpdateCurrentPage(string uri)
     {
-        if (uri.Contains("coaches"))       currentPage = "Coaches";
-        else if (uri.Contains("clients"))  currentPage = "My Clients";
-        else if (uri.Contains("my-data"))  currentPage = "My Data";
-        else if (uri.Contains("profile"))  currentPage = "My Profile";
-        else                               currentPage = "Dashboard";
+        if (uri.Contains("coaches"))       currentPage = L["Breadcrumb_Coaches"];
+        else if (uri.Contains("clients"))  currentPage = L["Breadcrumb_MyClients"];
+        else if (uri.Contains("my-data"))  currentPage = L["Breadcrumb_MyData"];
+        else if (uri.Contains("profile"))  currentPage = L["Breadcrumb_MyProfile"];
+        else                               currentPage = L["Breadcrumb_Dashboard"];
     }
 
     public void Dispose()

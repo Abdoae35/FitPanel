@@ -2,6 +2,7 @@
 @layout EmptyLayout
 
 @inject NavigationManager Nav
+@inject IStringLocalizer<SharedResource> L
 
 <PageTitle>FitPanel — Sign In</PageTitle>
 
@@ -15,22 +16,19 @@
                 <span class="fp-logo-text">FIT<span>PANEL</span></span>
             </div>
             <h1 class="fp-brand-headline">TRAIN.<br/>TRACK.<br/>TRANSFORM.</h1>
-            <p class="fp-brand-sub">
-                The professional coaching platform for elite fitness coaches.
-                Manage clients, build programs, and track progress — all in one place.
-            </p>
+            <p class="fp-brand-sub">@L["Login_BrandSub"]</p>
             <div class="fp-brand-stats">
                 <div class="fp-stat">
                     <span class="fp-stat-num">500+</span>
-                    <span class="fp-stat-label">Clients Managed</span>
+                    <span class="fp-stat-label">@L["Login_Stat_ClientsManaged"]</span>
                 </div>
                 <div class="fp-stat">
                     <span class="fp-stat-num">50+</span>
-                    <span class="fp-stat-label">Coaches</span>
+                    <span class="fp-stat-label">@L["Login_Stat_Coaches"]</span>
                 </div>
                 <div class="fp-stat">
                     <span class="fp-stat-num">1000+</span>
-                    <span class="fp-stat-label">Programs Created</span>
+                    <span class="fp-stat-label">@L["Login_Stat_ProgramsCreated"]</span>
                 </div>
             </div>
         </div>
@@ -41,33 +39,33 @@
         <div class="fp-form-inner">
 
             <div class="fp-form-header">
-                <span class="fp-form-tag">WELCOME BACK</span>
-                <h2>SIGN IN</h2>
+                <span class="fp-form-tag">@L["Login_WelcomeBack"]</span>
+                <h2>@L["Login_Title"]</h2>
                 <div class="fp-form-line"></div>
             </div>
 
             @if (errorMessage == "invalid")
             {
                 <div class="fp-alert fp-alert-danger">
-                    <i class="fa fa-exclamation-circle"></i> Invalid email or password.
+                    <i class="fa fa-exclamation-circle"></i> @L["Login_Error_Invalid"]
                 </div>
             }
             else if (errorMessage == "locked")
             {
                 <div class="fp-alert fp-alert-danger">
-                    <i class="fa fa-lock"></i> Account locked. Try again in 15 minutes.
+                    <i class="fa fa-lock"></i> @L["Login_Error_Locked"]
                 </div>
             }
             else if (errorMessage == "expired")
             {
                 <div class="fp-alert fp-alert-danger">
-                    <i class="fa fa-clock"></i> Your subscription has expired. Please contact the admin.
+                    <i class="fa fa-clock"></i> @L["Login_Error_Expired"]
                 </div>
             }
             else if (errorMessage == "inactive")
             {
                 <div class="fp-alert fp-alert-danger">
-                    <i class="fa fa-ban"></i> Your account has been deactivated. Please contact the administrator.
+                    <i class="fa fa-ban"></i> @L["Login_Error_Inactive"]
                 </div>
             }
 
@@ -75,7 +73,7 @@
                 <AntiforgeryToken />
 
                 <div class="fp-field">
-                    <label>EMAIL ADDRESS</label>
+                    <label>@L["Login_Email"]</label>
                     <input name="email"
                            type="text"
                            class="fp-input"
@@ -84,7 +82,7 @@
                 </div>
 
                 <div class="fp-field">
-                    <label>PASSWORD</label>
+                    <label>@L["Login_Password"]</label>
                     <input name="password"
                            type="password"
                            class="fp-input"
@@ -95,18 +93,21 @@
                 <div class="fp-remember">
                     <label class="fp-check-label">
                         <input name="rememberMe" type="checkbox" value="true" class="fp-checkbox" />
-                        <span>Remember me</span>
+                        <span>@L["Login_RememberMe"]</span>
                     </label>
                 </div>
 
                 <button type="submit" class="fp-btn">
-                    <span>SIGN IN</span>
+                    <span>@L["Login_Submit"]</span>
                     <i class="fa fa-arrow-right"></i>
                 </button>
             </form>
 
             <div class="fp-form-footer">
-                <p>© @DateTime.Now.Year FitPanel. All rights reserved.</p>
+                <p>© @DateTime.Now.Year FitPanel. @L["Footer_AllRightsReserved"]</p>
+                <div style="margin-top:12px;">
+                    <LanguageSwitcher />
+                </div>
             </div>
         </div>
     </div>
@@ -278,6 +279,15 @@
             max-width: 100%;
         }
     }
+
+    /* ── RTL ── */
+    [dir="rtl"] .fp-login-page { direction: rtl; }
+    [dir="rtl"] .fp-brand-panel { background: linear-gradient(225deg, #0a0a0a 0%, #0d1a2e 60%, #001233 100%); }
+    [dir="rtl"] .fp-logo { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-brand-stats { flex-direction: row-reverse; }
+    [dir="rtl"] .fp-form-panel { border-left: none; border-right: 1px solid rgba(234,33,39,0.2); }
+    [dir="rtl"] .fp-btn i { transform: scaleX(-1); }
+    [dir="rtl"] .fp-alert i { margin-right: 0; margin-left: 8px; }
 
     /* ── Small phones: ≤ 480px ── */
     @@media (max-width: 480px) {

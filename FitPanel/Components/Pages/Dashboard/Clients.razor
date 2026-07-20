@@ -7,6 +7,7 @@
 @inject IClientService ClientService
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IStringLocalizer<SharedResource> L
 @rendermode InteractiveServer
 
 <PageTitle>Clients — FitPanel</PageTitle>
@@ -337,7 +338,7 @@
     <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
         <div>
             <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:var(--fp-text);margin:0;line-height:1.2;letter-spacing:-0.5px;">
-                My Clients
+                @L["Clients_Title"]
             </h1>
             <p style="color:var(--fp-text-muted);font-size:14px;margin-top:4px;">
                 @clients.Count client@(clients.Count != 1 ? "s" : "") total
@@ -346,12 +347,12 @@
         
         <div class="fp-slots-badge">
             <i class="fa fa-users" style="color:var(--fp-accent);"></i>
-            <span>Active Slots:</span>
+            <span>@L["Clients_ActiveSlots"]</span>
             <span style="color:var(--fp-text); font-weight:700;">@clients.Count / @maxClients</span>
         </div>
     </div>
     <button class="fp-btn-primary" @onclick="() => showModal = true">
-        <i class="fa fa-plus"></i> New Client
+        <i class="fa fa-plus"></i> @L["Btn_NewClient"]
     </button>
 
 
@@ -361,7 +362,7 @@
 {
     <div class="fp-loading">
         <div class="fp-spinner-lg"></div>
-        <span>Loading clients...</span>
+        <span>@L["Clients_Loading"]</span>
     </div>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
@@ -375,9 +376,9 @@ else if (!clients.Any())
 {
     <div class="fp-empty">
         <i class="fa fa-user-plus"></i>
-        <p>No clients yet.</p>
+        <p>@L["Clients_NoClients"]</p>
         <button class="fp-btn-primary" @onclick="() => showModal = true">
-            <i class="fa fa-plus"></i> Add First Client
+            <i class="fa fa-plus"></i> @L["Btn_AddFirstClient"]
         </button>
     </div>
 }
@@ -410,11 +411,11 @@ else
                         <span><i class="fa fa-calendar"></i> @client.SubscriptionDurationPerMonth mo</span>
                     </div>
                     <p class="fp-client-date">
-                        Expiration Date @client.EndDate.ToString("MMM dd, yyyy")
+                        @L["Table_ExpirationDate"] @client.EndDate.ToString("MMM dd, yyyy")
                     </p>
                 </div>
                 <div class="fp-client-card-footer">
-                    <span>View Profile <i class="fa fa-arrow-right"></i></span>
+                    <span>@L["Clients_ViewProfile"] <i class="fa fa-arrow-right"></i></span>
                 </div>
             </div>
         }
@@ -429,7 +430,7 @@ else
             <div class="fp-modal-header">
                 <div class="fp-modal-title">
                     <i class="fa fa-user-plus" style="color:var(--fp-accent);"></i>
-                    NEW CLIENT
+                    @L["Modal_NewClientTitle"]
                 </div>
                 <button class="fp-modal-close" @onclick="CloseModal">
                     <i class="fa fa-times"></i>
@@ -446,66 +447,66 @@ else
                 <div class="fp-modal-body">
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Full Name *</label>
+                            <label>@L["Form_FullName"]</label>
                             <input @bind="newClient.Name" placeholder="John Doe" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Phone Number *</label>
+                            <label>@L["Form_PhoneNumber"]</label>
                             <input @bind="newClient.PhoneNumber" placeholder="e.g. +966500000000" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Weight (kg) *</label>
+                            <label>@L["Form_WeightKg"]</label>
                             <input type="number" @bind="newClient.Weight" placeholder="80" />
                         </div>
                         <div class="fp-input-group">
-                            <label>BMR (kcal) *</label>
+                            <label>@L["Form_BMR"]</label>
                             <input type="number" @bind="newClient.Bmr" placeholder="1800" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Goal (optional)</label>
+                            <label>@L["Form_Goal"]</label>
                             <input @bind="newClient.Goal" placeholder="Loss Weight / Gain Muscle" />
                         </div>
                         <div class="fp-input-group">
-                            <label>Subscription (months) *</label>
+                            <label>@L["Form_SubscriptionMonths"]</label>
                             <input type="number" @bind="newClient.SubscriptionDurationPerMonth" placeholder="1" min="1" max="12" />
                         </div>
                     </div>
 
                     <div class="fp-grid-2">
                         <div class="fp-input-group">
-                            <label>Inbody Link (optional)</label>
+                            <label>@L["Form_InbodyLink"]</label>
                             <input @bind="newClient.InbodyLink" placeholder="https://..." />
                         </div>
                         <div class="fp-input-group">
-                            <label>Before Photo Link (optional)</label>
+                            <label>@L["Form_BeforePhoto"]</label>
                             <input @bind="newClient.FromPicLink" placeholder="https://..." />
                         </div>
                     </div>
 
                     <div class="fp-input-group">
-                        <label>After Photo Link (optional)</label>
+                        <label>@L["Form_AfterPhoto"]</label>
                         <input @bind="newClient.ToPicLink" placeholder="https://..." />
                     </div>
                 </div>
 
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="CloseModal">Cancel</button>
+                <button class="fp-btn-outline" @onclick="CloseModal">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" @onclick="CreateClient" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span class="fp-spinner-sm"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
                         <i class="fa fa-check"></i>
-                        <span>Create Client</span>
+                        <span>@L["Btn_CreateClient"]</span>
                     }
                 </button>
             </div>
@@ -520,19 +521,19 @@ else
         <div class="fp-modal fp-modal-sm" @onclick:stopPropagation="true">
             <div class="fp-modal-header">
                 <div class="fp-modal-title" style="color:#ff6b6b;">
-                    <i class="fa fa-exclamation-triangle"></i> DELETE CLIENT
+                    <i class="fa fa-exclamation-triangle"></i> @L["Modal_DeleteClientTitle"]
                 </div>
             </div>
             <div class="fp-modal-body">
                 <p style="color:var(--fp-text);font-size:15px;">
-                    Are you sure you want to delete <strong>@deleteClientName</strong>?
-                    This will remove all their diets and workouts permanently.
+                    @L["Delete_AreYouSure"] <strong>@deleteClientName</strong>?
+                    @L["Delete_ClientWarning"]
                 </p>
             </div>
             <div class="fp-modal-footer">
-                <button class="fp-btn-outline" @onclick="() => showDeleteConfirm = false">Cancel</button>
+                <button class="fp-btn-outline" @onclick="() => showDeleteConfirm = false">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary" style="background:#c41920;border-color:#c41920;" @onclick="DeleteClient">
-                    <i class="fa fa-trash"></i> Delete
+                    <i class="fa fa-trash"></i> @L["Btn_Delete"]
                 </button>
             </div>
         </div>

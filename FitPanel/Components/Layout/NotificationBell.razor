@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject INotificationService NotificationService
 @inject NavigationManager Nav
+@inject IStringLocalizer<SharedResource> L
 
 <div style="position: relative; display: inline-block;">
     <button class="fp-theme-toggle" @onclick="ToggleDropdown" title="Notifications" type="button">
@@ -16,10 +17,10 @@
     {
         <div class="fp-notification-dropdown">
             <div class="fp-notif-header">
-                <span>NOTIFICATIONS</span>
+                <span>@L["Notif_Title"]</span>
                 @if (notifications.Any(n => !n.IsRead))
                 {
-                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead" type="button">Mark all read</button>
+                    <button class="fp-notif-clear-btn" @onclick="MarkAllAsRead" type="button">@L["Notif_ClearAll"]</button>
                 }
             </div>
             <div class="fp-notif-body">
@@ -27,7 +28,7 @@
                 {
                     <div class="fp-notif-empty">
                         <i class="fa fa-bell-slash"></i>
-                        <span>No new notifications</span>
+                        <span>@L["Notif_Empty"]</span>
                     </div>
                 }
                 else

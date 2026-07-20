@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- ── Login ── -->
+  <data name="Login_WelcomeBack" xml:space="preserve"><value>مرحباً بعودتك</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>تسجيل الدخول</value></data>
+  <data name="Login_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="Login_RememberMe" xml:space="preserve"><value>تذكرني</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>دخول</value></data>
+  <data name="Login_Error_Invalid" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value></data>
+  <data name="Login_Error_Locked" xml:space="preserve"><value>الحساب مقفل. حاول مرة أخرى بعد 15 دقيقة.</value></data>
+  <data name="Login_Error_Expired" xml:space="preserve"><value>انتهت صلاحية اشتراكك. يرجى التواصل مع المسؤول.</value></data>
+  <data name="Login_Error_Inactive" xml:space="preserve"><value>تم تعطيل حسابك. يرجى التواصل مع المسؤول.</value></data>
+  <data name="Login_BrandSub" xml:space="preserve"><value>منصة التدريب الاحترافية للمدربين المتميزين. أدر عملاءك، وابنِ البرامج، وتابع التقدم — كل ذلك في مكان واحد.</value></data>
+  <data name="Login_Stat_ClientsManaged" xml:space="preserve"><value>عميل تحت الإدارة</value></data>
+  <data name="Login_Stat_Coaches" xml:space="preserve"><value>مدرب</value></data>
+  <data name="Login_Stat_ProgramsCreated" xml:space="preserve"><value>برنامج منشأ</value></data>
+
+  <!-- ── Navigation ── -->
+  <data name="Nav_Main" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Nav_Dashboard" xml:space="preserve"><value>لوحة التحكم</value></data>
+  <data name="Nav_Coaches" xml:space="preserve"><value>المدربون</value></data>
+  <data name="Nav_MyClients" xml:space="preserve"><value>عملائي</value></data>
+  <data name="Nav_MyData" xml:space="preserve"><value>بياناتي</value></data>
+  <data name="Nav_MyProfile" xml:space="preserve"><value>ملفي الشخصي</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>تسجيل الخروج</value></data>
+  <data name="Nav_Administrator" xml:space="preserve"><value>مسؤول النظام</value></data>
+  <data name="Nav_Loading" xml:space="preserve"><value>تحميل</value></data>
+  <data name="Breadcrumb_Dashboard" xml:space="preserve"><value>لوحة التحكم</value></data>
+  <data name="Breadcrumb_Coaches" xml:space="preserve"><value>المدربون</value></data>
+  <data name="Breadcrumb_MyClients" xml:space="preserve"><value>عملائي</value></data>
+  <data name="Breadcrumb_MyData" xml:space="preserve"><value>بياناتي</value></data>
+  <data name="Breadcrumb_MyProfile" xml:space="preserve"><value>ملفي الشخصي</value></data>
+  <data name="Footer_AllRightsReserved" xml:space="preserve"><value>جميع الحقوق محفوظة.</value></data>
+
+  <!-- ── Common Buttons ── -->
+  <data name="Btn_Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Btn_Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="Btn_Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Btn_Renew" xml:space="preserve"><value>تجديد</value></data>
+  <data name="Btn_Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Btn_SaveChanges" xml:space="preserve"><value>حفظ التغييرات</value></data>
+  <data name="Btn_View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Btn_ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Btn_Creating" xml:space="preserve"><value>جارٍ الإنشاء...</value></data>
+  <data name="Btn_Deleting" xml:space="preserve"><value>جارٍ الحذف...</value></data>
+  <data name="Btn_Saving" xml:space="preserve"><value>جارٍ الحفظ...</value></data>
+  <data name="Btn_Generating" xml:space="preserve"><value>جارٍ التوليد...</value></data>
+  <data name="Btn_PDF" xml:space="preserve"><value>PDF</value></data>
+  <data name="Btn_SaveTemplate" xml:space="preserve"><value>حفظ كنموذج</value></data>
+  <data name="Btn_Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="Btn_Watch" xml:space="preserve"><value>شاهد</value></data>
+  <data name="Btn_Adding" xml:space="preserve"><value>جارٍ الإضافة...</value></data>
+  <data name="Btn_Theme" xml:space="preserve"><value>الثيم</value></data>
+
+  <!-- ── Common Status ── -->
+  <data name="Status_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Status_Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Status_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="Status_Expires" xml:space="preserve"><value>ينتهي:</value></data>
+  <data name="Status_Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+
+  <!-- ── Common Table Headers ── -->
+  <data name="Table_Client" xml:space="preserve"><value>العميل</value></data>
+  <data name="Table_Weight" xml:space="preserve"><value>الوزن</value></data>
+  <data name="Table_Subscription" xml:space="preserve"><value>الاشتراك</value></data>
+  <data name="Table_Joined" xml:space="preserve"><value>الانضمام</value></data>
+  <data name="Table_ExpirationDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Table_Action" xml:space="preserve"><value>إجراء</value></data>
+  <data name="Table_Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Table_Goal" xml:space="preserve"><value>الهدف</value></data>
+  <data name="Table_Phone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Table_PlanEnds" xml:space="preserve"><value>نهاية الخطة</value></data>
+  <data name="Table_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Table_Clients" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Table_Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Table_Macros" xml:space="preserve"><value>المغذيات (ب/ك/د)</value></data>
+  <data name="Table_Calories" xml:space="preserve"><value>السعرات</value></data>
+  <data name="Table_Link" xml:space="preserve"><value>الرابط</value></data>
+  <data name="Table_ExerciseName" xml:space="preserve"><value>اسم التمرين</value></data>
+  <data name="Table_VideoLink" xml:space="preserve"><value>رابط الفيديو</value></data>
+  <data name="Table_WarmUpName" xml:space="preserve"><value>اسم الإحماء</value></data>
+  <data name="Table_LinkUrl" xml:space="preserve"><value>الرابط</value></data>
+  <data name="Table_MealsCount" xml:space="preserve"><value>عدد الوجبات</value></data>
+  <data name="Table_Created" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="Table_SplitName" xml:space="preserve"><value>اسم الانقسام</value></data>
+  <data name="Table_Days" xml:space="preserve"><value>الأيام</value></data>
+  <data name="Table_Exercise" xml:space="preserve"><value>التمرين</value></data>
+  <data name="Table_Sets" xml:space="preserve"><value>المجموعات</value></data>
+  <data name="Table_Reps" xml:space="preserve"><value>التكرارات</value></data>
+  <data name="Table_Rest" xml:space="preserve"><value>الراحة</value></data>
+
+  <!-- ── Common Form Labels ── -->
+  <data name="Form_FullName" xml:space="preserve"><value>الاسم الكامل *</value></data>
+  <data name="Form_PhoneNumber" xml:space="preserve"><value>رقم الهاتف *</value></data>
+  <data name="Form_WeightKg" xml:space="preserve"><value>الوزن (كجم) *</value></data>
+  <data name="Form_BMR" xml:space="preserve"><value>معدل الأيض الأساسي *</value></data>
+  <data name="Form_Goal" xml:space="preserve"><value>الهدف (اختياري)</value></data>
+  <data name="Form_SubscriptionMonths" xml:space="preserve"><value>مدة الاشتراك (بالأشهر) *</value></data>
+  <data name="Form_InbodyLink" xml:space="preserve"><value>رابط الإنبودي (اختياري)</value></data>
+  <data name="Form_BeforePhoto" xml:space="preserve"><value>رابط صورة قبل (اختياري)</value></data>
+  <data name="Form_AfterPhoto" xml:space="preserve"><value>رابط صورة بعد (اختياري)</value></data>
+  <data name="Form_Email" xml:space="preserve"><value>البريد الإلكتروني *</value></data>
+  <data name="Form_MaxClients" xml:space="preserve"><value>الحد الأقصى للعملاء</value></data>
+  <data name="Form_InstagramUsername" xml:space="preserve"><value>اسم مستخدم إنستغرام</value></data>
+  <data name="Form_InstagramLink" xml:space="preserve"><value>رابط إنستغرام</value></data>
+  <data name="Form_Password" xml:space="preserve"><value>كلمة المرور *</value></data>
+  <data name="Form_Specialization" xml:space="preserve"><value>التخصص</value></data>
+  <data name="Form_Bio" xml:space="preserve"><value>نبذة</value></data>
+  <data name="Form_NewPassword" xml:space="preserve"><value>كلمة مرور جديدة</value></data>
+  <data name="Form_AccountActive" xml:space="preserve"><value>الحساب نشط</value></data>
+  <data name="Form_MealName" xml:space="preserve"><value>اسم الوجبة *</value></data>
+  <data name="Form_RecipeInstructions" xml:space="preserve"><value>الوصفة / التعليمات</value></data>
+  <data name="Form_VideoLink" xml:space="preserve"><value>رابط الفيديو أو الوصفة (اختياري)</value></data>
+  <data name="Form_NumberOfMeals" xml:space="preserve"><value>عدد الوجبات يومياً *</value></data>
+  <data name="Form_CoachingNotes" xml:space="preserve"><value>ملاحظات التدريب / التعليمات (اختياري)</value></data>
+  <data name="Form_DietNotes" xml:space="preserve"><value>ملاحظات الخطة الغذائية</value></data>
+  <data name="Form_TemplateName" xml:space="preserve"><value>اسم النموذج *</value></data>
+  <data name="Form_SelectDietTemplate" xml:space="preserve"><value>اختر نموذجاً غذائياً *</value></data>
+  <data name="Form_SelectWorkoutTemplate" xml:space="preserve"><value>اختر نموذجاً تدريبياً *</value></data>
+  <data name="Form_MealCategoryName" xml:space="preserve"><value>اسم فئة الوجبة *</value></data>
+  <data name="Form_VideoTutorialLink" xml:space="preserve"><value>رابط الفيديو التعليمي (اختياري)</value></data>
+  <data name="Form_RecipeInstructionsOpt" xml:space="preserve"><value>تعليمات الوصفة (اختياري)</value></data>
+  <data name="Form_NumberOfWorkoutDays" xml:space="preserve"><value>عدد أيام التدريب *</value></data>
+  <data name="Form_DayOfWeek" xml:space="preserve"><value>يوم الأسبوع *</value></data>
+  <data name="Form_DayNotes" xml:space="preserve"><value>ملاحظات اليوم (اختياري)</value></data>
+  <data name="Form_DayNotesEdit" xml:space="preserve"><value>ملاحظات وتعليمات اليوم</value></data>
+  <data name="Form_WarmUpName" xml:space="preserve"><value>اسم الإحماء *</value></data>
+  <data name="Form_WarmUpLink" xml:space="preserve"><value>رابط الإحماء (اختياري)</value></data>
+  <data name="Form_NumberOfMonths" xml:space="preserve"><value>عدد الأشهر *</value></data>
+
+  <!-- ── Dashboard Home ── -->
+  <data name="Dashboard_TotalClients" xml:space="preserve"><value>إجمالي العملاء</value></data>
+  <data name="Dashboard_ActiveThisMonth" xml:space="preserve"><value>نشطون هذا الشهر</value></data>
+  <data name="Dashboard_AvgSubscription" xml:space="preserve"><value>متوسط الاشتراك</value></data>
+  <data name="Dashboard_NewThisMonth" xml:space="preserve"><value>جدد هذا الشهر</value></data>
+  <data name="Dashboard_RecentClients" xml:space="preserve"><value>العملاء الأخيرون</value></data>
+  <data name="Dashboard_RecentClientsSub" xml:space="preserve"><value>آخر العملاء المضافين</value></data>
+  <data name="Dashboard_Loading" xml:space="preserve"><value>جارٍ تحميل العملاء...</value></data>
+  <data name="Dashboard_NoClients_Title" xml:space="preserve"><value>لا يوجد عملاء حديثون</value></data>
+  <data name="Dashboard_NoClients_Desc" xml:space="preserve"><value>ابدأ بإضافة عميل جديد إلى لوحة التحكم.</value></data>
+  <data name="Dashboard_AddNewClient" xml:space="preserve"><value>إضافة عميل جديد</value></data>
+
+  <!-- ── Clients Page ── -->
+  <data name="Clients_Title" xml:space="preserve"><value>عملائي</value></data>
+  <data name="Clients_ActiveSlots" xml:space="preserve"><value>الأماكن المتاحة:</value></data>
+  <data name="Btn_NewClient" xml:space="preserve"><value>عميل جديد</value></data>
+  <data name="Clients_Loading" xml:space="preserve"><value>جارٍ تحميل العملاء...</value></data>
+  <data name="Clients_NoClients" xml:space="preserve"><value>لا يوجد عملاء بعد.</value></data>
+  <data name="Btn_AddFirstClient" xml:space="preserve"><value>أضف أول عميل</value></data>
+  <data name="Clients_ViewProfile" xml:space="preserve"><value>عرض الملف</value></data>
+  <data name="Modal_NewClientTitle" xml:space="preserve"><value>عميل جديد</value></data>
+  <data name="Btn_CreateClient" xml:space="preserve"><value>إنشاء عميل</value></data>
+  <data name="Modal_DeleteClientTitle" xml:space="preserve"><value>حذف العميل</value></data>
+  <data name="Delete_ClientWarning" xml:space="preserve"><value>سيؤدي ذلك إلى إزالة جميع خططه الغذائية وبرامجه التدريبية نهائياً.</value></data>
+  <data name="Delete_AreYouSure" xml:space="preserve"><value>هل أنت متأكد من حذف</value></data>
+
+  <!-- ── Coaches Page ── -->
+  <data name="Coaches_Title" xml:space="preserve"><value>إدارة المدربين</value></data>
+  <data name="Coaches_Sub" xml:space="preserve"><value>إدارة شاملة — إدارة المدربين وعملائهم والاشتراكات</value></data>
+  <data name="Btn_NewCoach" xml:space="preserve"><value>مدرب جديد</value></data>
+  <data name="Coaches_Loading" xml:space="preserve"><value>جارٍ تحميل المدربين والعملاء...</value></data>
+  <data name="Stat_TotalCoaches" xml:space="preserve"><value>إجمالي المدربين</value></data>
+  <data name="Stat_ActiveCoaches" xml:space="preserve"><value>المدربون النشطون</value></data>
+  <data name="Stat_TotalClients" xml:space="preserve"><value>إجمالي العملاء</value></data>
+  <data name="Stat_ExpiredSubs" xml:space="preserve"><value>اشتراكات منتهية</value></data>
+  <data name="Coaches_NoCoaches" xml:space="preserve"><value>لا يوجد مدربون بعد. أنشئ مدربك الأول.</value></data>
+  <data name="Coaches_NoClientsForCoach" xml:space="preserve"><value>لا يوجد عملاء لهذا المدرب بعد.</value></data>
+  <data name="Coaches_ClientsOf" xml:space="preserve"><value>عملاء</value></data>
+  <data name="Modal_NewCoach" xml:space="preserve"><value>مدرب جديد</value></data>
+  <data name="Modal_EditCoach" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Btn_CreateCoach" xml:space="preserve"><value>إنشاء مدرب</value></data>
+  <data name="Modal_DeleteCoach_Title" xml:space="preserve"><value>حذف المدرب</value></data>
+  <data name="Delete_CoachWarning" xml:space="preserve"><value>سيؤدي ذلك إلى إزالة جميع عملائهم وخططهم ونماذجهم وقواميسهم. لا يمكن التراجع عن هذا.</value></data>
+  <data name="Btn_DeleteCoach" xml:space="preserve"><value>حذف المدرب</value></data>
+  <data name="Modal_DeleteClient_Title" xml:space="preserve"><value>حذف العميل</value></data>
+  <data name="Delete_ClientCoachWarning" xml:space="preserve"><value>ستتم إزالة جميع خططه الغذائية والتدريبية ونشاطه نهائياً.</value></data>
+  <data name="Btn_DeleteClient" xml:space="preserve"><value>حذف العميل</value></data>
+
+  <!-- ── My Data Page ── -->
+  <data name="MyData_Title" xml:space="preserve"><value>بياناتي ونماذجي</value></data>
+  <data name="MyData_Sub" xml:space="preserve"><value>إدارة قواميسك المحفوظة تلقائياً ونماذج خططك</value></data>
+  <data name="MyData_Loading" xml:space="preserve"><value>جارٍ تحميل بياناتك...</value></data>
+  <data name="MyData_Tab_Meals" xml:space="preserve"><value>قاموس الوجبات</value></data>
+  <data name="MyData_Tab_Exercises" xml:space="preserve"><value>قاموس التمارين</value></data>
+  <data name="MyData_Tab_WarmUps" xml:space="preserve"><value>قاموس الإحماء</value></data>
+  <data name="MyData_Tab_DietTemplates" xml:space="preserve"><value>نماذج الغذاء</value></data>
+  <data name="MyData_Tab_WorkoutTemplates" xml:space="preserve"><value>نماذج التدريب</value></data>
+  <data name="MyData_Meals_Title" xml:space="preserve"><value>قاموس الوجبات</value></data>
+  <data name="MyData_AddMeal" xml:space="preserve"><value>إضافة وجبة</value></data>
+  <data name="MyData_NoMeals" xml:space="preserve"><value>لا يوجد وجبات محفوظة بعد.</value></data>
+  <data name="MyData_Exercises_Title" xml:space="preserve"><value>قاموس التمارين</value></data>
+  <data name="MyData_AddExercise" xml:space="preserve"><value>إضافة تمرين</value></data>
+  <data name="MyData_NoExercises" xml:space="preserve"><value>لا يوجد تمارين محفوظة بعد.</value></data>
+  <data name="MyData_WarmUps_Title" xml:space="preserve"><value>قاموس الإحماء</value></data>
+  <data name="MyData_AddWarmUp" xml:space="preserve"><value>إضافة إحماء</value></data>
+  <data name="MyData_NoWarmUps" xml:space="preserve"><value>لا يوجد تمارين إحماء محفوظة بعد.</value></data>
+  <data name="MyData_DietTemplates_Title" xml:space="preserve"><value>نماذج خطط الغذاء</value></data>
+  <data name="MyData_CreateDietTemplate" xml:space="preserve"><value>إنشاء نموذج غذائي</value></data>
+  <data name="MyData_NoDietTemplates" xml:space="preserve"><value>لا يوجد نماذج غذائية بعد.</value></data>
+  <data name="MyData_WorkoutTemplates_Title" xml:space="preserve"><value>نماذج خطط التدريب</value></data>
+  <data name="MyData_CreateWorkoutTemplate" xml:space="preserve"><value>إنشاء نموذج تدريبي</value></data>
+  <data name="MyData_NoWorkoutTemplates" xml:space="preserve"><value>لا يوجد نماذج تدريبية بعد.</value></data>
+
+  <!-- ── Profile Page ── -->
+  <data name="Profile_Title" xml:space="preserve"><value>الملف الشخصي للمدرب</value></data>
+  <data name="Profile_Sub" xml:space="preserve"><value>إدارة هويتك التجارية وأماكن العملاء وإعدادات PDF</value></data>
+  <data name="Profile_Loading" xml:space="preserve"><value>جارٍ تحميل بيانات ملفك الشخصي...</value></data>
+  <data name="Profile_LoadError" xml:space="preserve"><value>تعذّر تحميل الملف الشخصي. يرجى تحديث الصفحة أو تسجيل الدخول مجدداً.</value></data>
+  <data name="Profile_ActiveClients" xml:space="preserve"><value>العملاء النشطون</value></data>
+  <data name="Profile_PDFTheme" xml:space="preserve"><value>ثيم PDF</value></data>
+  <data name="Profile_BrandSettings" xml:space="preserve"><value>إعدادات العلامة التجارية</value></data>
+  <data name="Profile_CoachBrandName" xml:space="preserve"><value>اسم المدرب / العلامة التجارية *</value></data>
+  <data name="Profile_Specialization" xml:space="preserve"><value>التخصص</value></data>
+  <data name="Profile_InstagramUsername" xml:space="preserve"><value>اسم مستخدم إنستغرام</value></data>
+  <data name="Profile_InstagramLink" xml:space="preserve"><value>رابط ملف إنستغرام</value></data>
+  <data name="Profile_ProfilePicture" xml:space="preserve"><value>صورة الملف الشخصي</value></data>
+  <data name="Profile_Bio" xml:space="preserve"><value>السيرة الذاتية / فلسفة التدريب</value></data>
+  <data name="Profile_SaveBrandDetails" xml:space="preserve"><value>حفظ بيانات العلامة</value></data>
+  <data name="Profile_PDFBranding" xml:space="preserve"><value>تصميم PDF</value></data>
+  <data name="Profile_PDFCoverImage" xml:space="preserve"><value>صورة غلاف PDF</value></data>
+  <data name="Profile_CoachIntro" xml:space="preserve"><value>مقدمة المدرب</value></data>
+  <data name="Profile_Certifications" xml:space="preserve"><value>الشهادات والمؤهلات</value></data>
+  <data name="Profile_PDFThemeLabel" xml:space="preserve"><value>ثيم PDF</value></data>
+  <data name="Profile_Classic" xml:space="preserve"><value>الكلاسيكي</value></data>
+  <data name="Profile_ProfessionalNavy" xml:space="preserve"><value>البحري الاحترافي</value></data>
+  <data name="Profile_AthleticOrange" xml:space="preserve"><value>البرتقالي الرياضي</value></data>
+  <data name="Profile_CoachingPlan" xml:space="preserve"><value>خطة التدريب</value></data>
+  <data name="Profile_SavePDFSettings" xml:space="preserve"><value>حفظ إعدادات PDF</value></data>
+  <data name="Profile_SaveProfile" xml:space="preserve"><value>حفظ الملف الشخصي</value></data>
+  <data name="Profile_ChangePassword" xml:space="preserve"><value>تغيير كلمة المرور</value></data>
+  <data name="Profile_CurrentPassword" xml:space="preserve"><value>كلمة المرور الحالية *</value></data>
+  <data name="Profile_ConfirmNewPassword" xml:space="preserve"><value>تأكيد كلمة المرور الجديدة *</value></data>
+
+  <!-- ── ClientDetail Page ── -->
+  <data name="ClientDetail_Loading" xml:space="preserve"><value>جارٍ تحميل بيانات العميل...</value></data>
+  <data name="ClientDetail_NotFound" xml:space="preserve"><value>لم يتم العثور على العميل.</value></data>
+  <data name="ClientDetail_BackToClients" xml:space="preserve"><value>→ العودة إلى العملاء</value></data>
+  <data name="ClientDetail_EditClient" xml:space="preserve"><value>تعديل بيانات العميل</value></data>
+  <data name="ClientDetail_InbodyResult" xml:space="preserve"><value>نتيجة الإنبودي</value></data>
+  <data name="ClientDetail_BeforePhoto" xml:space="preserve"><value>صورة قبل</value></data>
+  <data name="ClientDetail_AfterPhoto" xml:space="preserve"><value>صورة بعد</value></data>
+  <data name="ClientDetail_StartDate" xml:space="preserve"><value>تاريخ البداية</value></data>
+  <data name="ClientDetail_EndDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="ClientDetail_DaysLeft" xml:space="preserve"><value>الأيام المتبقية</value></data>
+  <data name="ClientDetail_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="ClientDetail_ExpiringSoon" xml:space="preserve"><value>ينتهي قريباً</value></data>
+  <data name="ClientDetail_ActiveBadge" xml:space="preserve"><value>نشط</value></data>
+  <data name="ClientDetail_WhatsApp" xml:space="preserve"><value>تذكير واتساب</value></data>
+  <data name="ClientDetail_DietTab" xml:space="preserve"><value>الخطة الغذائية</value></data>
+  <data name="ClientDetail_WorkoutTab" xml:space="preserve"><value>خطة التدريب</value></data>
+  <data name="ClientDetail_DietPlans" xml:space="preserve"><value>الخطط الغذائية</value></data>
+  <data name="ClientDetail_WorkoutPlans" xml:space="preserve"><value>خطط التدريب</value></data>
+  <data name="ClientDetail_NewDietPlan" xml:space="preserve"><value>خطة غذائية جديدة</value></data>
+  <data name="ClientDetail_NewWorkoutPlan" xml:space="preserve"><value>خطة تدريبية جديدة</value></data>
+  <data name="ClientDetail_NoDietPlans" xml:space="preserve"><value>لا توجد خطط غذائية بعد.</value></data>
+  <data name="ClientDetail_NoWorkoutPlans" xml:space="preserve"><value>لا توجد خطط تدريبية بعد.</value></data>
+  <data name="ClientDetail_StartFromTemplate" xml:space="preserve"><value>البدء من نموذج</value></data>
+  <data name="Modal_EditClient" xml:space="preserve"><value>تعديل بيانات العميل</value></data>
+  <data name="Modal_NewDietPlan" xml:space="preserve"><value>خطة غذائية جديدة</value></data>
+  <data name="Modal_CoachingNotes" xml:space="preserve"><value>ملاحظات التدريب</value></data>
+  <data name="Modal_SaveDietTemplate" xml:space="preserve"><value>حفظ كنموذج غذائي</value></data>
+  <data name="Modal_SaveWorkoutTemplate" xml:space="preserve"><value>حفظ كنموذج تدريبي</value></data>
+  <data name="Modal_StartFromDietTemplate" xml:space="preserve"><value>بدء من نموذج غذائي</value></data>
+  <data name="Modal_StartFromWorkoutTemplate" xml:space="preserve"><value>بدء من نموذج تدريبي</value></data>
+  <data name="Modal_EditMealCount" xml:space="preserve"><value>تعديل عدد الوجبات</value></data>
+  <data name="Modal_AddMealCategory" xml:space="preserve"><value>إضافة فئة وجبة</value></data>
+  <data name="Modal_EditMealInfo" xml:space="preserve"><value>تعديل بيانات الوجبة</value></data>
+  <data name="Modal_AddFoodItem" xml:space="preserve"><value>إضافة عنصر غذائي</value></data>
+  <data name="Modal_EditFoodItem" xml:space="preserve"><value>تعديل عنصر غذائي</value></data>
+  <data name="Modal_AddAlternative" xml:space="preserve"><value>إضافة بديل</value></data>
+  <data name="Modal_EditAlternative" xml:space="preserve"><value>تعديل البديل</value></data>
+  <data name="Modal_NewWorkoutPlan" xml:space="preserve"><value>خطة تدريبية جديدة</value></data>
+  <data name="Modal_EditDayCount" xml:space="preserve"><value>تعديل عدد الأيام</value></data>
+  <data name="Modal_AddWorkoutDay" xml:space="preserve"><value>إضافة يوم تدريب</value></data>
+  <data name="Modal_EditWorkoutDay" xml:space="preserve"><value>تعديل يوم التدريب</value></data>
+  <data name="Modal_AddExercise" xml:space="preserve"><value>إضافة تمرين</value></data>
+  <data name="Modal_EditExercise" xml:space="preserve"><value>تعديل التمرين</value></data>
+  <data name="Modal_AddCardio" xml:space="preserve"><value>إضافة كارديو</value></data>
+  <data name="Modal_EditCardio" xml:space="preserve"><value>تعديل الكارديو</value></data>
+  <data name="Modal_EditDayNotes" xml:space="preserve"><value>تعديل ملاحظات اليوم</value></data>
+  <data name="Modal_EditDayWarmUp" xml:space="preserve"><value>تعديل الإحماء</value></data>
+  <data name="Modal_RenewSubscription" xml:space="preserve"><value>تجديد الاشتراك</value></data>
+  <data name="Btn_Create" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="Btn_Update" xml:space="preserve"><value>تحديث</value></data>
+  <data name="Btn_Add" xml:space="preserve"><value>إضافة</value></data>
+  <data name="Btn_SaveNotes" xml:space="preserve"><value>حفظ الملاحظات</value></data>
+  <data name="Btn_ClonePlan" xml:space="preserve"><value>استنساخ الخطة</value></data>
+  <data name="Btn_AddDay" xml:space="preserve"><value>إضافة يوم</value></data>
+  <data name="Btn_AddCardio" xml:space="preserve"><value>إضافة كارديو</value></data>
+  <data name="Btn_UpdateCardio" xml:space="preserve"><value>تحديث الكارديو</value></data>
+  <data name="Btn_Renewing" xml:space="preserve"><value>جارٍ التجديد...</value></data>
+  <data name="Btn_Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="Form_FoodName" xml:space="preserve"><value>اسم الغذاء *</value></data>
+  <data name="Form_Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Form_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Form_GoalFitness" xml:space="preserve"><value>هدف العميل التدريبي</value></data>
+  <data name="Form_NumberOfDays" xml:space="preserve"><value>عدد الأيام *</value></data>
+  <data name="Form_DayName" xml:space="preserve"><value>اسم اليوم *</value></data>
+  <data name="Form_CardioTypeRequired" xml:space="preserve"><value>نوع الكارديو *</value></data>
+  <data name="Form_DurationMin" xml:space="preserve"><value>المدة (دقيقة) *</value></data>
+  <data name="Form_IntensityRequired" xml:space="preserve"><value>الشدة *</value></data>
+  <data name="Form_NotesOpt" xml:space="preserve"><value>ملاحظات (اختياري)</value></data>
+  <data name="Form_RestTime" xml:space="preserve"><value>وقت الراحة *</value></data>
+
+  <!-- ── Notifications ── -->
+  <data name="Notif_Title" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Notif_ClearAll" xml:space="preserve"><value>مسح الكل</value></data>
+  <data name="Notif_Empty" xml:space="preserve"><value>لا توجد إشعارات</value></data>
+
+  <!-- ── Modal Titles ── -->
+  <data name="Modal_AddDictionaryMeal" xml:space="preserve"><value>إضافة وجبة للقاموس</value></data>
+  <data name="Modal_EditDictionaryMeal" xml:space="preserve"><value>تعديل وجبة في القاموس</value></data>
+  <data name="Modal_AddDictionaryExercise" xml:space="preserve"><value>إضافة تمرين للقاموس</value></data>
+  <data name="Modal_EditDictionaryExercise" xml:space="preserve"><value>تعديل تمرين في القاموس</value></data>
+  <data name="Modal_AddDictionaryWarmUp" xml:space="preserve"><value>إضافة إحماء للقاموس</value></data>
+  <data name="Modal_EditDictionaryWarmUp" xml:space="preserve"><value>تعديل إحماء في القاموس</value></data>
+  <data name="Modal_CreateDietTemplate" xml:space="preserve"><value>إنشاء نموذج غذائي</value></data>
+  <data name="Modal_EditDietTemplate" xml:space="preserve"><value>تعديل نموذج غذائي</value></data>
+  <data name="Modal_CreateWorkoutTemplate" xml:space="preserve"><value>إنشاء نموذج تدريبي</value></data>
+  <data name="Modal_EditWorkoutTemplate" xml:space="preserve"><value>تعديل نموذج تدريبي</value></data>
+  <data name="Modal_ConfirmDeletion" xml:space="preserve"><value>تأكيد الحذف</value></data>
+  <data name="Modal_CannotBeUndone" xml:space="preserve"><value>لا يمكن التراجع عن هذه العملية.</value></data>
+
+  <!-- ── Additional Buttons ── -->
+  <data name="Btn_SaveMeal" xml:space="preserve"><value>حفظ الوجبة</value></data>
+  <data name="Btn_SaveExercise" xml:space="preserve"><value>حفظ التمرين</value></data>
+  <data name="Btn_SaveWarmUp" xml:space="preserve"><value>حفظ الإحماء</value></data>
+  <data name="Btn_AddFoodItem" xml:space="preserve"><value>إضافة عنصر غذائي</value></data>
+  <data name="Btn_AddMeal" xml:space="preserve"><value>إضافة وجبة</value></data>
+  <data name="Btn_AddWorkoutDay" xml:space="preserve"><value>إضافة يوم تدريب</value></data>
+  <data name="Btn_AddExercise" xml:space="preserve"><value>إضافة تمرين</value></data>
+
+  <!-- ── Additional Form Labels ── -->
+  <data name="Form_ManualMacroOverride" xml:space="preserve"><value>تحديد المغذيات يدوياً</value></data>
+  <data name="Form_MacroTotals" xml:space="preserve"><value>مجموع المغذيات المحسوب</value></data>
+  <data name="Form_IngredientsList" xml:space="preserve"><value>قائمة المكونات</value></data>
+  <data name="Form_ExerciseName" xml:space="preserve"><value>اسم التمرين *</value></data>
+  <data name="Form_SplitName" xml:space="preserve"><value>اسم الانقسام *</value></data>
+  <data name="Form_InstructionsTips" xml:space="preserve"><value>التعليمات والنصائح</value></data>
+  <data name="Form_ExpectedMeals" xml:space="preserve"><value>عدد الوجبات المتوقع</value></data>
+  <data name="Form_InstructionsGuidelines" xml:space="preserve"><value>التعليمات وإرشادات الوصفة</value></data>
+  <data name="Form_MealsInsideTemplate" xml:space="preserve"><value>الوجبات داخل النموذج</value></data>
+  <data name="Form_ImportFromDictionary" xml:space="preserve"><value>استيراد من القاموس</value></data>
+  <data name="Form_WorkoutDays" xml:space="preserve"><value>أيام التدريب</value></data>
+  <data name="Form_DayTitle" xml:space="preserve"><value>عنوان اليوم *</value></data>
+  <data name="Form_CalendarDay" xml:space="preserve"><value>تعيين يوم الأسبوع *</value></data>
+  <data name="Form_ExercisesOnDay" xml:space="preserve"><value>تمارين هذا اليوم</value></data>
+  <data name="Form_IncludeCardio" xml:space="preserve"><value>إضافة كارديو في هذا اليوم</value></data>
+  <data name="Form_CardioType" xml:space="preserve"><value>نوع الكارديو</value></data>
+  <data name="Form_DurationMinutes" xml:space="preserve"><value>المدة (بالدقائق)</value></data>
+  <data name="Form_Intensity" xml:space="preserve"><value>الشدة</value></data>
+  <data name="Form_CardioGuidelines" xml:space="preserve"><value>إرشادات وملاحظات الكارديو</value></data>
+  <data name="Form_VideoLinkOpt" xml:space="preserve"><value>رابط الفيديو (اختياري)</value></data>
+  <data name="Form_ProteinG" xml:space="preserve"><value>البروتين (جم)</value></data>
+  <data name="Form_CarbsG" xml:space="preserve"><value>الكربوهيدرات (جم)</value></data>
+  <data name="Form_FatsG" xml:space="preserve"><value>الدهون (جم)</value></data>
+  <data name="Form_CaloriesKcal" xml:space="preserve"><value>السعرات (كيلو كالوري) *</value></data>
+  <data name="Form_CaloriesRequired" xml:space="preserve"><value>السعرات الحرارية *</value></data>
+</root>

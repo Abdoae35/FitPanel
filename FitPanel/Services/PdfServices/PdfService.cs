@@ -117,8 +117,9 @@ public class PdfService : IPdfService
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
         var photoBase64 = (theme == 1 || theme == 4 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
         // Cover image: uses PdfCoverImage if set, falls back to ProfilePicture
-        var coverImageBase64 = GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage);
-        var hasCoverPhoto = !string.IsNullOrEmpty(coverImageBase64);
+        var coverImagePath = string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage;
+        var hasCoverPhoto = HasCoachPhoto(coverImagePath);
+        var coverImageBase64 = hasCoverPhoto ? GetCoachPhotoBase64(coverImagePath) : "";
         var coverX = Math.Clamp(coach?.PdfCoverImageX ?? 50, 0, 100);
 
         string introPage;
@@ -153,7 +154,7 @@ public class PdfService : IPdfService
                 break;
             default:
                 css = SharedCss("#ea2127", "rgba(234, 33, 39, 0.25)", "#ff0066");
-                cover = WorkoutCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64, coverX);
+                cover = WorkoutCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64, hasCoverPhoto, coverX);
                 break;
         }
 
@@ -192,8 +193,9 @@ public class PdfService : IPdfService
         var hasPhoto = HasCoachPhoto(coach?.ProfilePicture);
         var photoBase64 = (theme == 1 || theme == 4 || hasPhoto) ? GetCoachPhotoBase64(coach?.ProfilePicture) : "";
         // Cover image: uses PdfCoverImage if set, falls back to ProfilePicture
-        var coverImageBase64 = GetCoachPhotoBase64(string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage);
-        var hasCoverPhoto = !string.IsNullOrEmpty(coverImageBase64);
+        var coverImagePath = string.IsNullOrEmpty(coach?.PdfCoverImage) ? coach?.ProfilePicture : coach.PdfCoverImage;
+        var hasCoverPhoto = HasCoachPhoto(coverImagePath);
+        var coverImageBase64 = hasCoverPhoto ? GetCoachPhotoBase64(coverImagePath) : "";
         var coverX = Math.Clamp(coach?.PdfCoverImageX ?? 50, 0, 100);
 
         string introPage;
@@ -237,7 +239,7 @@ public class PdfService : IPdfService
                 break;
             default:
                 css = SharedCss("#00FF88", "rgba(0, 255, 136, 0.25)", "#FF0066");
-                cover = DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64, coverX);
+                cover = DietCover(client, coachName, coachEmail, coachPhone, instagram, instagramLink, coverImageBase64, hasCoverPhoto, coverX);
                 break;
         }
 
@@ -289,7 +291,13 @@ public class PdfService : IPdfService
 
     // ── COVER PAGES ───────────────────────────────────────────────
     private static string WorkoutCover(
-        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64, int coverX = 50) => $"""
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64, bool hasCoverPhoto, int coverX = 50)
+    {
+        var initials = string.Concat(coachName.Split(' ', 2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : ""));
+        var photoSlot = hasCoverPhoto
+            ? $"<img src=\"{photoBase64}\" alt=\"Coach Photo\" class=\"coach-photo\" style=\"object-position:{coverX}% center;\">"
+            : $"<div style=\"width:100%;height:100%;background:var(--coach-dark-elevated);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;\"><div style=\"font-size:84px;font-weight:900;line-height:1;letter-spacing:-2px;color:transparent;-webkit-text-stroke:1.5px rgba(234,33,39,.35);\">{initials}</div><div style=\"font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.25);text-transform:uppercase;\">{coachName}</div></div>";
+        return $"""
         <div class="a4-page">
           <div class="diagonal-overlay"></div>
           <div class="accent-bar" style="top: 0; left: 0; width: 60%;"></div>
@@ -298,7 +306,7 @@ public class PdfService : IPdfService
             <div class="cover-grid">
               <!-- Left Column: Coach Photo -->
               <div class="cover-photo-section">
-                <img src="{photoBase64}" alt="Coach Photo" class="coach-photo" style="object-position:{coverX}% center;">
+                {photoSlot}
               </div>
 
               <!-- Right Column: Coach Info -->
@@ -377,9 +385,16 @@ public class PdfService : IPdfService
           </footer>
         </div>
         """;
+    }
 
     private static string DietCover(
-        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64, int coverX = 50) => $"""
+        Client client, string coachName, string coachEmail, string coachPhone, string instagram, string instagramLink, string photoBase64, bool hasCoverPhoto, int coverX = 50)
+    {
+        var initials = string.Concat(coachName.Split(' ', 2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : ""));
+        var photoSlot = hasCoverPhoto
+            ? $"<img src=\"{photoBase64}\" alt=\"Coach Photo\" class=\"coach-photo\" style=\"object-position:{coverX}% center;\">"
+            : $"<div style=\"width:100%;height:100%;background:var(--coach-dark-elevated);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;\"><div style=\"font-size:84px;font-weight:900;line-height:1;letter-spacing:-2px;color:transparent;-webkit-text-stroke:1.5px rgba(234,33,39,.35);\">{initials}</div><div style=\"font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.25);text-transform:uppercase;\">{coachName}</div></div>";
+        return $"""
         <div class="a4-page">
           <div class="diagonal-overlay"></div>
           <div class="accent-bar" style="top: 0; left: 0; width: 60%;"></div>
@@ -388,7 +403,7 @@ public class PdfService : IPdfService
             <div class="cover-grid">
               <!-- Left Column: Coach Photo -->
               <div class="cover-photo-section">
-                <img src="{photoBase64}" alt="Coach Photo" class="coach-photo" style="object-position:{coverX}% center;">
+                {photoSlot}
               </div>
 
               <!-- Right Column: Coach Info -->
@@ -467,6 +482,7 @@ public class PdfService : IPdfService
           </footer>
         </div>
         """;
+    }
 
     // ── WORKOUT DAY PAGE ──────────────────────────────────────────
     private static string WorkoutDayPage(
@@ -1656,7 +1672,7 @@ public class PdfService : IPdfService
               <p style="font-size:11px;color:#475569;line-height:1.8;max-width:66mm;font-weight:400;">{bodyText}</p>
             </div>
 
-            <div style="flex-shrink:0;margin-bottom:10mm;max-width:115mm;">
+            <div style="flex-shrink:0;margin-bottom:10mm;max-width:104mm;">
               <div style="background:rgba(14,165,233,.05);border:1px solid rgba(14,165,233,.15);border-radius:8px;padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;">
                 <div style="padding-right:16px;border-right:1px solid rgba(14,165,233,.12);">
                   <div style="font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#334155;margin-bottom:6px;">ATHLETE</div>
@@ -1729,7 +1745,7 @@ public class PdfService : IPdfService
               <div style="font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#3a3a3a;">{tagline}</div>
             </div>
 
-            <div style="flex-shrink:0;margin-bottom:8mm;padding-top:16px;border-top:2px solid #F97316;max-width:120mm;">
+            <div style="flex-shrink:0;margin-bottom:8mm;padding-top:16px;border-top:2px solid #F97316;max-width:98mm;">
               <div style="display:flex;justify-content:space-between;align-items:flex-end;">
                 <div>
                   <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#444444;margin-bottom:6px;">ATHLETE</div>

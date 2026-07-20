@@ -18,6 +18,7 @@
 @inject ITemplateService TemplateService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject INutritionApiService NutritionApiService
+@inject IStringLocalizer<SharedResource> L
 @rendermode InteractiveServer
 
 <PageTitle>My Data — FitPanel</PageTitle>
@@ -598,15 +599,15 @@
 <div class="fp-data-page">
 
     <div class="fp-data-header">
-        <h1>My Data & Templates</h1>
-        <p>Manage your auto-saved dictionary data and plan templates</p>
+        <h1>@L["MyData_Title"]</h1>
+        <p>@L["MyData_Sub"]</p>
     </div>
 
     @if (isLoading)
     {
         <div class="fp-loading">
             <div class="fp-spinner-lg"></div>
-            <span>Loading your data...</span>
+            <span>@L["MyData_Loading"]</span>
         </div>
     }
     else if (!string.IsNullOrEmpty(errorMessage))
@@ -620,19 +621,19 @@
     {
         <div class="fp-data-tabs">
             <button class="fp-data-tab @(activeTab == "meals" ? "active" : "")" @onclick='() => activeTab = "meals"'>
-                <i class="fa fa-utensils"></i> Meals Dictionary (@meals.Count)
+                <i class="fa fa-utensils"></i> @L["MyData_Tab_Meals"] (@meals.Count)
             </button>
             <button class="fp-data-tab @(activeTab == "exercises" ? "active" : "")" @onclick='() => activeTab = "exercises"'>
-                <i class="fa fa-dumbbell"></i> Exercises Dictionary (@exercises.Count)
+                <i class="fa fa-dumbbell"></i> @L["MyData_Tab_Exercises"] (@exercises.Count)
             </button>
             <button class="fp-data-tab @(activeTab == "warmups" ? "active" : "")" @onclick='() => activeTab = "warmups"'>
-                <i class="fa fa-fire"></i> Warm-Ups Dictionary (@warmups.Count)
+                <i class="fa fa-fire"></i> @L["MyData_Tab_WarmUps"] (@warmups.Count)
             </button>
             <button class="fp-data-tab @(activeTab == "diet-templates" ? "active" : "")" @onclick='() => activeTab = "diet-templates"'>
-                <i class="fa fa-folder-open"></i> Diet Templates (@dietTemplates.Count)
+                <i class="fa fa-folder-open"></i> @L["MyData_Tab_DietTemplates"] (@dietTemplates.Count)
             </button>
             <button class="fp-data-tab @(activeTab == "workout-templates" ? "active" : "")" @onclick='() => activeTab = "workout-templates"'>
-                <i class="fa fa-dumbbell"></i> Workout Templates (@workoutTemplates.Count)
+                <i class="fa fa-dumbbell"></i> @L["MyData_Tab_WorkoutTemplates"] (@workoutTemplates.Count)
             </button>
         </div>
 
@@ -642,10 +643,10 @@
             <div class="fp-data-card">
                 <div class="fp-data-card-title">
                     <div class="fp-data-card-title-left">
-                        <i class="fa fa-utensils"></i> Meals Dictionary
+                        <i class="fa fa-utensils"></i> @L["MyData_Meals_Title"]
                     </div>
                     <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddMealModal">
-                        <i class="fa fa-plus"></i> Add Meal
+                        <i class="fa fa-plus"></i> @L["MyData_AddMeal"]
                     </button>
                 </div>
 
@@ -653,7 +654,7 @@
                 {
                     <div class="fp-data-empty">
                         <i class="fa fa-utensils"></i>
-                        <p>No meals saved yet.</p>
+                        <p>@L["MyData_NoMeals"]</p>
                     </div>
                 }
                 else
@@ -662,11 +663,11 @@
                         <table class="fp-data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Macros (P/C/F)</th>
-                                    <th>Calories</th>
-                                    <th>Link</th>
-                                    <th>Actions</th>
+                                    <th>@L["Table_Name"]</th>
+                                    <th>@L["Table_Macros"]</th>
+                                    <th>@L["Table_Calories"]</th>
+                                    <th>@L["Table_Link"]</th>
+                                    <th>@L["Table_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -705,10 +706,10 @@
             <div class="fp-data-card">
                 <div class="fp-data-card-title">
                     <div class="fp-data-card-title-left">
-                        <i class="fa fa-dumbbell"></i> Exercises Dictionary
+                        <i class="fa fa-dumbbell"></i> @L["MyData_Exercises_Title"]
                     </div>
                     <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddExerciseModal">
-                        <i class="fa fa-plus"></i> Add Exercise
+                        <i class="fa fa-plus"></i> @L["MyData_AddExercise"]
                     </button>
                 </div>
 
@@ -716,7 +717,7 @@
                 {
                     <div class="fp-data-empty">
                         <i class="fa fa-dumbbell"></i>
-                        <p>No exercises saved yet.</p>
+                        <p>@L["MyData_NoExercises"]</p>
                     </div>
                 }
                 else
@@ -725,9 +726,9 @@
                         <table class="fp-data-table">
                             <thead>
                                 <tr>
-                                    <th>Exercise Name</th>
-                                    <th>Video Link</th>
-                                    <th>Actions</th>
+                                    <th>@L["Table_ExerciseName"]</th>
+                                    <th>@L["Table_VideoLink"]</th>
+                                    <th>@L["Table_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -764,10 +765,10 @@
             <div class="fp-data-card">
                 <div class="fp-data-card-title">
                     <div class="fp-data-card-title-left">
-                        <i class="fa fa-fire"></i> Warm-Ups Dictionary
+                        <i class="fa fa-fire"></i> @L["MyData_WarmUps_Title"]
                     </div>
                     <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddWarmUpModal">
-                        <i class="fa fa-plus"></i> Add Warm-Up
+                        <i class="fa fa-plus"></i> @L["MyData_AddWarmUp"]
                     </button>
                 </div>
 
@@ -775,7 +776,7 @@
                 {
                     <div class="fp-data-empty">
                         <i class="fa fa-fire"></i>
-                        <p>No warm-ups saved yet.</p>
+                        <p>@L["MyData_NoWarmUps"]</p>
                     </div>
                 }
                 else
@@ -784,9 +785,9 @@
                         <table class="fp-data-table">
                             <thead>
                                 <tr>
-                                    <th>Warm-Up Name</th>
-                                    <th>Link / URL</th>
-                                    <th>Actions</th>
+                                    <th>@L["Table_WarmUpName"]</th>
+                                    <th>@L["Table_LinkUrl"]</th>
+                                    <th>@L["Table_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -823,10 +824,10 @@
             <div class="fp-data-card">
                 <div class="fp-data-card-title">
                     <div class="fp-data-card-title-left">
-                        <i class="fa fa-folder-open"></i> Diet Plan Templates
+                        <i class="fa fa-folder-open"></i> @L["MyData_DietTemplates_Title"]
                     </div>
                     <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddDietTemplateModal">
-                        <i class="fa fa-plus"></i> Create Diet Template
+                        <i class="fa fa-plus"></i> @L["MyData_CreateDietTemplate"]
                     </button>
                 </div>
 
@@ -834,7 +835,7 @@
                 {
                     <div class="fp-data-empty">
                         <i class="fa fa-folder-open"></i>
-                        <p>No diet templates saved yet. Create one directly or save from any client's plan!</p>
+                        <p>@L["MyData_NoDietTemplates"]</p>
                     </div>
                 }
                 else
@@ -843,10 +844,10 @@
                         <table class="fp-data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Meals Count</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
+                                    <th>@L["Table_Name"]</th>
+                                    <th>@L["Table_MealsCount"]</th>
+                                    <th>@L["Table_Created"]</th>
+                                    <th>@L["Table_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -879,10 +880,10 @@
             <div class="fp-data-card">
                 <div class="fp-data-card-title">
                     <div class="fp-data-card-title-left">
-                        <i class="fa fa-dumbbell"></i> Workout Split Templates
+                        <i class="fa fa-dumbbell"></i> @L["MyData_WorkoutTemplates_Title"]
                     </div>
                     <button class="fp-btn-primary fp-data-btn" @onclick="OpenAddWorkoutTemplateModal">
-                        <i class="fa fa-plus"></i> Create Workout Template
+                        <i class="fa fa-plus"></i> @L["MyData_CreateWorkoutTemplate"]
                     </button>
                 </div>
 
@@ -890,7 +891,7 @@
                 {
                     <div class="fp-data-empty">
                         <i class="fa fa-dumbbell"></i>
-                        <p>No workout split templates saved yet. Create one directly or save from any client's plan!</p>
+                        <p>@L["MyData_NoWorkoutTemplates"]</p>
                     </div>
                 }
                 else
@@ -899,11 +900,11 @@
                         <table class="fp-data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Split Name</th>
-                                    <th>Days</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
+                                    <th>@L["Table_Name"]</th>
+                                    <th>@L["Table_SplitName"]</th>
+                                    <th>@L["Table_Days"]</th>
+                                    <th>@L["Table_Created"]</th>
+                                    <th>@L["Table_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -941,7 +942,7 @@
     <div class="fp-modal-overlay" @onclick="() => showMealModal = false">
         <div class="fp-data-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header">
-                <span class="fp-data-modal-title"><i class="fa fa-utensils"></i> @(editMeal.Id == 0 ? "ADD" : "EDIT") DICTIONARY MEAL</span>
+                <span class="fp-data-modal-title"><i class="fa fa-utensils"></i> @(editMeal.Id == 0 ? L["Modal_AddDictionaryMeal"] : L["Modal_EditDictionaryMeal"])</span>
                 <button class="fp-data-modal-close" @onclick="() => showMealModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
@@ -950,30 +951,30 @@
                     <!-- Left Column: Meal General Details -->
                     <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div class="fp-input-group" style="margin-bottom: 0;">
-                            <label>Meal Name *</label>
+                            <label>@L["Form_MealName"]</label>
                             <input @bind="editMeal.MealName" placeholder="e.g. Chicken Pasta, Beef Rice..." />
                         </div>
                         <div class="fp-input-group" style="margin-bottom: 0;">
-                            <label>Recipe / Instructions</label>
+                            <label>@L["Form_RecipeInstructions"]</label>
                             <textarea @bind="editMeal.Instruction" rows="6" placeholder="e.g. Cook the chicken with garlic, add rice and serve hot..." style="height: 140px;"></textarea>
                         </div>
                         <div class="fp-input-group" style="margin-bottom: 0;">
-                            <label>Video or Recipe Link (optional)</label>
+                            <label>@L["Form_VideoLink"]</label>
                             <input @bind="editMeal.Link" placeholder="https://youtube.com/..." />
                         </div>
                         
                         <!-- Manual Override Panel -->
                         <div class="fp-manual-override-panel">
                             <span class="fp-manual-override-title">
-                                <i class="fa fa-sliders-h"></i> Manual Macro Override
+                                <i class="fa fa-sliders-h"></i> @L["Form_ManualMacroOverride"]
                             </span>
                             <div class="fp-grid-2" style="gap: 12px;">
-                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Calories *</label><input type="number" @bind="editMeal.Calories" disabled="@editMealIngredients.Any()" /></div>
-                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Protein (g)</label><input type="number" @bind="editMeal.Protein" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">@L["Form_CaloriesRequired"]</label><input type="number" @bind="editMeal.Calories" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">@L["Form_ProteinG"]</label><input type="number" @bind="editMeal.Protein" disabled="@editMealIngredients.Any()" /></div>
                             </div>
                             <div class="fp-grid-2" style="gap: 12px; margin-top: 12px;">
-                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Carbs (g)</label><input type="number" @bind="editMeal.Carbs" disabled="@editMealIngredients.Any()" /></div>
-                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">Fats (g)</label><input type="number" @bind="editMeal.Fats" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">@L["Form_CarbsG"]</label><input type="number" @bind="editMeal.Carbs" disabled="@editMealIngredients.Any()" /></div>
+                                <div class="fp-input-group" style="margin-bottom:0;"><label style="font-size:11px;">@L["Form_FatsG"]</label><input type="number" @bind="editMeal.Fats" disabled="@editMealIngredients.Any()" /></div>
                             </div>
                             @if (editMealIngredients.Any())
                             {
@@ -987,7 +988,7 @@
                     <!-- Right Column: Ingredients & Macros -->
                     <div>
                         <!-- Macro Summary Badges -->
-                        <span class="fp-macro-box-title">Calculated Macro Totals</span>
+                        <span class="fp-macro-box-title">@L["Form_MacroTotals"]</span>
                         <div class="fp-macro-grid">
                             <div class="fp-macro-box protein">
                                 <span class="fp-macro-box-label">Protein</span>
@@ -1010,9 +1011,9 @@
                         <!-- Ingredients block -->
                         <div class="fp-ing-container">
                             <div class="fp-ing-header">
-                                <span>Ingredients List</span>
+                                <span>@L["Form_IngredientsList"]</span>
                                 <button type="button" class="fp-btn-primary fp-data-btn" style="padding: 6px 14px; font-size: 12px; border-radius: 8px;" @onclick="AddIngredientToDictMeal">
-                                    <i class="fa fa-plus"></i> Add Food Item
+                                    <i class="fa fa-plus"></i> @L["Btn_AddFoodItem"]
                                 </button>
                             </div>
                             
@@ -1057,19 +1058,19 @@
                                         
                                         <div class="fp-ing-inner-grid">
                                             <div>
-                                                <label>Protein (g)</label>
+                                                <label>@L["Form_ProteinG"]</label>
                                                 <input type="number" @bind="ing.Protein" @bind:after="RecalculateDictionaryMealMacros" class="fp-ing-inner-input" />
                                             </div>
                                             <div>
-                                                <label>Carbs (g)</label>
+                                                <label>@L["Form_CarbsG"]</label>
                                                 <input type="number" @bind="ing.Carbs" @bind:after="RecalculateDictionaryMealMacros" class="fp-ing-inner-input" />
                                             </div>
                                             <div>
-                                                <label>Fats (g)</label>
+                                                <label>@L["Form_FatsG"]</label>
                                                 <input type="number" @bind="ing.Fats" @bind:after="RecalculateDictionaryMealMacros" class="fp-ing-inner-input" />
                                             </div>
                                             <div>
-                                                <label>Calories</label>
+                                                <label>@L["Table_Calories"]</label>
                                                 <input type="number" @bind="ing.Calories" readonly style="color: var(--fp-accent); font-weight: bold;" class="fp-ing-inner-input" />
                                             </div>
                                         </div>
@@ -1081,16 +1082,16 @@
                 </div>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showMealModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showMealModal = false" disabled="@isSaving">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary fp-data-btn" @onclick="SaveMeal" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-save"></i> <span>Save Meal</span>
+                        <i class="fa fa-save"></i> <span>@L["Btn_SaveMeal"]</span>
                     }
                 </button>
             </div>
@@ -1104,24 +1105,24 @@
     <div class="fp-modal-overlay" @onclick="() => showExerciseModal = false">
         <div class="fp-data-modal" style="max-width: 560px;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header">
-                <span class="fp-data-modal-title"><i class="fa fa-dumbbell"></i> @(editExercise.Id == 0 ? "ADD" : "EDIT") DICTIONARY EXERCISE</span>
+                <span class="fp-data-modal-title"><i class="fa fa-dumbbell"></i> @(editExercise.Id == 0 ? L["Modal_AddDictionaryExercise"] : L["Modal_EditDictionaryExercise"])</span>
                 <button class="fp-data-modal-close" @onclick="() => showExerciseModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
-                <div class="fp-input-group"><label>Exercise Name *</label><input @bind="editExercise.ExerciseName" /></div>
-                <div class="fp-input-group"><label>Video Link</label><input @bind="editExercise.ExcerciseLink" /></div>
+                <div class="fp-input-group"><label>@L["Form_ExerciseName"]</label><input @bind="editExercise.ExerciseName" /></div>
+                <div class="fp-input-group"><label>@L["Form_VideoLinkOpt"]</label><input @bind="editExercise.ExcerciseLink" /></div>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showExerciseModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showExerciseModal = false" disabled="@isSaving">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary fp-data-btn" @onclick="SaveExercise" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-save"></i> <span>Save Exercise</span>
+                        <i class="fa fa-save"></i> <span>@L["Btn_SaveExercise"]</span>
                     }
                 </button>
             </div>
@@ -1135,24 +1136,24 @@
     <div class="fp-modal-overlay" @onclick="() => showWarmUpModal = false">
         <div class="fp-data-modal" style="max-width: 560px;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header">
-                <span class="fp-data-modal-title"><i class="fa fa-fire"></i> @(editWarmUp.Id == 0 ? "ADD" : "EDIT") DICTIONARY WARM-UP</span>
+                <span class="fp-data-modal-title"><i class="fa fa-fire"></i> @(editWarmUp.Id == 0 ? L["Modal_AddDictionaryWarmUp"] : L["Modal_EditDictionaryWarmUp"])</span>
                 <button class="fp-data-modal-close" @onclick="() => showWarmUpModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
-                <div class="fp-input-group"><label>Warm-up Name *</label><input @bind="editWarmUp.WarmUpName" /></div>
-                <div class="fp-input-group"><label>Link / URL (optional)</label><input @bind="editWarmUp.WarmUpLink" /></div>
+                <div class="fp-input-group"><label>@L["Form_WarmUpName"]</label><input @bind="editWarmUp.WarmUpName" /></div>
+                <div class="fp-input-group"><label>@L["Form_WarmUpLink"]</label><input @bind="editWarmUp.WarmUpLink" /></div>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showWarmUpModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showWarmUpModal = false" disabled="@isSaving">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary fp-data-btn" @onclick="SaveWarmUp" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-save"></i> <span>Save Warm-up</span>
+                        <i class="fa fa-save"></i> <span>@L["Btn_SaveWarmUp"]</span>
                     }
                 </button>
             </div>
@@ -1166,31 +1167,31 @@
     <div class="fp-modal-overlay" @onclick="() => showDietTemplateModal = false">
         <div class="fp-data-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header">
-                <span class="fp-data-modal-title"><i class="fa fa-folder-open"></i> @(editDietTemplate.Id == 0 ? "CREATE" : "EDIT") DIET TEMPLATE</span>
+                <span class="fp-data-modal-title"><i class="fa fa-folder-open"></i> @(editDietTemplate.Id == 0 ? L["Modal_CreateDietTemplate"] : L["Modal_EditDietTemplate"])</span>
                 <button class="fp-data-modal-close" @onclick="() => showDietTemplateModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
                 <div class="fp-grid-2" style="gap: 16px;">
                     <div class="fp-input-group">
-                        <label>Template Name *</label>
+                        <label>@L["Form_TemplateName"]</label>
                         <input @bind="editDietTemplate.Name" placeholder="e.g. 2000kcal High Protein Plan" />
                     </div>
                     <div class="fp-input-group">
-                        <label>Expected Number of Meals</label>
+                        <label>@L["Form_ExpectedMeals"]</label>
                         <input type="number" readonly value="@editDietTemplateMeals.Count" style="color:var(--fp-text-secondary);" />
                     </div>
                 </div>
-                
+
                 <div class="fp-input-group">
-                    <label>Instructions & Recipe Guidelines</label>
+                    <label>@L["Form_InstructionsGuidelines"]</label>
                     <textarea @bind="editDietTemplate.Instructions" rows="3" placeholder="General rules (e.g. Drink 3L water, take multivitamins in the morning)..."></textarea>
                 </div>
 
                 <div style="margin-top:28px; border-top: 1px solid var(--fp-border); padding-top:24px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                        <h4 class="fp-template-section-title">Meals inside Template</h4>
+                        <h4 class="fp-template-section-title">@L["Form_MealsInsideTemplate"]</h4>
                         <button type="button" class="fp-data-btn-secondary fp-data-btn" @onclick="AddMealToTemplate">
-                            <i class="fa fa-plus"></i> Add Meal
+                            <i class="fa fa-plus"></i> @L["Btn_AddMeal"]
                         </button>
                     </div>
 
@@ -1216,7 +1217,7 @@
 
                                 <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                     <div class="fp-input-group" style="flex:1; min-width:260px; margin-bottom:0;">
-                                        <label>Import from Dictionary</label>
+                                        <label>@L["Form_ImportFromDictionary"]</label>
                                         <select @onchange="(e) => OnDictionaryMealSelected(meal, e.Value?.ToString())">
                                             <option value="">-- Select Saved Meal --</option>
                                             @foreach (var dm in meals)
@@ -1226,7 +1227,7 @@
                                         </select>
                                     </div>
                                     <div class="fp-input-group" style="flex:1.2; min-width:260px; margin-bottom:0;">
-                                        <label>Meal Name *</label>
+                                        <label>@L["Form_MealName"]</label>
                                         <input value="@meal.Name" @oninput='(e) => UpdateMealName(meal, e.Value?.ToString() ?? "")' placeholder="e.g. Eggs & Whole Wheat Toast" />
                                     </div>
                                 </div>
@@ -1235,19 +1236,19 @@
                                 {
                                     <div class="fp-grid-4" style="margin-top:16px; gap: 16px;">
                                         <div class="fp-input-group">
-                                            <label>Protein (g)</label>
+                                            <label>@L["Form_ProteinG"]</label>
                                             <input type="number" value="@primaryIng.Protein" @onchange='(e) => UpdateMealProtein(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
                                         </div>
                                         <div class="fp-input-group">
-                                            <label>Carbs (g)</label>
+                                            <label>@L["Form_CarbsG"]</label>
                                             <input type="number" value="@primaryIng.Carbs" @onchange='(e) => UpdateMealCarbs(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
                                         </div>
                                         <div class="fp-input-group">
-                                            <label>Fats (g)</label>
+                                            <label>@L["Form_FatsG"]</label>
                                             <input type="number" value="@primaryIng.Fats" @onchange='(e) => UpdateMealFats(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' />
                                         </div>
                                         <div class="fp-input-group">
-                                            <label>Calories (kcal) *</label>
+                                            <label>@L["Form_CaloriesKcal"]</label>
                                             <input type="number" value="@primaryIng.Calories" @onchange='(e) => UpdateMealCalories(meal, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)' style="color: var(--fp-accent); font-weight: bold;" />
                                         </div>
                                     </div>
@@ -1255,11 +1256,11 @@
 
                                 <div class="fp-grid-2" style="margin-top:16px; gap: 16px;">
                                     <div class="fp-input-group">
-                                        <label>Recipe / Instructions</label>
+                                        <label>@L["Form_RecipeInstructions"]</label>
                                         <input @bind="meal.Instruction" placeholder="e.g. Scramble egg whites, toast the bread and serve hot" />
                                     </div>
                                     <div class="fp-input-group">
-                                        <label>Video Link (optional)</label>
+                                        <label>@L["Form_VideoLinkOpt"]</label>
                                         <input @bind="meal.Link" placeholder="e.g. https://youtube.com/..." />
                                     </div>
                                 </div>
@@ -1269,16 +1270,16 @@
                 </div>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showDietTemplateModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showDietTemplateModal = false" disabled="@isSaving">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary fp-data-btn" @onclick="SaveDietTemplate" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-save"></i> <span>Save Template</span>
+                        <i class="fa fa-save"></i> <span>@L["Btn_SaveTemplate"]</span>
                     }
                 </button>
             </div>
@@ -1292,31 +1293,31 @@
     <div class="fp-modal-overlay" @onclick="() => showWorkoutTemplateModal = false">
         <div class="fp-data-modal" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header">
-                <span class="fp-data-modal-title"><i class="fa fa-folder-open"></i> @(editWorkoutTemplate.Id == 0 ? "CREATE" : "EDIT") WORKOUT TEMPLATE</span>
+                <span class="fp-data-modal-title"><i class="fa fa-folder-open"></i> @(editWorkoutTemplate.Id == 0 ? L["Modal_CreateWorkoutTemplate"] : L["Modal_EditWorkoutTemplate"])</span>
                 <button class="fp-data-modal-close" @onclick="() => showWorkoutTemplateModal = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
                 <div class="fp-grid-2" style="gap: 16px;">
                     <div class="fp-input-group">
-                        <label>Template Name *</label>
+                        <label>@L["Form_TemplateName"]</label>
                         <input @bind="editWorkoutTemplate.Name" placeholder="e.g. Push/Pull/Legs Split Month 1" />
                     </div>
                     <div class="fp-input-group">
-                        <label>Split Name *</label>
+                        <label>@L["Form_SplitName"]</label>
                         <input @bind="editWorkoutTemplate.SplitName" placeholder="e.g. 3-Day PPL split" />
                     </div>
                 </div>
-                
+
                 <div class="fp-input-group">
-                    <label>Instructions & Tips</label>
+                    <label>@L["Form_InstructionsTips"]</label>
                     <textarea @bind="editWorkoutTemplate.Instructions" rows="3" placeholder="General rules (e.g. Target RPE 8, rest 2 minutes on compound movements)..."></textarea>
                 </div>
 
                 <div style="margin-top:28px; border-top: 1px solid var(--fp-border); padding-top:24px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                        <h4 class="fp-template-section-title">Workout Days</h4>
+                        <h4 class="fp-template-section-title">@L["Form_WorkoutDays"]</h4>
                         <button type="button" class="fp-data-btn-secondary fp-data-btn" @onclick="AddWorkoutDayToTemplate">
-                            <i class="fa fa-plus"></i> Add Workout Day
+                            <i class="fa fa-plus"></i> @L["Btn_AddWorkoutDay"]
                         </button>
                     </div>
 
@@ -1341,11 +1342,11 @@
 
                                 <div class="fp-grid-2" style="gap: 16px;">
                                     <div class="fp-input-group">
-                                        <label>Day Title *</label>
+                                        <label>@L["Form_DayTitle"]</label>
                                         <input @bind="dayHolder.DayName" placeholder="e.g. Day 1 - Chest & Shoulders" />
                                     </div>
                                     <div class="fp-input-group">
-                                        <label>Calendar Day Assignment *</label>
+                                        <label>@L["Form_CalendarDay"]</label>
                                         <select @bind="dayHolder.Day">
                                             @foreach (var dVal in Enum.GetValues<Days>())
                                             {
@@ -1358,9 +1359,9 @@
                                 @* Exercises *@
                                 <div class="fp-template-nested-section">
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                        <span style="font-weight:700; font-size:13px; color:var(--fp-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Exercises on this Day</span>
+                                        <span style="font-weight:700; font-size:13px; color:var(--fp-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">@L["Form_ExercisesOnDay"]</span>
                                         <button type="button" class="fp-data-btn-secondary fp-data-btn" style="padding: 6px 12px; font-size:12px; border-radius:8px;" @onclick="() => AddExerciseToDay(dayHolder)">
-                                            <i class="fa fa-plus"></i> Add Exercise
+                                            <i class="fa fa-plus"></i> @L["Btn_AddExercise"]
                                         </button>
                                     </div>
 
@@ -1385,7 +1386,7 @@
 
                                                 <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
                                                     <div class="fp-input-group" style="flex:1.5; min-width:240px; margin-bottom:0;">
-                                                        <label>Import from Dictionary</label>
+                                                        <label>@L["Form_ImportFromDictionary"]</label>
                                                         <select style="border-radius:10px; height:44px;" @onchange="(e) => OnDictionaryExerciseSelected(exHolder, e.Value?.ToString())">
                                                             <option value="">-- Select Saved Exercise --</option>
                                                             @foreach (var dex in exercises)
@@ -1395,26 +1396,26 @@
                                                         </select>
                                                     </div>
                                                     <div class="fp-input-group" style="flex:2; min-width:240px; margin-bottom:0;">
-                                                        <label>Exercise Name *</label>
+                                                        <label>@L["Form_ExerciseName"]</label>
                                                         <input @bind="exHolder.ExerciseName" placeholder="e.g. Incline Bench Press" />
                                                     </div>
                                                 </div>
 
                                                 <div class="fp-grid-4" style="margin-top:12px; gap:12px;">
                                                     <div class="fp-input-group" style="margin-bottom:0;">
-                                                        <label>Sets</label>
+                                                        <label>@L["Table_Sets"]</label>
                                                         <input @bind="exHolder.Sets" placeholder="e.g. 4" />
                                                     </div>
                                                     <div class="fp-input-group" style="margin-bottom:0;">
-                                                        <label>Reps</label>
+                                                        <label>@L["Table_Reps"]</label>
                                                         <input @bind="exHolder.Reps" placeholder="e.g. 8-12" />
                                                     </div>
                                                     <div class="fp-input-group" style="margin-bottom:0;">
-                                                        <label>Rest</label>
+                                                        <label>@L["Table_Rest"]</label>
                                                         <input @bind="exHolder.RestTime" placeholder="e.g. 90s" />
                                                     </div>
                                                     <div class="fp-input-group" style="margin-bottom:0;">
-                                                        <label>Video Link</label>
+                                                        <label>@L["Form_VideoLinkOpt"]</label>
                                                         <input @bind="exHolder.ExerciseLink" placeholder="e.g. https://..." />
                                                     </div>
                                                 </div>
@@ -1427,22 +1428,22 @@
                                 <div class="fp-template-cardio-section">
                                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                                         <input type="checkbox" id="chkCardioTab_@(currentDayIdx)" @bind="dayHolder.IncludeCardio" style="width:16px; height:16px; cursor:pointer;" />
-                                        <label for="chkCardioTab_@(currentDayIdx)" style="margin:0; font-family:'Inter',sans-serif; font-size:13.5px; font-weight:700; color:var(--fp-text); cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">Include Cardio on this Day</label>
+                                        <label for="chkCardioTab_@(currentDayIdx)" style="margin:0; font-family:'Inter',sans-serif; font-size:13.5px; font-weight:700; color:var(--fp-text); cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">@L["Form_IncludeCardio"]</label>
                                     </div>
 
                                     @if (dayHolder.IncludeCardio)
                                     {
                                         <div class="fp-grid-3" style="gap: 12px;">
                                             <div class="fp-input-group" style="margin-bottom:0;">
-                                                <label>Cardio Type</label>
+                                                <label>@L["Form_CardioType"]</label>
                                                 <input @bind="dayHolder.CardioType" placeholder="e.g. Elliptical" />
                                             </div>
                                             <div class="fp-input-group" style="margin-bottom:0;">
-                                                <label>Duration (minutes)</label>
+                                                <label>@L["Form_DurationMinutes"]</label>
                                                 <input type="number" @bind="dayHolder.CardioDuration" />
                                             </div>
                                             <div class="fp-input-group" style="margin-bottom:0;">
-                                                <label>Intensity</label>
+                                                <label>@L["Form_Intensity"]</label>
                                                 <select @bind="dayHolder.CardioIntensity">
                                                     @foreach (var ciVal in Enum.GetValues<CardioIntensity>())
                                                     {
@@ -1452,7 +1453,7 @@
                                             </div>
                                         </div>
                                         <div class="fp-input-group" style="margin-top:12px; margin-bottom:0;">
-                                            <label>Cardio Guidelines & Notes</label>
+                                            <label>@L["Form_CardioGuidelines"]</label>
                                             <input @bind="dayHolder.CardioNotes" placeholder="e.g. Steady state at 65% max heart rate" />
                                         </div>
                                     }
@@ -1463,16 +1464,16 @@
                 </div>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showWorkoutTemplateModal = false" disabled="@isSaving">Cancel</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showWorkoutTemplateModal = false" disabled="@isSaving">@L["Btn_Cancel"]</button>
                 <button class="fp-btn-primary fp-data-btn" @onclick="SaveWorkoutTemplate" disabled="@isSaving">
                     @if (isSaving)
                     {
                         <span style="width: 12px; height: 12px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: fp-spin 0.75s linear infinite; margin-right: 6px; vertical-align: middle;"></span>
-                        <span>Saving...</span>
+                        <span>@L["Btn_Saving"]</span>
                     }
                     else
                     {
-                        <i class="fa fa-save"></i> <span>Save Template</span>
+                        <i class="fa fa-save"></i> <span>@L["Btn_SaveTemplate"]</span>
                     }
                 </button>
             </div>
@@ -1486,16 +1487,16 @@
     <div class="fp-modal-overlay" @onclick="() => showDeleteConfirm = false">
         <div class="fp-data-modal" style="max-width: 420px;" @onclick:stopPropagation="true">
             <div class="fp-data-modal-header" style="background:rgba(234,33,39,0.04);border-bottom:1px solid rgba(234,33,39,0.15);">
-                <span class="fp-data-modal-title" style="color:var(--fp-accent);"><i class="fa fa-exclamation-triangle"></i> CONFIRM DELETION</span>
+                <span class="fp-data-modal-title" style="color:var(--fp-accent);"><i class="fa fa-exclamation-triangle"></i> @L["Modal_ConfirmDeletion"]</span>
                 <button class="fp-data-modal-close" @onclick="() => showDeleteConfirm = false"><i class="fa fa-times"></i></button>
             </div>
             <div class="fp-data-modal-body">
                 <p style="font-family:'Inter',sans-serif; font-size:14px; color:var(--fp-text); margin:0; line-height:1.5;">@deleteConfirmMessage</p>
-                <p class="fp-hint" style="color:#ff6b6b; margin-top: 12px; font-weight:500;">This action cannot be undone.</p>
+                <p class="fp-hint" style="color:#ff6b6b; margin-top: 12px; font-weight:500;">@L["Modal_CannotBeUndone"]</p>
             </div>
             <div class="fp-data-modal-footer">
-                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showDeleteConfirm = false">Cancel</button>
-                <button class="fp-btn-primary fp-data-btn" style="background:#e31c1c; border-color:#e31c1c;" @onclick="PerformDelete"><i class="fa fa-trash"></i> Delete</button>
+                <button class="fp-data-btn-secondary fp-data-btn" @onclick="() => showDeleteConfirm = false">@L["Btn_Cancel"]</button>
+                <button class="fp-btn-primary fp-data-btn" style="background:#e31c1c; border-color:#e31c1c;" @onclick="PerformDelete"><i class="fa fa-trash"></i> @L["Btn_Delete"]</button>
             </div>
         </div>
     </div>

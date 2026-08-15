@@ -165,23 +165,13 @@ public partial class ClientDetail
             client = await ClientService.GetClientByIdAsync(ClientId, coachId);
             if (client != null)
             {
-                var dietsTask = DietService.GetDietsAsync(ClientId, coachId);
-                var workoutsTask = WorkoutService.GetWorkoutsAsync(ClientId, coachId);
-                var mealDictTask = DictionaryService.GetMealsAsync(coachId);
-                var exerciseDictTask = DictionaryService.GetExercisesAsync(coachId);
-                var warmUpDictTask = DictionaryService.GetWarmUpsAsync(coachId);
-                var dietTemplatesTask = TemplateService.GetDietTemplatesAsync(coachId);
-                var workoutTemplatesTask = TemplateService.GetWorkoutTemplatesAsync(coachId);
-
-                await Task.WhenAll(dietsTask, workoutsTask, mealDictTask, exerciseDictTask, warmUpDictTask, dietTemplatesTask, workoutTemplatesTask);
-
-                diets = await dietsTask;
-                workouts = await workoutsTask;
-                mealDict = await mealDictTask;
-                exerciseDict = await exerciseDictTask;
-                warmUpDict = await warmUpDictTask;
-                dietTemplates = await dietTemplatesTask;
-                workoutTemplates = await workoutTemplatesTask;
+                diets = await DietService.GetDietsAsync(ClientId, coachId);
+                workouts = await WorkoutService.GetWorkoutsAsync(ClientId, coachId);
+                mealDict = await DictionaryService.GetMealsAsync(coachId);
+                exerciseDict = await DictionaryService.GetExercisesAsync(coachId);
+                warmUpDict = await DictionaryService.GetWarmUpsAsync(coachId);
+                dietTemplates = await TemplateService.GetDietTemplatesAsync(coachId);
+                workoutTemplates = await TemplateService.GetWorkoutTemplatesAsync(coachId);
             }
         }
         finally

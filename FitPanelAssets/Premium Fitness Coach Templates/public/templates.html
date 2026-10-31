@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Fitness Coach Templates - Print Ready</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ========================================
+       CSS VARIABLES - CUSTOMIZE YOUR BRAND
+       ======================================== */
+    :root {
+      /* Brand Colors */
+      --coach-primary: #FF6B00;      /* Fire Orange */
+      --coach-accent: #00E5FF;       /* Electric Blue */
+      --coach-gold: #FFD700;         /* Neon Gold */
+      --coach-dark: #0A0A0A;         /* Deep Black */
+      --coach-charcoal: #1A1A1A;     /* Charcoal */
+      --coach-gray: #2A2A2A;         /* Dark Gray */
+      --coach-light-gray: #404040;   /* Light Gray */
+      --coach-text: #FFFFFF;         /* White Text */
+      --coach-text-secondary: #B0B0B0; /* Secondary Text */
+      
+      /* Typography */
+      --font-display: 'Barlow Condensed', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      /* Spacing */
+      --page-padding: 40px;
+      --section-gap: 24px;
+      --footer-height: 80px;
+    }
+
+    /* ========================================
+       PRINT-READY PAGE SETUP
+       ======================================== */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: #000;
+      color: var(--coach-text);
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* A4 Page Container */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: var(--coach-dark);
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      page-break-inside: avoid;
+      margin: 0 auto 20px;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* Page Content Container */
+    .page-content {
+      padding: var(--page-padding);
+      padding-bottom: calc(var(--footer-height) + 20px);
+      height: 100%;
+    }
+
+    /* ========================================
+       GLOBAL FOOTER (Every Page)
+       ======================================== */
+    .page-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--footer-height);
+      background: var(--coach-charcoal);
+      border-top: 3px solid var(--coach-primary);
+      padding: 20px var(--page-padding);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .footer-contact {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex: 1;
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--coach-text-secondary);
+      font-weight: 500;
+    }
+
+    .footer-item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--coach-primary);
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--coach-primary);
+    }
+
+    /* ========================================
+       COVER PAGE STYLES
+       ======================================== */
+    .cover-page {
+      background: linear-gradient(135deg, var(--coach-dark) 0%, var(--coach-charcoal) 100%);
+    }
+
+    .cover-diagonal-bg {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(135deg, transparent 0%, var(--coach-primary) 100%);
+      opacity: 0.08;
+      clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+    }
+
+    .cover-geometric {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      opacity: 0.03;
+    }
+
+    .cover-geometric::before,
+    .cover-geometric::after {
+      content: '';
+      position: absolute;
+      background: var(--coach-accent);
+    }
+
+    .cover-geometric::before {
+      width: 400px;
+      height: 400px;
+      top: -100px;
+      left: -100px;
+      transform: rotate(45deg);
+    }
+
+    .cover-geometric::after {
+      width: 300px;
+      height: 300px;
+      bottom: -80px;
+      right: -80px;
+      transform: rotate(25deg);
+    }
+
+    .cover-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cover-header {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .coach-photo-container {
+      flex-shrink: 0;
+      width: 280px;
+      height: 380px;
+      position: relative;
+      overflow: hidden;
+      border: 4px solid var(--coach-primary);
+      box-shadow: 0 20px 60px rgba(255, 107, 0, 0.3);
+    }
+
+    .coach-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .coach-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .coach-name {
+      font-family: var(--font-display);
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -2px;
+      color: var(--coach-text);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .coach-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--coach-primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .coach-bio {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--coach-text-secondary);
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+
+    .coach-certifications {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .cert-badge {
+      background: var(--coach-gray);
+      border-left: 3px solid var(--coach-accent);
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-accent);
+    }
+
+    .cover-document-title {
+      margin-top: auto;
+      margin-bottom: 30px;
+    }
+
+    .document-type {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--coach-primary) 0%, #FF8C00 100%);
+      padding: 20px 40px;
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #000;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+      margin-bottom: 16px;
+    }
+
+    .client-info {
+      font-size: 16px;
+      color: var(--coach-text-secondary);
+    }
+
+    .client-name {
+      font-weight: 700;
+      color: var(--coach-text);
+      font-size: 20px;
+    }
+
+    /* ========================================
+       WORKOUT DAY PAGE STYLES
+       ======================================== */
+    .workout-header {
+      background: linear-gradient(135deg, var(--coach-charcoal) 0%, var(--coach-gray) 100%);
+      border-left: 6px solid var(--coach-primary);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .workout-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--coach-primary));
+      opacity: 0.05;
+    }
+
+    .day-label {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-text);
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .muscle-focus {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--coach-primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .intensity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--coach-dark);
+      border: 2px solid var(--coach-primary);
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-primary);
+      margin-top: 12px;
+    }
+
+    .motivational-quote {
+      font-style: italic;
+      color: var(--coach-text-secondary);
+      font-size: 14px;
+      margin-top: 12px;
+      border-left: 3px solid var(--coach-accent);
+      padding-left: 16px;
+    }
+
+    /* Exercise Table */
+    .exercise-table-container {
+      margin-bottom: var(--section-gap);
+    }
+
+    .exercise-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+    }
+
+    .exercise-table thead {
+      background: linear-gradient(135deg, var(--coach-charcoal) 0%, var(--coach-gray) 100%);
+    }
+
+    .exercise-table th {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 18px 20px;
+      text-align: left;
+      color: var(--coach-primary);
+      border-bottom: 3px solid var(--coach-primary);
+    }
+
+    .exercise-table tbody tr {
+      border-left: 4px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .exercise-table tbody tr:nth-child(odd) {
+      background: var(--coach-charcoal);
+    }
+
+    .exercise-table tbody tr:nth-child(even) {
+      background: rgba(26, 26, 26, 0.5);
+    }
+
+    .exercise-table tbody tr:hover {
+      border-left-color: var(--coach-primary);
+      background: var(--coach-gray);
+    }
+
+    .exercise-table td {
+      padding: 16px 20px;
+      font-size: 15px;
+      color: var(--coach-text);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .exercise-name-link {
+      color: var(--coach-text);
+      text-decoration: none;
+      font-weight: 600;
+      position: relative;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+
+    .exercise-name-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--coach-accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .exercise-name-link:hover {
+      color: var(--coach-accent);
+    }
+
+    .exercise-name-link:hover::after {
+      opacity: 1;
+      box-shadow: 0 0 8px var(--coach-accent);
+    }
+
+    .sets-reps-rest {
+      font-weight: 600;
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    /* Cardio Section */
+    .cardio-section {
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.1) 0%, rgba(0, 229, 255, 0.05) 100%);
+      border: 2px solid var(--coach-accent);
+      border-left: 6px solid var(--coach-accent);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+    }
+
+    .cardio-header {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--coach-accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cardio-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .cardio-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cardio-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-text-secondary);
+    }
+
+    .cardio-value {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--coach-accent);
+      letter-spacing: 1px;
+    }
+
+    /* ========================================
+       DIET MEAL PAGE STYLES
+       ======================================== */
+    .meal-header {
+      background: linear-gradient(135deg, var(--coach-charcoal) 0%, var(--coach-gray) 100%);
+      border-left: 6px solid var(--coach-gold);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meal-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--coach-gold));
+      opacity: 0.05;
+    }
+
+    .meal-label {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-text);
+      margin-bottom: 8px;
+    }
+
+    .meal-timing {
+      font-size: 16px;
+      color: var(--coach-gold);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    /* Macro Summary Bar */
+    .macro-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: var(--section-gap);
+    }
+
+    .macro-card {
+      background: var(--coach-charcoal);
+      border: 2px solid var(--coach-gray);
+      border-top: 4px solid var(--coach-gold);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .macro-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--coach-gold), transparent);
+      opacity: 0.3;
+    }
+
+    .macro-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .macro-value {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--coach-gold);
+      letter-spacing: -1px;
+    }
+
+    .macro-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--coach-text-secondary);
+      margin-left: 4px;
+    }
+
+    /* Ingredients Section */
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--coach-primary);
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--coach-gray);
+      padding-bottom: 8px;
+    }
+
+    .ingredients-list {
+      background: var(--coach-charcoal);
+      border-left: 4px solid var(--coach-gold);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+    }
+
+    .ingredient-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .ingredient-item:last-child {
+      border-bottom: none;
+    }
+
+    .ingredient-name {
+      font-weight: 600;
+      color: var(--coach-text);
+      font-size: 15px;
+    }
+
+    .ingredient-amount {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--coach-gold);
+      letter-spacing: 1px;
+    }
+
+    .ingredient-alternative {
+      margin-left: 12px;
+      font-size: 13px;
+      color: var(--coach-text-secondary);
+      font-style: italic;
+    }
+
+    .ingredient-alternative::before {
+      content: '↔';
+      margin-right: 6px;
+      color: var(--coach-accent);
+    }
+
+    .alternative-meal-block {
+      background: rgba(0, 229, 255, 0.05);
+      border: 2px solid var(--coach-accent);
+      border-left: 6px solid var(--coach-accent);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+    }
+
+    .alternative-label {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--coach-accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    /* Preparation Instructions */
+    .preparation-section {
+      background: var(--coach-charcoal);
+      border-left: 4px solid var(--coach-primary);
+      padding: 24px 30px;
+      margin-bottom: var(--section-gap);
+    }
+
+    .preparation-steps {
+      list-style: none;
+      counter-reset: step-counter;
+    }
+
+    .preparation-step {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .preparation-step:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      background: var(--coach-primary);
+      color: #000;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .step-number::before {
+      content: counter(step-counter);
+    }
+
+    .step-text {
+      flex: 1;
+      color: var(--coach-text);
+      font-size: 15px;
+      line-height: 1.7;
+      padding-top: 6px;
+    }
+
+    /* Nutritional Info Block */
+    .nutrition-block {
+      background: linear-gradient(135deg, var(--coach-gray) 0%, var(--coach-charcoal) 100%);
+      border: 2px solid var(--coach-gold);
+      padding: 24px 30px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: var(--section-gap);
+    }
+
+    .nutrition-stat {
+      text-align: center;
+    }
+
+    .nutrition-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coach-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .nutrition-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--coach-gold);
+      letter-spacing: -1px;
+    }
+
+    .nutrition-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--coach-dark);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .nutrition-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--coach-gold), var(--coach-primary));
+      transition: width 0.3s;
+    }
+
+    /* ========================================
+       UTILITY CLASSES
+       ======================================== */
+    .flex {
+      display: flex;
+    }
+
+    .flex-col {
+      flex-direction: column;
+    }
+
+    .gap-4 {
+      gap: 16px;
+    }
+
+    .mb-6 {
+      margin-bottom: 24px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* ========================================
+       RESPONSIVE ADJUSTMENTS FOR SCREEN VIEW
+       ======================================== */
+    @media screen {
+      body {
+        background: #111;
+        padding: 40px 20px;
+      }
+      
+      .page {
+        box-shadow: 0 10px 60px rgba(0, 0, 0, 0.5);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       SECTION 1: COVER PAGE TEMPLATE (SHARED)
+       Can be used for both Workout Plan and Diet Plan
+       ========================================== -->
+  <div class="page cover-page">
+    <div class="cover-diagonal-bg"></div>
+    <div class="cover-geometric"></div>
+    
+    <div class="page-content cover-content">
+      <div class="cover-header">
+        <div class="coach-photo-container">
+          <!-- Replace src with actual coach photo URL -->
+          <img 
+            class="coach-photo" 
+            src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=800&fit=crop" 
+            alt="Coach Photo"
+          >
+        </div>
+        
+        <div class="coach-info">
+          <h1 class="coach-name">{{COACH_NAME}}<br>{{COACH_LASTNAME}}</h1>
+          <div class="coach-title">{{COACH_SPECIALTY}}</div>
+          <p class="coach-bio">
+            {{COACH_BIO_TEXT}}
+          </p>
+          
+          <div class="coach-certifications">
+            <div class="cert-badge">{{CERT_1}}</div>
+            <div class="cert-badge">{{CERT_2}}</div>
+            <div class="cert-badge">{{CERT_3}}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cover-document-title">
+        <div class="document-type">{{DOCUMENT_TYPE}}</div>
+        <div class="client-info">
+          Prepared for: <span class="client-name">{{CLIENT_NAME}}</span><br>
+          Plan Start Date: {{PLAN_START_DATE}}
+        </div>
+      </div>
+    </div>
+    
+    <div class="page-footer">
+      <div class="footer-contact">
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          @{{INSTAGRAM_HANDLE}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          {{COACH_EMAIL}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          {{COACH_PHONE}}
+        </div>
+      </div>
+      
+      <div class="footer-logo">{{COACH_BRAND}}</div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SECTION 2: WORKOUT DAY PAGE TEMPLATE
+       Repeat this page for each training day
+       ========================================== -->
+  <div class="page">
+    <div class="page-content">
+      <!-- Workout Header -->
+      <div class="workout-header">
+        <div class="day-label">DAY {{DAY_NUMBER}} — {{DAY_TYPE}}</div>
+        <div class="muscle-focus">
+          <span>🎯 TARGET:</span> {{MUSCLE_FOCUS}}
+        </div>
+        <div class="intensity-badge">
+          🔥 {{INTENSITY_LEVEL}}
+        </div>
+        <div class="motivational-quote">
+          "{{MOTIVATIONAL_QUOTE}}"
+        </div>
+      </div>
+      
+      <!-- Exercise Table -->
+      <div class="exercise-table-container">
+        <table class="exercise-table">
+          <thead>
+            <tr>
+              <th style="width: 50%;">EXERCISE NAME</th>
+              <th style="width: 15%;">SETS</th>
+              <th style="width: 15%;">REPS</th>
+              <th style="width: 20%;">REST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- REPEAT THIS ROW FOR EACH EXERCISE -->
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Barbell Bench Press
+                </a>
+              </td>
+              <td class="sets-reps-rest">4</td>
+              <td class="sets-reps-rest">8-10</td>
+              <td class="sets-reps-rest">90 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Incline Dumbbell Press
+                </a>
+              </td>
+              <td class="sets-reps-rest">4</td>
+              <td class="sets-reps-rest">10-12</td>
+              <td class="sets-reps-rest">75 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Cable Flyes
+                </a>
+              </td>
+              <td class="sets-reps-rest">3</td>
+              <td class="sets-reps-rest">12-15</td>
+              <td class="sets-reps-rest">60 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Overhead Press
+                </a>
+              </td>
+              <td class="sets-reps-rest">4</td>
+              <td class="sets-reps-rest">8-10</td>
+              <td class="sets-reps-rest">90 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Lateral Raises
+                </a>
+              </td>
+              <td class="sets-reps-rest">3</td>
+              <td class="sets-reps-rest">12-15</td>
+              <td class="sets-reps-rest">60 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Tricep Dips
+                </a>
+              </td>
+              <td class="sets-reps-rest">3</td>
+              <td class="sets-reps-rest">10-12</td>
+              <td class="sets-reps-rest">60 sec</td>
+            </tr>
+            
+            <tr>
+              <td>
+                <a href="{{EXERCISE_VIDEO_URL}}" class="exercise-name-link" target="_blank">
+                  Cable Tricep Pushdowns
+                </a>
+              </td>
+              <td class="sets-reps-rest">3</td>
+              <td class="sets-reps-rest">12-15</td>
+              <td class="sets-reps-rest">45 sec</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Optional Cardio Section (conditional - show/hide based on data) -->
+      <div class="cardio-section">
+        <div class="cardio-header">
+          🏃 OPTIONAL CARDIO
+        </div>
+        <div class="cardio-details">
+          <div class="cardio-item">
+            <div class="cardio-label">Type</div>
+            <div class="cardio-value">{{CARDIO_TYPE}}</div>
+          </div>
+          <div class="cardio-item">
+            <div class="cardio-label">Duration</div>
+            <div class="cardio-value">{{CARDIO_DURATION}}</div>
+          </div>
+          <div class="cardio-item">
+            <div class="cardio-label">Intensity</div>
+            <div class="cardio-value">{{CARDIO_INTENSITY}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer (same on every page) -->
+    <div class="page-footer">
+      <div class="footer-contact">
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          @{{INSTAGRAM_HANDLE}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          {{COACH_EMAIL}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          {{COACH_PHONE}}
+        </div>
+      </div>
+      
+      <div class="footer-logo">{{COACH_BRAND}}</div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SECTION 3: DIET MEAL PAGE TEMPLATE
+       Repeat this page for each meal
+       ========================================== -->
+  <div class="page">
+    <div class="page-content">
+      <!-- Meal Header -->
+      <div class="meal-header">
+        <div class="meal-label">MEAL {{MEAL_NUMBER}} — {{MEAL_NAME}}</div>
+        <div class="meal-timing">⏰ {{MEAL_TIME_RANGE}}</div>
+      </div>
+      
+      <!-- Macro Summary -->
+      <div class="macro-summary">
+        <div class="macro-card">
+          <div class="macro-label">Calories</div>
+          <div class="macro-value">
+            {{TOTAL_CALORIES}}<span class="macro-unit">kcal</span>
+          </div>
+        </div>
+        
+        <div class="macro-card">
+          <div class="macro-label">Protein</div>
+          <div class="macro-value">
+            {{PROTEIN}}<span class="macro-unit">g</span>
+          </div>
+        </div>
+        
+        <div class="macro-card">
+          <div class="macro-label">Carbs</div>
+          <div class="macro-value">
+            {{CARBS}}<span class="macro-unit">g</span>
+          </div>
+        </div>
+        
+        <div class="macro-card">
+          <div class="macro-label">Fat</div>
+          <div class="macro-value">
+            {{FAT}}<span class="macro-unit">g</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Ingredients Section -->
+      <h2 class="section-title">📋 Ingredients</h2>
+      <div class="ingredients-list">
+        <!-- REPEAT THIS ITEM FOR EACH INGREDIENT -->
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Chicken Breast (boneless, skinless)</span>
+            <span class="ingredient-alternative">Turkey Breast</span>
+          </div>
+          <div class="ingredient-amount">200g</div>
+        </div>
+        
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Brown Rice (cooked)</span>
+          </div>
+          <div class="ingredient-amount">150g</div>
+        </div>
+        
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Broccoli (steamed)</span>
+            <span class="ingredient-alternative">Green Beans</span>
+          </div>
+          <div class="ingredient-amount">100g</div>
+        </div>
+        
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Olive Oil</span>
+          </div>
+          <div class="ingredient-amount">1 tbsp</div>
+        </div>
+        
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Garlic (minced)</span>
+          </div>
+          <div class="ingredient-amount">2 cloves</div>
+        </div>
+        
+        <div class="ingredient-item">
+          <div>
+            <span class="ingredient-name">Lemon Juice</span>
+          </div>
+          <div class="ingredient-amount">1 tbsp</div>
+        </div>
+      </div>
+      
+      <!-- Alternative Meal Block (conditional - show only if alternative exists) -->
+      <div class="alternative-meal-block" style="display: none;">
+        <div class="alternative-label">↔ ALTERNATIVE MEAL OPTION</div>
+        <div class="ingredients-list" style="background: transparent; border: none; padding: 0;">
+          <div class="ingredient-item">
+            <div>
+              <span class="ingredient-name">Salmon Fillet</span>
+            </div>
+            <div class="ingredient-amount">180g</div>
+          </div>
+          
+          <div class="ingredient-item">
+            <div>
+              <span class="ingredient-name">Sweet Potato (baked)</span>
+            </div>
+            <div class="ingredient-amount">150g</div>
+          </div>
+          
+          <div class="ingredient-item">
+            <div>
+              <span class="ingredient-name">Asparagus (grilled)</span>
+            </div>
+            <div class="ingredient-amount">100g</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Preparation Instructions -->
+      <h2 class="section-title">👨‍🍳 Preparation</h2>
+      <div class="preparation-section">
+        <ol class="preparation-steps">
+          <!-- REPEAT THIS STEP FOR EACH INSTRUCTION -->
+          <li class="preparation-step">
+            <div class="step-number"></div>
+            <div class="step-text">
+              Season the chicken breast with salt, pepper, and your preferred spices. Let it marinate for 15 minutes at room temperature.
+            </div>
+          </li>
+          
+          <li class="preparation-step">
+            <div class="step-number"></div>
+            <div class="step-text">
+              Heat olive oil in a pan over medium-high heat. Add minced garlic and sauté for 30 seconds until fragrant.
+            </div>
+          </li>
+          
+          <li class="preparation-step">
+            <div class="step-number"></div>
+            <div class="step-text">
+              Add the chicken breast to the pan and cook for 6-7 minutes per side, or until internal temperature reaches 165°F (74°C).
+            </div>
+          </li>
+          
+          <li class="preparation-step">
+            <div class="step-number"></div>
+            <div class="step-text">
+              While the chicken is cooking, steam the broccoli for 5-6 minutes until tender but still crisp.
+            </div>
+          </li>
+          
+          <li class="preparation-step">
+            <div class="step-number"></div>
+            <div class="step-text">
+              Plate the cooked brown rice, add the chicken breast, and arrange the steamed broccoli on the side. Drizzle with lemon juice before serving.
+            </div>
+          </li>
+        </ol>
+      </div>
+      
+      <!-- Nutritional Info Block -->
+      <div class="nutrition-block">
+        <div class="nutrition-stat">
+          <div class="nutrition-label">Total Calories</div>
+          <div class="nutrition-value">{{TOTAL_CALORIES}}</div>
+          <div class="nutrition-bar">
+            <div class="nutrition-bar-fill" style="width: 85%;"></div>
+          </div>
+        </div>
+        
+        <div class="nutrition-stat">
+          <div class="nutrition-label">Protein</div>
+          <div class="nutrition-value">{{PROTEIN}}g</div>
+          <div class="nutrition-bar">
+            <div class="nutrition-bar-fill" style="width: 75%;"></div>
+          </div>
+        </div>
+        
+        <div class="nutrition-stat">
+          <div class="nutrition-label">Carbs</div>
+          <div class="nutrition-value">{{CARBS}}g</div>
+          <div class="nutrition-bar">
+            <div class="nutrition-bar-fill" style="width: 60%;"></div>
+          </div>
+        </div>
+        
+        <div class="nutrition-stat">
+          <div class="nutrition-label">Fat</div>
+          <div class="nutrition-value">{{FAT}}g</div>
+          <div class="nutrition-bar">
+            <div class="nutrition-bar-fill" style="width: 40%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer (same on every page) -->
+    <div class="page-footer">
+      <div class="footer-contact">
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          @{{INSTAGRAM_HANDLE}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          {{COACH_EMAIL}}
+        </div>
+        
+        <div class="footer-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          {{COACH_PHONE}}
+        </div>
+      </div>
+      
+      <div class="footer-logo">{{COACH_BRAND}}</div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TEMPLATE VARIABLE REFERENCE
+       ========================================== 
+       
+       Replace these placeholders with actual data:
+       
+       COVER PAGE:
+       - {{COACH_NAME}} - Coach's first name
+       - {{COACH_LASTNAME}} - Coach's last name
+       - {{COACH_SPECIALTY}} - e.g., "Elite Fitness Coach & Nutritionist"
+       - {{COACH_BIO_TEXT}} - Short bio paragraph
+       - {{CERT_1}}, {{CERT_2}}, {{CERT_3}} - Certifications
+       - {{DOCUMENT_TYPE}} - "Personalized Workout Plan" or "Personalized Diet Plan"
+       - {{CLIENT_NAME}} - Client's full name
+       - {{PLAN_START_DATE}} - Start date of the plan
+       
+       FOOTER (All Pages):
+       - {{INSTAGRAM_HANDLE}} - Instagram username without @
+       - {{COACH_EMAIL}} - Coach's email address
+       - {{COACH_PHONE}} - Coach's phone number
+       - {{COACH_BRAND}} - Brand name/logo text
+       
+       WORKOUT PAGE:
+       - {{DAY_NUMBER}} - Day number (01, 02, etc.)
+       - {{DAY_TYPE}} - e.g., "PUSH DAY", "LEG DAY"
+       - {{MUSCLE_FOCUS}} - Target muscle groups
+       - {{INTENSITY_LEVEL}} - e.g., "HIGH INTENSITY", "MODERATE"
+       - {{MOTIVATIONAL_QUOTE}} - Optional motivational text
+       - {{EXERCISE_VIDEO_URL}} - Link to exercise demonstration
+       - {{CARDIO_TYPE}} - e.g., "Treadmill", "Rowing"
+       - {{CARDIO_DURATION}} - e.g., "20 min"
+       - {{CARDIO_INTENSITY}} - e.g., "Moderate"
+       
+       DIET PAGE:
+       - {{MEAL_NUMBER}} - Meal number (01, 02, etc.)
+       - {{MEAL_NAME}} - e.g., "BREAKFAST", "LUNCH"
+       - {{MEAL_TIME_RANGE}} - e.g., "12:00 PM - 1:00 PM"
+       - {{TOTAL_CALORIES}} - Total calories for the meal
+       - {{PROTEIN}} - Protein in grams
+       - {{CARBS}} - Carbohydrates in grams
+       - {{FAT}} - Fat in grams
+       
+       ========================================== -->
+
+  <script>
+    // Optional: Add dynamic data injection here
+    // This script can be used to replace template variables programmatically
+    
+    // Example data structure for reference:
+    const templateData = {
+      coach: {
+        firstName: "MARCUS",
+        lastName: "STEEL",
+        specialty: "Elite Fitness Coach & Nutritionist",
+        bio: "10+ years of experience transforming lives through science-based training and nutrition. Specialized in body recomposition, strength training, and sustainable lifestyle changes.",
+        certifications: ["NASM-CPT", "PN Level 2", "CSCS"],
+        instagram: "marcussteel.fit",
+        email: "coach@marcussteel.com",
+        phone: "+1 (555) 123-4567",
+        brand: "STEEL FIT"
+      },
+      client: {
+        name: "Alex Johnson",
+        startDate: "May 21, 2026"
+      },
+      workout: {
+        day: "01",
+        type: "PUSH DAY",
+        muscleFocus: "Chest, Shoulders, Triceps",
+        intensity: "HIGH INTENSITY",
+        quote: "The only bad workout is the one that didn't happen.",
+        exercises: [
+          { name: "Barbell Bench Press", sets: 4, reps: "8-10", rest: "90 sec", videoUrl: "#" },
+          { name: "Incline Dumbbell Press", sets: 4, reps: "10-12", rest: "75 sec", videoUrl: "#" }
+        ],
+        cardio: {
+          type: "Treadmill",
+          duration: "15 min",
+          intensity: "Moderate"
+        }
+      },
+      meal: {
+        number: "02",
+        name: "LUNCH",
+        timeRange: "12:00 PM - 1:00 PM",
+        macros: {
+          calories: 520,
+          protein: 45,
+          carbs: 48,
+          fat: 12
+        },
+        ingredients: [
+          { name: "Chicken Breast", amount: "200g", alternative: "Turkey Breast" },
+          { name: "Brown Rice", amount: "150g", alternative: null }
+        ],
+        steps: [
+          "Season the chicken breast with salt, pepper, and your preferred spices.",
+          "Heat olive oil in a pan over medium-high heat."
+        ]
+      }
+    };
+    
+    // You can use this data structure to populate the template dynamically
+    // when generating PDFs programmatically with tools like Puppeteer
+  </script>
+</body>
+</html>

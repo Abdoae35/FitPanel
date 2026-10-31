@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Coach — Plan Templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   BRAND VARIABLES — swap these to restyle everything instantly
+   ============================================================ */
+:root {
+  --coach-primary:   #F5A623;   /* neon gold accent */
+  --coach-accent:    #00C2FF;   /* electric blue */
+  --coach-fire:      #FF4B1F;   /* fire orange for highlights */
+  --coach-dark:      #0A0A0A;   /* near-black background */
+  --coach-surface:   #141414;   /* card background */
+  --coach-surface2:  #1C1C1C;   /* alternate row / raised surface */
+  --coach-border:    #2A2A2A;   /* subtle borders */
+  --coach-muted:     #666666;   /* muted text */
+  --coach-text:      #F0F0F0;   /* body text */
+  --coach-white:     #FFFFFF;
+
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+
+  --page-w: 210mm;
+  --page-h: 297mm;
+  --page-pad: 12mm;
+  --footer-h: 18mm;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1a1a1a;
+  font-family: var(--font-body);
+  color: var(--coach-text);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ============================================================
+   PAGE SHELL — every page is exactly A4
+   ============================================================ */
+.page {
+  width: var(--page-w);
+  height: var(--page-h);
+  background: var(--coach-dark);
+  margin: 0 auto 8mm;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+}
+
+/* ============================================================
+   SHARED FOOTER
+   ============================================================ */
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--footer-h);
+  padding: 0 var(--page-pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--coach-surface);
+  border-top: 1px solid var(--coach-border);
+  z-index: 10;
+}
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: var(--page-pad); right: var(--page-pad);
+  height: 2px;
+  background: linear-gradient(90deg, var(--coach-primary), var(--coach-accent), transparent);
+}
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 7.5pt;
+  color: var(--coach-muted);
+  letter-spacing: 0.02em;
+}
+.footer-item svg { width: 11px; height: 11px; flex-shrink: 0; }
+.footer-item span { color: var(--coach-text); }
+
+/* ============================================================
+   PAGE CONTENT WRAPPER (sits above footer)
+   ============================================================ */
+.page-content {
+  flex: 1;
+  padding: var(--page-pad);
+  padding-bottom: calc(var(--footer-h) + 4mm);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ============================================================
+   GEOMETRIC DECORATIONS
+   ============================================================ */
+.geo-stripe {
+  position: absolute;
+  top: 0; right: 0;
+  width: 28mm;
+  height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(245,166,35,0.06) 6px,
+    rgba(245,166,35,0.06) 12px
+  );
+  pointer-events: none;
+}
+.geo-dot-grid {
+  position: absolute;
+  bottom: var(--footer-h);
+  left: 0;
+  width: 50mm;
+  height: 50mm;
+  background-image: radial-gradient(circle, rgba(245,166,35,0.12) 1px, transparent 1px);
+  background-size: 6mm 6mm;
+  pointer-events: none;
+  opacity: 0.6;
+}
+.accent-bar-v {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--coach-primary), var(--coach-accent));
+}
+
+/* ============================================================
+   SHARED INNER-PAGE HEADER
+   ============================================================ */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 6mm;
+  padding-bottom: 4mm;
+  border-bottom: 1px solid var(--coach-border);
+  position: relative;
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 30mm;
+  height: 2px;
+  background: var(--coach-primary);
+}
+.day-badge {
+  font-family: var(--font-display);
+  font-size: 28pt;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--coach-white);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.day-badge span {
+  color: var(--coach-primary);
+}
+.muscle-badge {
+  font-family: var(--font-display);
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--coach-dark);
+  background: var(--coach-primary);
+  padding: 3px 10px;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  margin-top: 4px;
+}
+.intensity-badge {
+  font-family: var(--font-display);
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--coach-fire);
+  border: 1px solid var(--coach-fire);
+  padding: 3px 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+.header-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.logo-area {
+  font-family: var(--font-display);
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+}
+.logo-area span { color: var(--coach-primary); }
+
+/* ============================================================
+   WORKOUT TABLE
+   ============================================================ */
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  margin-bottom: 5mm;
+}
+.exercise-table thead tr {
+  background: var(--coach-primary);
+}
+.exercise-table thead th {
+  font-family: var(--font-display);
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coach-dark);
+  padding: 6px 10px;
+  text-align: left;
+}
+.exercise-table thead th:first-child {
+  border-left: 4px solid var(--coach-fire);
+  padding-left: 12px;
+}
+.exercise-table tbody tr {
+  border-left: 4px solid transparent;
+  transition: background 0.1s;
+}
+.exercise-table tbody tr:nth-child(odd) {
+  background: var(--coach-surface2);
+  border-left-color: var(--coach-border);
+}
+.exercise-table tbody tr:nth-child(even) {
+  background: var(--coach-surface);
+  border-left-color: var(--coach-border);
+}
+.exercise-table tbody tr:hover {
+  border-left-color: var(--coach-primary);
+}
+.exercise-table tbody td {
+  padding: 7px 10px;
+  font-size: 9pt;
+  color: var(--coach-text);
+  border-bottom: 1px solid var(--coach-border);
+  vertical-align: middle;
+}
+.exercise-table tbody td:first-child {
+  padding-left: 12px;
+}
+.exercise-link {
+  color: var(--coach-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 9.5pt;
+  position: relative;
+  display: inline-block;
+}
+.exercise-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--coach-primary);
+  box-shadow: 0 0 6px var(--coach-primary);
+  opacity: 0.7;
+}
+.exercise-link:hover { color: var(--coach-primary); }
+.set-badge {
+  display: inline-block;
+  background: var(--coach-surface2);
+  border: 1px solid var(--coach-border);
+  color: var(--coach-accent);
+  font-family: var(--font-display);
+  font-size: 10pt;
+  font-weight: 700;
+  padding: 2px 8px;
+  min-width: 28px;
+  text-align: center;
+}
+.reps-val {
+  font-family: var(--font-display);
+  font-size: 10pt;
+  font-weight: 700;
+  color: var(--coach-white);
+}
+.rest-val {
+  font-size: 8.5pt;
+  color: var(--coach-muted);
+}
+.table-note {
+  font-size: 7.5pt;
+  color: var(--coach-muted);
+  font-style: italic;
+  margin-top: 2mm;
+  margin-bottom: 4mm;
+}
+
+/* ============================================================
+   CARDIO BLOCK
+   ============================================================ */
+.cardio-block {
+  background: var(--coach-surface);
+  border: 1px solid var(--coach-accent);
+  border-left: 4px solid var(--coach-accent);
+  padding: 5mm 6mm;
+  margin-top: 4mm;
+}
+.cardio-title {
+  font-family: var(--font-display);
+  font-size: 11pt;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coach-accent);
+  margin-bottom: 4mm;
+}
+.cardio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4mm;
+}
+.cardio-stat {
+  background: var(--coach-surface2);
+  padding: 4mm;
+  border-top: 2px solid var(--coach-accent);
+}
+.cardio-stat-label {
+  font-size: 7pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+  margin-bottom: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.cardio-stat-val {
+  font-family: var(--font-display);
+  font-size: 14pt;
+  font-weight: 800;
+  color: var(--coach-accent);
+}
+
+/* ============================================================
+   MOTIVATIONAL QUOTE
+   ============================================================ */
+.quote-strip {
+  background: var(--coach-surface2);
+  border-left: 3px solid var(--coach-primary);
+  padding: 3mm 5mm;
+  margin-bottom: 5mm;
+  font-size: 8.5pt;
+  font-style: italic;
+  color: var(--coach-muted);
+}
+.quote-strip strong { color: var(--coach-primary); font-style: normal; font-family: var(--font-display); font-size: 9pt; letter-spacing: 0.05em; }
+
+/* ============================================================
+   DIET PAGE — MACROS BAR
+   ============================================================ */
+.macro-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3mm;
+  margin-bottom: 5mm;
+}
+.macro-card {
+  background: var(--coach-surface2);
+  border-top: 3px solid var(--coach-primary);
+  padding: 4mm;
+  text-align: center;
+}
+.macro-card.protein { border-top-color: var(--coach-accent); }
+.macro-card.carbs   { border-top-color: var(--coach-primary); }
+.macro-card.fat     { border-top-color: var(--coach-fire); }
+.macro-card.calories{ border-top-color: #9B59B6; }
+.macro-label {
+  font-family: var(--font-display);
+  font-size: 7pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+  margin-bottom: 2px;
+}
+.macro-val {
+  font-family: var(--font-display);
+  font-size: 18pt;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--coach-white);
+}
+.macro-card.protein .macro-val { color: var(--coach-accent); }
+.macro-card.carbs .macro-val   { color: var(--coach-primary); }
+.macro-card.fat .macro-val     { color: var(--coach-fire); }
+.macro-card.calories .macro-val{ color: #C39BD3; }
+.macro-unit {
+  font-size: 7pt;
+  color: var(--coach-muted);
+  margin-top: 1px;
+}
+
+/* ============================================================
+   DIET — INGREDIENT LIST
+   ============================================================ */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 12pt;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coach-white);
+  margin-bottom: 3mm;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: var(--coach-primary);
+}
+.ingredient-list {
+  list-style: none;
+  margin-bottom: 5mm;
+}
+.ingredient-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--coach-border);
+  font-size: 9pt;
+}
+.ingredient-list li:last-child { border-bottom: none; }
+.ing-dot {
+  width: 5px; height: 5px;
+  background: var(--coach-primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.ing-name { font-weight: 600; color: var(--coach-text); flex: 1; }
+.ing-qty  { font-family: var(--font-display); font-weight: 700; font-size: 10pt; color: var(--coach-accent); min-width: 20mm; text-align: right; }
+.ing-alt  { font-size: 7.5pt; color: var(--coach-muted); margin-left: 4px; }
+.ing-alt-swap { color: var(--coach-primary); }
+
+/* ============================================================
+   DIET — ALTERNATE MEAL BLOCK
+   ============================================================ */
+.alt-meal-block {
+  background: var(--coach-surface);
+  border: 1px solid var(--coach-fire);
+  border-left: 4px solid var(--coach-fire);
+  padding: 4mm 5mm;
+  margin-top: 4mm;
+  margin-bottom: 4mm;
+}
+.alt-meal-title {
+  font-family: var(--font-display);
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coach-fire);
+  margin-bottom: 3mm;
+}
+
+/* ============================================================
+   DIET — PREP STEPS
+   ============================================================ */
+.prep-steps {
+  list-style: none;
+  counter-reset: steps;
+  margin-bottom: 5mm;
+}
+.prep-steps li {
+  counter-increment: steps;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 3.5mm;
+  font-size: 9pt;
+  line-height: 1.5;
+  color: var(--coach-text);
+}
+.prep-steps li::before {
+  content: counter(steps, decimal-leading-zero);
+  font-family: var(--font-display);
+  font-size: 11pt;
+  font-weight: 900;
+  color: var(--coach-primary);
+  min-width: 24px;
+  line-height: 1.2;
+}
+
+/* ============================================================
+   DIET — NUTRITION INFO CARD
+   ============================================================ */
+.nutrition-card {
+  background: var(--coach-surface2);
+  border: 1px solid var(--coach-border);
+  padding: 5mm;
+  margin-top: 4mm;
+}
+.nutrition-card-title {
+  font-family: var(--font-display);
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+  margin-bottom: 4mm;
+}
+.nutrition-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5mm;
+}
+.nutr-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nutr-label {
+  font-family: var(--font-display);
+  font-size: 8pt;
+  font-weight: 700;
+  width: 22mm;
+  color: var(--coach-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.nutr-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--coach-border);
+  border-radius: 0;
+  overflow: hidden;
+}
+.nutr-bar-fill {
+  height: 100%;
+  background: var(--coach-primary);
+}
+.nutr-bar-fill.protein { background: var(--coach-accent); }
+.nutr-bar-fill.carbs   { background: var(--coach-primary); }
+.nutr-bar-fill.fat     { background: var(--coach-fire); }
+.nutr-val {
+  font-family: var(--font-display);
+  font-size: 10pt;
+  font-weight: 800;
+  color: var(--coach-white);
+  min-width: 18mm;
+  text-align: right;
+}
+
+/* ============================================================
+   COVER PAGE SPECIFIC
+   ============================================================ */
+.cover-page {
+  background: var(--coach-dark);
+  overflow: hidden;
+}
+.cover-bg-diag {
+  position: absolute;
+  top: 0; right: 0;
+  width: 55%;
+  height: 100%;
+  background: var(--coach-surface);
+  clip-path: polygon(18% 0%, 100% 0%, 100% 100%, 0% 100%);
+  z-index: 0;
+}
+.cover-bg-diag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(245,166,35,0.04) 8px,
+    rgba(245,166,35,0.04) 16px
+  );
+}
+.cover-accent-line {
+  position: absolute;
+  top: 0; left: 52mm;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--coach-primary) 0%, var(--coach-accent) 60%, transparent 100%);
+  z-index: 2;
+}
+.cover-content {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 48mm 1fr;
+  height: calc(100% - var(--footer-h));
+  gap: 0;
+}
+.cover-left {
+  padding: 10mm 6mm 6mm 8mm;
+  display: flex;
+  flex-direction: column;
+  gap: 6mm;
+  background: var(--coach-dark);
+  position: relative;
+}
+.cover-logo {
+  font-family: var(--font-display);
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+}
+.cover-logo span { color: var(--coach-primary); display: block; font-size: 10pt; }
+.cover-photo-wrap {
+  flex: 1;
+  overflow: hidden;
+  background: var(--coach-surface2);
+  position: relative;
+}
+.cover-photo-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 20mm;
+  background: linear-gradient(transparent, var(--coach-dark));
+}
+.coach-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  filter: contrast(1.05) saturate(0.9);
+}
+.cover-plan-label {
+  font-family: var(--font-display);
+  font-size: 7pt;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--coach-dark);
+  background: var(--coach-primary);
+  padding: 2px 8px;
+  display: inline-block;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+.cover-right {
+  padding: 12mm 8mm 6mm 10mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.cover-coach-name {
+  font-family: var(--font-display);
+  font-size: 38pt;
+  font-weight: 900;
+  line-height: 0.92;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--coach-white);
+}
+.cover-coach-name em {
+  font-style: normal;
+  color: var(--coach-primary);
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-size: 10pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--coach-accent);
+  margin-top: 4mm;
+  margin-bottom: 5mm;
+}
+.cover-bio {
+  font-size: 8.5pt;
+  line-height: 1.65;
+  color: var(--coach-muted);
+  max-width: 90mm;
+  margin-bottom: 6mm;
+}
+.cert-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 6mm;
+}
+.cert-badge {
+  font-family: var(--font-display);
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--coach-border);
+  color: var(--coach-muted);
+  padding: 3px 8px;
+  background: var(--coach-surface2);
+}
+.cert-badge.highlight {
+  border-color: var(--coach-primary);
+  color: var(--coach-primary);
+  background: rgba(245,166,35,0.06);
+}
+.cover-bottom {
+  border-top: 1px solid var(--coach-border);
+  padding-top: 4mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.cover-doc-title {
+  font-family: var(--font-display);
+  font-size: 20pt;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--coach-white);
+  line-height: 1;
+}
+.cover-doc-title span { color: var(--coach-primary); }
+.cover-client-info {
+  text-align: right;
+}
+.cover-client-label {
+  font-size: 7pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--coach-muted);
+  font-family: var(--font-display);
+}
+.cover-client-name {
+  font-family: var(--font-display);
+  font-size: 12pt;
+  font-weight: 800;
+  color: var(--coach-accent);
+}
+.cover-client-date {
+  font-size: 7.5pt;
+  color: var(--coach-muted);
+}
+
+/* ============================================================
+   PRINT RULES
+   ============================================================ */
+@media print {
+  body { background: none; margin: 0; }
+  .page { margin: 0; box-shadow: none; page-break-after: always; }
+  @page { size: A4; margin: 0; }
+  a { color: inherit; text-decoration: none; }
+  .exercise-link::after { display: none; }
+}
+
+/* Screen preview wrapper */
+@media screen {
+  body { padding: 10mm; }
+  .page { box-shadow: 0 4px 40px rgba(0,0,0,0.6); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SHARED FOOTER TEMPLATE (injected into each page)
+     ============================================================ -->
+<template id="footer-tpl">
+  <footer class="footer">
+    <div class="footer-item">
+      <!-- Instagram SVG -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+      <span>{{COACH_INSTAGRAM}}</span>
+    </div>
+    <div class="footer-item">
+      <!-- Mail SVG -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span>{{COACH_EMAIL}}</span>
+    </div>
+    <div class="footer-item">
+      <!-- Phone SVG -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.72 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      <span>{{COACH_PHONE}}</span>
+    </div>
+  </footer>
+</template>
+
+
+<!-- ============================================================
+     PAGE 1 — COVER PAGE
+     ============================================================ -->
+<div class="page cover-page" id="cover-page">
+  <div class="cover-bg-diag"></div>
+  <div class="cover-accent-line"></div>
+
+  <div class="cover-content">
+    <!-- LEFT COLUMN -->
+    <div class="cover-left">
+      <div class="cover-logo">
+        COACH<span>STUDIO</span>
+      </div>
+      <div class="cover-photo-wrap">
+        <img src="{{COACH_PHOTO_URL}}" alt="Coach Photo" class="coach-photo"
+          onerror="this.style.background='#1C1C1C';this.removeAttribute('src')">
+      </div>
+      <div style="padding-top: 2mm;">
+        <div class="cover-plan-label">{{PLAN_TYPE}}</div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="cover-right">
+      <div>
+        <div class="cover-coach-name">{{COACH_FIRST_NAME}}<br><em>{{COACH_LAST_NAME}}</em></div>
+        <div class="cover-title">{{COACH_TITLE}}</div>
+        <p class="cover-bio">{{COACH_BIO}}</p>
+        <div class="cert-badges">
+          <span class="cert-badge highlight">{{CERT_1}}</span>
+          <span class="cert-badge highlight">{{CERT_2}}</span>
+          <span class="cert-badge">{{CERT_3}}</span>
+          <span class="cert-badge">{{CERT_4}}</span>
+        </div>
+      </div>
+
+      <div class="cover-bottom">
+        <div>
+          <div class="cover-doc-title">
+            <span>{{DOC_TITLE_LINE1}}</span><br>{{DOC_TITLE_LINE2}}
+          </div>
+        </div>
+        <div class="cover-client-info">
+          <div class="cover-client-label">Prepared For</div>
+          <div class="cover-client-name">{{CLIENT_NAME}}</div>
+          <div class="cover-client-date">Start Date: {{PLAN_START_DATE}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px">
+        <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+      <span>{{COACH_INSTAGRAM}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span>{{COACH_EMAIL}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.72 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      <span>{{COACH_PHONE}}</span>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ============================================================
+     PAGE 2 — WORKOUT DAY PAGE
+     ============================================================ -->
+<div class="page" id="workout-day-page">
+  <div class="accent-bar-v"></div>
+  <div class="geo-stripe"></div>
+  <div class="geo-dot-grid"></div>
+
+  <div class="page-content">
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="day-badge">DAY <span>{{DAY_NUMBER}}</span> — {{DAY_NAME}}</div>
+        <div style="margin-top:3px;">
+          <span class="muscle-badge">{{MUSCLE_FOCUS}}</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="logo-area"><span>{{COACH_LAST_NAME}}</span> COACHING</div>
+        <div class="intensity-badge">{{INTENSITY_LEVEL}}</div>
+      </div>
+    </div>
+
+    <!-- MOTIVATIONAL QUOTE -->
+    <div class="quote-strip">
+      <strong>"</strong>{{MOTIVATIONAL_QUOTE}}<strong>"</strong>
+    </div>
+
+    <!-- EXERCISE TABLE -->
+    <table class="exercise-table">
+      <thead>
+        <tr>
+          <th style="width:46%">Exercise</th>
+          <th style="width:13%">Sets</th>
+          <th style="width:17%">Reps</th>
+          <th style="width:24%">Rest</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ROW TEMPLATE — repeat for each exercise via your app's template engine -->
+        <tr>
+          <td><a href="{{EXERCISE_1_VIDEO_URL}}" class="exercise-link">{{EXERCISE_1_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_1_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_1_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_1_REST}}</span></td>
+        </tr>
+        <tr>
+          <td><a href="{{EXERCISE_2_VIDEO_URL}}" class="exercise-link">{{EXERCISE_2_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_2_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_2_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_2_REST}}</span></td>
+        </tr>
+        <tr>
+          <td><a href="{{EXERCISE_3_VIDEO_URL}}" class="exercise-link">{{EXERCISE_3_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_3_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_3_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_3_REST}}</span></td>
+        </tr>
+        <tr>
+          <td><a href="{{EXERCISE_4_VIDEO_URL}}" class="exercise-link">{{EXERCISE_4_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_4_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_4_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_4_REST}}</span></td>
+        </tr>
+        <tr>
+          <td><a href="{{EXERCISE_5_VIDEO_URL}}" class="exercise-link">{{EXERCISE_5_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_5_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_5_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_5_REST}}</span></td>
+        </tr>
+        <tr>
+          <td><a href="{{EXERCISE_6_VIDEO_URL}}" class="exercise-link">{{EXERCISE_6_NAME}}</a></td>
+          <td><span class="set-badge">{{EXERCISE_6_SETS}}</span></td>
+          <td><span class="reps-val">{{EXERCISE_6_REPS}}</span></td>
+          <td><span class="rest-val">{{EXERCISE_6_REST}}</span></td>
+        </tr>
+        <!-- Add more rows as needed — table handles up to 12 gracefully -->
+      </tbody>
+    </table>
+    <p class="table-note">* Click exercise names to watch technique videos. All sets are working sets — warm up sets not included.</p>
+
+    <!-- OPTIONAL CARDIO BLOCK — conditionally rendered by your app -->
+    <!-- {{#if HAS_CARDIO}} -->
+    <div class="cardio-block">
+      <div class="cardio-title">🏃 Optional Cardio</div>
+      <div class="cardio-grid">
+        <div class="cardio-stat">
+          <div class="cardio-stat-label">Type</div>
+          <div class="cardio-stat-val" style="font-size:11pt;">{{CARDIO_TYPE}}</div>
+        </div>
+        <div class="cardio-stat">
+          <div class="cardio-stat-label">Duration</div>
+          <div class="cardio-stat-val">{{CARDIO_DURATION}}</div>
+        </div>
+        <div class="cardio-stat">
+          <div class="cardio-stat-label">Intensity</div>
+          <div class="cardio-stat-val" style="font-size:11pt;">{{CARDIO_INTENSITY}}</div>
+        </div>
+      </div>
+    </div>
+    <!-- {{/if}} -->
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      <span>{{COACH_INSTAGRAM}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span>{{COACH_EMAIL}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.72 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>{{COACH_PHONE}}</span>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ============================================================
+     PAGE 3 — DIET MEAL PAGE
+     ============================================================ -->
+<div class="page" id="diet-meal-page">
+  <div class="accent-bar-v" style="background: linear-gradient(180deg, var(--coach-accent), var(--coach-primary));"></div>
+  <div class="geo-stripe" style="background: repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(0,194,255,0.04) 6px, rgba(0,194,255,0.04) 12px);"></div>
+
+  <div class="page-content">
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="day-badge" style="color:var(--coach-accent);">
+          MEAL <span style="color:var(--coach-white);">{{MEAL_NUMBER}}</span> — {{MEAL_NAME}}
+        </div>
+        <div style="font-family:var(--font-display); font-size:8.5pt; font-weight:600; letter-spacing:0.08em; color:var(--coach-muted); margin-top:2px; text-transform:uppercase;">
+          ⏱ {{MEAL_TIME_START}} – {{MEAL_TIME_END}}
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="logo-area"><span>{{COACH_LAST_NAME}}</span> NUTRITION</div>
+        <div class="muscle-badge" style="background:var(--coach-accent); color:var(--coach-dark);">{{MEAL_CATEGORY}}</div>
+      </div>
+    </div>
+
+    <!-- MACRO BAR -->
+    <div class="macro-bar">
+      <div class="macro-card calories">
+        <div class="macro-label">Calories</div>
+        <div class="macro-val">{{MEAL_CALORIES}}</div>
+        <div class="macro-unit">kcal</div>
+      </div>
+      <div class="macro-card protein">
+        <div class="macro-label">Protein</div>
+        <div class="macro-val">{{MEAL_PROTEIN}}</div>
+        <div class="macro-unit">grams</div>
+      </div>
+      <div class="macro-card carbs">
+        <div class="macro-label">Carbs</div>
+        <div class="macro-val">{{MEAL_CARBS}}</div>
+        <div class="macro-unit">grams</div>
+      </div>
+      <div class="macro-card fat">
+        <div class="macro-label">Fat</div>
+        <div class="macro-val">{{MEAL_FAT}}</div>
+        <div class="macro-unit">grams</div>
+      </div>
+    </div>
+
+    <!-- INGREDIENTS -->
+    <div class="section-title">Ingredients</div>
+    <ul class="ingredient-list">
+      <li>
+        <span class="ing-dot"></span>
+        <span class="ing-name">{{INGREDIENT_1_NAME}}</span>
+        <span class="ing-qty">{{INGREDIENT_1_QTY}}</span>
+        <span class="ing-alt"><span class="ing-alt-swap">↔</span> {{INGREDIENT_1_ALT}}</span>
+      </li>
+      <li>
+        <span class="ing-dot"></span>
+        <span class="ing-name">{{INGREDIENT_2_NAME}}</span>
+        <span class="ing-qty">{{INGREDIENT_2_QTY}}</span>
+        <span class="ing-alt"><span class="ing-alt-swap">↔</span> {{INGREDIENT_2_ALT}}</span>
+      </li>
+      <li>
+        <span class="ing-dot"></span>
+        <span class="ing-name">{{INGREDIENT_3_NAME}}</span>
+        <span class="ing-qty">{{INGREDIENT_3_QTY}}</span>
+      </li>
+      <li>
+        <span class="ing-dot"></span>
+        <span class="ing-name">{{INGREDIENT_4_NAME}}</span>
+        <span class="ing-qty">{{INGREDIENT_4_QTY}}</span>
+      </li>
+      <li>
+        <span class="ing-dot"></span>
+        <span class="ing-name">{{INGREDIENT_5_NAME}}</span>
+        <span class="ing-qty">{{INGREDIENT_5_QTY}}</span>
+        <span class="ing-alt"><span class="ing-alt-swap">↔</span> {{INGREDIENT_5_ALT}}</span>
+      </li>
+    </ul>
+
+    <!-- ALTERNATE MEAL BLOCK — conditional -->
+    <!-- {{#if HAS_ALT_MEAL}} -->
+    <div class="alt-meal-block">
+      <div class="alt-meal-title">🔄 Alternate Meal Option</div>
+      <ul class="ingredient-list" style="margin-bottom:0">
+        <li><span class="ing-dot" style="background:var(--coach-fire)"></span><span class="ing-name">{{ALT_INGREDIENT_1_NAME}}</span><span class="ing-qty">{{ALT_INGREDIENT_1_QTY}}</span></li>
+        <li><span class="ing-dot" style="background:var(--coach-fire)"></span><span class="ing-name">{{ALT_INGREDIENT_2_NAME}}</span><span class="ing-qty">{{ALT_INGREDIENT_2_QTY}}</span></li>
+        <li><span class="ing-dot" style="background:var(--coach-fire)"></span><span class="ing-name">{{ALT_INGREDIENT_3_NAME}}</span><span class="ing-qty">{{ALT_INGREDIENT_3_QTY}}</span></li>
+      </ul>
+    </div>
+    <!-- {{/if}} -->
+
+    <!-- TWO COLUMN LOWER SECTION -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 4mm;">
+
+      <!-- PREP STEPS -->
+      <div>
+        <div class="section-title">Preparation</div>
+        <ol class="prep-steps">
+          <li>{{PREP_STEP_1}}</li>
+          <li>{{PREP_STEP_2}}</li>
+          <li>{{PREP_STEP_3}}</li>
+          <li>{{PREP_STEP_4}}</li>
+        </ol>
+      </div>
+
+      <!-- NUTRITION CARD -->
+      <div>
+        <div class="section-title">Macros Breakdown</div>
+        <div class="nutrition-card">
+          <div class="nutrition-card-title">Per Serving</div>
+          <div class="nutrition-bars">
+            <div class="nutr-row">
+              <span class="nutr-label">Calories</span>
+              <div class="nutr-bar-bg"><div class="nutr-bar-fill" style="width:{{CALORIE_BAR_PCT}}%; background:#C39BD3;"></div></div>
+              <span class="nutr-val" style="color:#C39BD3;">{{MEAL_CALORIES}} kcal</span>
+            </div>
+            <div class="nutr-row">
+              <span class="nutr-label">Protein</span>
+              <div class="nutr-bar-bg"><div class="nutr-bar-fill protein" style="width:{{PROTEIN_BAR_PCT}}%;"></div></div>
+              <span class="nutr-val" style="color:var(--coach-accent);">{{MEAL_PROTEIN}}g</span>
+            </div>
+            <div class="nutr-row">
+              <span class="nutr-label">Carbs</span>
+              <div class="nutr-bar-bg"><div class="nutr-bar-fill carbs" style="width:{{CARBS_BAR_PCT}}%;"></div></div>
+              <span class="nutr-val" style="color:var(--coach-primary);">{{MEAL_CARBS}}g</span>
+            </div>
+            <div class="nutr-row">
+              <span class="nutr-label">Fat</span>
+              <div class="nutr-bar-bg"><div class="nutr-bar-fill fat" style="width:{{FAT_BAR_PCT}}%;"></div></div>
+              <span class="nutr-val" style="color:var(--coach-fire);">{{MEAL_FAT}}g</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      <span>{{COACH_INSTAGRAM}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span>{{COACH_EMAIL}}</span>
+    </div>
+    <div class="footer-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.72 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.1a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>{{COACH_PHONE}}</span>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

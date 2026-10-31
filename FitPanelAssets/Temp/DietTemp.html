@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Elite Performance - Diet & Nutrition Template</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&family=Inter:wght@400;500;700;900&display=swap');
+
+    :root {
+      --coach-primary: #E2FB28;
+      --coach-dark: #050505;
+      --coach-surface: #121212;
+      --coach-accent: #222222;
+      --coach-text: #FFFFFF;
+      --coach-text-muted: #888888;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--coach-dark);
+      color: var(--coach-text);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 0;
+      margin: 0;
+    }
+
+    .a4-page {
+      width: 210mm;
+      height: 297mm;
+      background-color: var(--coach-dark);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24mm 20mm;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    .diagonal-overlay {
+      position: absolute;
+      top: -30%;
+      left: -20%;
+      width: 150%;
+      height: 150%;
+      background: linear-gradient(135deg, rgba(226, 251, 40, 0.04) 0%, transparent 45%);
+      transform: rotate(-12deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Header component design */
+    .header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-b: 2px solid var(--coach-accent);
+      padding-bottom: 24px;
+      margin-bottom: 20px;
+    }
+
+    .header-logo-section h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 28px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      line-height: 0.95;
+    }
+
+    .header-logo-section p {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--coach-text-muted);
+      margin-top: 4px;
+    }
+
+    .skew-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      background-color: var(--coach-primary);
+      color: #000000;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 4px 10px;
+      text-transform: uppercase;
+      transform: skewX(-10deg);
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+
+    .calorie-indicator {
+      text-align: right;
+    }
+
+    .calorie-indicator-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 950;
+      color: var(--coach-text);
+      letter-spacing: 0.5px;
+    }
+
+    /* Macro Bento Bento-Grid styling */
+    .macro-row {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-cols: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .macro-card {
+      background: var(--coach-surface);
+      border: 1px solid var(--coach-accent);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .macro-label {
+      font-size: 8px;
+      color: var(--coach-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .macro-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--coach-primary);
+    }
+
+    /* Multi Column Layout Content block */
+    .content-wrapper {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: grid;
+      grid-template-cols: 1.1fr 0.9fr;
+      gap: 30px;
+    }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--coach-primary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-b: 1px solid var(--coach-accent);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    /* Ingredients UI Styling */
+    .ingredients-list {
+      list-style-type: none;
+    }
+
+    .ingredients-item {
+      font-size: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ingredients-item-main {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      color: var(--coach-text);
+    }
+
+    .ingredients-alternative {
+      font-size: 10px;
+      color: var(--coach-text-muted);
+      margin-top: 3.5px;
+      font-style: italic;
+    }
+
+    /* Preparation Steps list */
+    .prep-list {
+      list-style-type: none;
+    }
+
+    .prep-item {
+      font-size: 11.5px;
+      line-height: 1.7;
+      color: #D1D5DB;
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 14px;
+    }
+
+    .prep-number {
+      font-family: 'Barlow Condensed', sans-serif;
+      position: absolute;
+      left: 0;
+      color: var(--coach-primary);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    /* Alternate Option block */
+    .alt-block {
+      grid-column: span 2;
+      border-left: 3px solid var(--coach-primary);
+      background-color: var(--coach-surface);
+      padding: 16px;
+      margin-top: auto;
+    }
+
+    .alt-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--coach-primary);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .alt-detail {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    /* Footer styling */
+    .footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-t: 1px solid var(--coach-accent);
+      padding-top: 16px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--coach-text-muted);
+      font-weight: 500;
+    }
+
+    .primary-glow {
+      text-shadow: 0 0 15px rgba(226, 251, 40, 0.35);
+    }
+
+    @media print {
+      body {
+        background-color: #000000;
+      }
+      .a4-page {
+        margin: 0;
+        padding: 20mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="a4-page">
+    <div class="diagonal-overlay"></div>
+
+    <!-- MAIN DIET CONTAINER -->
+    <div style="display: flex; flex-direction: column; flex: 1;">
+      
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header-logo-section">
+          <h2>MEAL 02: <span class="primary-glow" style="color: var(--coach-primary);">MID-DAY NUTRITION</span></h2>
+          <p>TIMING WINDOW: 12:30 PM — 1:30 PM</p>
+        </div>
+        <div class="calorie-indicator">
+          <div class="calorie-indicator-val">645 KCAL</div>
+          <span class="skew-badge" style="font-size: 9px; padding: 2px 6px;">PEAK METABOLIC RATE</span>
+        </div>
+      </header>
+
+      <!-- MACROS STATS BENTO -->
+      <div class="macro-row">
+        <div class="macro-card">
+          <div class="macro-label">PROTEIN (g)</div>
+          <div class="macro-val">52g</div>
+        </div>
+        <div class="macro-card">
+          <div class="macro-label">CARBOHYDRATES (g)</div>
+          <div class="macro-val">68g</div>
+        </div>
+        <div class="macro-card">
+          <div class="macro-label">DIETARY FAT (g)</div>
+          <div class="macro-val">12g</div>
+        </div>
+        <div class="macro-card">
+          <div class="macro-label">FIBER TARGET (g)</div>
+          <div class="macro-val">8g</div>
+        </div>
+      </div>
+
+      <!-- MAIN SPLIT (INGREDIENTS & PREPARATION) -->
+      <div class="content-wrapper">
+        
+        <!-- COLUMN 1: INGREDIENTS -->
+        <div>
+          <h3 class="section-title">🥩 BULKING INGREDIENTS</h3>
+          <ul class="ingredients-list">
+            <li class="ingredients-item">
+              <div class="ingredients-item-main">
+                <span>Grilled Chicken Breast (Raw Weight)</span>
+                <span>200g</span>
+              </div>
+              <div class="ingredients-alternative">Swap Option: 220g Wild-Caught Cod or Turkey Breast Slim Cuts</div>
+            </li>
+            <li class="ingredients-item">
+              <div class="ingredients-item-main">
+                <span>Jasmine Rice (Cooked Weight)</span>
+                <span>150g</span>
+              </div>
+              <div class="ingredients-alternative">Swap Option: 180g Baked Sweet Potatoes with sea salt</div>
+            </li>
+            <li class="ingredients-item">
+              <div class="ingredients-item-main">
+                <span>Steamed Broccoli Florets</span>
+                <span>100g</span>
+              </div>
+              <div class="ingredients-alternative">Swap Option: 100g Asparagus spears or Steamed Green beans</div>
+            </li>
+            <li class="ingredients-item">
+              <div class="ingredients-item-main">
+                <span>Extra Virgin Olive Oil</span>
+                <span>10g</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- COLUMN 2: PREPARATION -->
+        <div>
+          <h3 class="section-title">⏱️ PREPARATION INSTRUCTIONS</h3>
+          <ol class="prep-list">
+            <li class="prep-item">
+              <span class="prep-number">01.</span>
+              Season breast fillets lightly with sea salt, ground black pepper, and garlic paprika powder.
+            </li>
+            <li class="prep-item">
+              <span class="prep-number">02.</span>
+              Preheat skillet on high heat and sear chicken for 6 minutes per side until properly cooked.
+            </li>
+            <li class="prep-item">
+              <span class="prep-number">03.</span>
+              Weigh Jasmine rice after cooking. Plate and drizzle evenly with extra virgin olive oil.
+            </li>
+          </ol>
+        </div>
+
+        <!-- SPANNING ALTERNATIVE OPTION BLOCK -->
+        <div class="alt-block">
+          <div class="alt-title">⚡ FAST TRACK CONVENIENCE ALTERNATIVE</div>
+          <div class="alt-detail">If short on cooking time, consume: 2 Scoops Whey Isolate Protein Shake + 65g Raw Ground Cream of Rice + 15g Organic Cashew Butter.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DOCUMENT FOOTER -->
+    <footer class="footer">
+      <div>@VIKTORKANE_PRO</div>
+      <div>COACHING@VIKTORKANE.COM</div>
+      <div>+1 (555) 789-9432</div>
+    </footer>
+  </div>
+
+</body>
+</html>

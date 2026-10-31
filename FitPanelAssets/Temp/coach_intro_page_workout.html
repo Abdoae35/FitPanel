@@ -1,0 +1,340 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Inter:wght@400;500;700;900&display=swap');
+
+  .a4-wrap {
+    width: 794px;
+    height: 1123px;
+    background: #050505;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    margin: 0 auto;
+  }
+
+  .geo-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .photo-col {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 340px;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .photo-main {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: grayscale(20%) contrast(1.05);
+  }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #050505 0%, #050505 5%, transparent 40%),
+                linear-gradient(0deg, #050505 0%, transparent 25%);
+  }
+
+  .photo-accent-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: #E2FB28;
+    z-index: 10;
+  }
+
+  .content-col {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 480px;
+    height: 100%;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    padding: 52px 48px 32px 52px;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 64px;
+  }
+
+  .top-bar-line {
+    width: 32px;
+    height: 2px;
+    background: #E2FB28;
+  }
+
+  .top-bar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #888;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .skew-tag {
+    background: #E2FB28;
+    color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    transform: skewX(-10deg);
+    display: inline-block;
+    margin-left: auto;
+  }
+
+  .coach-pretitle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #E2FB28;
+    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .coach-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 86px;
+    line-height: 0.88;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+
+  .coach-name span {
+    color: #E2FB28;
+    display: block;
+  }
+
+  .title-line {
+    width: 60px;
+    height: 3px;
+    background: #E2FB28;
+    margin: 18px 0 20px;
+  }
+
+  .quote-block {
+    border-left: 3px solid #E2FB28;
+    padding-left: 16px;
+    margin-bottom: 40px;
+  }
+
+  .quote-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 22px;
+    color: #fff;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .pillars-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 44px;
+  }
+
+  .pillar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111;
+    border: 1px solid #1e1e1e;
+    padding: 10px 14px;
+  }
+
+  .pillar-dot {
+    width: 6px;
+    height: 6px;
+    background: #E2FB28;
+    flex-shrink: 0;
+    transform: rotate(45deg);
+  }
+
+  .pillar-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ddd;
+  }
+
+  .goal-banner {
+    background: #E2FB28;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: auto;
+  }
+
+  .goal-banner-icon {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: #000;
+    line-height: 1;
+  }
+
+  .goal-banner-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    line-height: 1.3;
+  }
+
+  .footer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #1e1e1e;
+    padding: 14px 52px;
+    background: #050505;
+  }
+
+  .footer-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #666;
+    font-weight: 600;
+  }
+
+  .footer-dot {
+    width: 4px;
+    height: 4px;
+    background: #E2FB28;
+    border-radius: 50%;
+  }
+
+  .doc-number {
+    position: absolute;
+    bottom: 52px;
+    right: 52px;
+    z-index: 20;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 120px;
+    color: rgba(226,251,40,0.04);
+    line-height: 1;
+    letter-spacing: -4px;
+    user-select: none;
+  }
+</style>
+
+<div class="a4-wrap">
+  <svg class="geo-bg" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="0,0 300,0 0,400" fill="rgba(226,251,40,0.025)"/>
+    <polygon points="0,800 0,1123 250,1123" fill="rgba(226,251,40,0.02)"/>
+    <line x1="0" y1="180" x2="420" y2="180" stroke="rgba(226,251,40,0.07)" stroke-width="1"/>
+    <line x1="52" y1="0" x2="52" y2="1123" stroke="rgba(226,251,40,0.04)" stroke-width="1"/>
+  </svg>
+
+  <div class="photo-col">
+    <img class="photo-main" src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=680&q=80" alt="Coach Mostafa Tolba"/>
+    <div class="photo-overlay"></div>
+    <div class="photo-accent-line"></div>
+  </div>
+
+  <div class="content-col">
+    <div class="top-bar">
+      <div class="top-bar-line"></div>
+      <div class="top-bar-label">Personal Training Program</div>
+      <div class="skew-tag">2025 · Elite</div>
+    </div>
+
+    <div class="coach-pretitle">Dr. Mostafa Tolba</div>
+    <div class="coach-name">
+      Mostafa<span>Tolba</span>
+    </div>
+    <div class="title-line"></div>
+
+    <div class="quote-block">
+      <div class="quote-text">"Every workout is a step forward to your goal"</div>
+    </div>
+
+    <div class="pillars-label">Keys to reach your goal</div>
+    <div class="pillars-grid">
+      <div class="pillar-item">
+        <div class="pillar-dot"></div>
+        <div class="pillar-text">Workout</div>
+      </div>
+      <div class="pillar-item">
+        <div class="pillar-dot"></div>
+        <div class="pillar-text">Abs</div>
+      </div>
+      <div class="pillar-item">
+        <div class="pillar-dot"></div>
+        <div class="pillar-text">Nutrition</div>
+      </div>
+      <div class="pillar-item">
+        <div class="pillar-dot"></div>
+        <div class="pillar-text">Cardio</div>
+      </div>
+      <div class="pillar-item">
+        <div class="pillar-dot"></div>
+        <div class="pillar-text">Supplementation</div>
+      </div>
+    </div>
+
+    <div class="goal-banner">
+      <div class="goal-banner-icon">→</div>
+      <div class="goal-banner-text">All are keys<br>to reach our goal</div>
+    </div>
+  </div>
+
+  <div class="doc-number">01</div>
+
+  <div class="footer-bar">
+    <div class="footer-item"><div class="footer-dot"></div>@viktorkane_pro</div>
+    <div class="footer-item"><div class="footer-dot"></div>coaching@mostafatolba.com</div>
+    <div class="footer-item"><div class="footer-dot"></div>+20 100 000 0000</div>
+  </div>
+</div>

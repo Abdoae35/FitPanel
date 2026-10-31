@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{plan_type}} — {{client_name}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────────── */
+    :root {
+      --ink:        #0c0e16;
+      --ink-mid:    #131621;
+      --ink-soft:   #1b1e2d;
+      --ink-line:   #262a3a;
+      --ink-muted:  rgba(255,255,255,.4);
+
+      --volt:       #c9f21d;
+      --volt-dim:   rgba(201,242,29,.11);
+      --volt-mid:   rgba(201,242,29,.22);
+      --volt-hi:    rgba(201,242,29,.45);
+
+      --white:      #ffffff;
+      --off:        #f5f6fb;
+      --border:     #e3e6f0;
+      --muted:      #7c829a;
+      --body:       #393e55;
+      --main:       #0c0e16;
+
+      --c-p: #3b82f6;
+      --c-c: #f59e0b;
+      --c-f: #ef4444;
+
+      --sh-sm:  0 1px 4px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.05);
+      --sh-md:  0 4px 16px rgba(0,0,0,.1),  0 1px 4px rgba(0,0,0,.06);
+      --sh-dk:  0 8px 32px rgba(0,0,0,.35);
+
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 16px;
+
+      --fh: 'Montserrat', sans-serif;
+      --fb: 'Inter', sans-serif;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 210mm; background: #c8ccd9; font-family: var(--fb); }
+
+    /* ── PRINT ──────────────────────────────────────────────────── */
+    @page { size: A4; margin: 0; }
+    @media print {
+      html, body { background: transparent; }
+      .page { box-shadow: none !important; margin-bottom: 0 !important; }
+    }
+
+    /* ── PAGE SHELL ─────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      background: var(--white);
+      overflow: hidden;
+      page-break-after: always;
+      page-break-inside: avoid;
+      box-shadow: 0 16px 56px rgba(0,0,0,.25);
+      margin: 0 auto 14mm;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 1 · COVER
+    ════════════════════════════════════════════════════════════ */
+    .cover {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      height: 297mm;
+    }
+
+    /* top accent stripe */
+    .cover__stripe {
+      height: 3px;
+      background: linear-gradient(90deg, var(--volt) 0%, #8ef500 55%, transparent 100%);
+      flex-shrink: 0;
+    }
+
+    /* hero */
+    .cover__hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16mm 17mm 8mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* large watermark letter behind content */
+    .cover__watermark {
+      position: absolute;
+      right: 88mm;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--fh);
+      font-size: 260px;
+      font-weight: 900;
+      color: rgba(255,255,255,.025);
+      line-height: 1;
+      letter-spacing: -8px;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+
+    /* radial glow behind headline */
+    .cover__hero::before {
+      content: '';
+      position: absolute;
+      left: -30mm;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 130mm;
+      height: 130mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,242,29,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* coach photo */
+    .cover__coach-photo {
+      position: absolute;
+      top: 0; right: 0;
+      width: 98mm;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .cover__coach-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+    .cover__coach-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        var(--ink) 0%,
+        rgba(12,14,22,.7) 30%,
+        rgba(12,14,22,.15) 65%,
+        transparent 100%
+      );
+    }
+    .cover__coach-photo::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 35%;
+      background: linear-gradient(to top, rgba(12,14,22,.9) 0%, transparent 100%);
+      z-index: 1;
+    }
+    .cover__coach-photo-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      background: linear-gradient(160deg, var(--ink-soft) 0%, var(--ink) 100%);
+    }
+    .cover__coach-photo-placeholder svg { width: 56px; height: 56px; fill: rgba(255,255,255,.1); }
+    .cover__coach-photo-placeholder span {
+      font-size: 8px; font-weight: 700; letter-spacing: 2px;
+      color: rgba(255,255,255,.18); text-transform: uppercase;
+    }
+
+    /* badge */
+    .cover__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--volt-dim);
+      border: 1px solid rgba(201,242,29,.5);
+      border-radius: 100px;
+      padding: 5px 16px 5px 10px;
+      margin-bottom: 22px;
+      position: relative; z-index: 1;
+    }
+    .cover__badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--volt);
+      box-shadow: 0 0 10px var(--volt-hi);
+    }
+    .cover__badge-text {
+      font-family: var(--fh);
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 2.5px;
+      color: var(--volt);
+      text-transform: uppercase;
+    }
+
+    /* headline */
+    .cover__headline {
+      font-family: var(--fh);
+      font-size: 40px; font-weight: 900;
+      line-height: 1.05;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      max-width: 120mm;
+      margin-bottom: 12px;
+      position: relative; z-index: 1;
+    }
+    .cover__headline em {
+      font-style: normal;
+      color: var(--volt);
+      display: inline-block;
+    }
+
+    .cover__sub {
+      font-size: 11px; font-weight: 400;
+      color: rgba(255,255,255,.38);
+      letter-spacing: 1px;
+      margin-bottom: 30px;
+      position: relative; z-index: 1;
+      text-transform: uppercase;
+    }
+
+    /* accent divider */
+    .cover__divider {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 30px;
+      position: relative; z-index: 1;
+    }
+    .cover__divider-line {
+      width: 40px; height: 2px;
+      background: var(--volt); border-radius: 2px;
+    }
+    .cover__divider-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--volt);
+      box-shadow: 0 0 8px var(--volt-hi);
+    }
+    .cover__divider-line2 {
+      width: 20px; height: 2px;
+      background: rgba(201,242,29,.3); border-radius: 2px;
+    }
+
+    /* client meta — 3-col horizontal cards */
+    .cover__meta {
+      display: flex;
+      gap: 10px;
+      position: relative; z-index: 1;
+      max-width: 118mm;
+    }
+    .cover__meta-card {
+      flex: 1;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-top: 2px solid var(--volt-mid);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+    }
+    .cover__meta-label {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 1.5px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 5px;
+    }
+    .cover__meta-value {
+      font-family: var(--fh);
+      font-size: 13px; font-weight: 800;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    /* footer */
+    .cover__footer {
+      padding: 0 17mm 12mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .cover__footer-sep {
+      height: 1px;
+      background: rgba(255,255,255,.07);
+      margin: 0 17mm 10mm;
+    }
+    .cover__brand { display: flex; flex-direction: column; gap: 2px; }
+    .cover__brand-name {
+      font-family: var(--fh);
+      font-size: 13px; font-weight: 800;
+      color: var(--white); letter-spacing: 0.2px;
+    }
+    .cover__brand-title {
+      font-size: 9.5px; color: var(--muted); letter-spacing: 0.5px;
+    }
+    .cover__logo {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--volt);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cover__logo svg { width: 22px; height: 22px; fill: var(--ink); }
+
+    .cover__bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--volt) 40%, rgba(201,242,29,.4) 70%, transparent 100%);
+      flex-shrink: 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 2 · COACH PROFILE
+    ════════════════════════════════════════════════════════════ */
+    .profile-page {
+      display: flex; flex-direction: column;
+      height: 297mm;
+    }
+
+    /* shared page topbar */
+    .page-topbar {
+      height: 3px;
+      background: linear-gradient(90deg, var(--volt) 0%, #8ef500 55%, transparent 100%);
+      flex-shrink: 0;
+    }
+
+    /* shared page header */
+    .page-header {
+      padding: 7mm 13mm 5mm;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .page-header__left {
+      display: flex; align-items: center; gap: 9px;
+    }
+    .page-header__dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--volt);
+      box-shadow: 0 0 8px var(--volt-hi);
+    }
+    .page-header__title {
+      font-family: var(--fh);
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 2px; color: var(--muted);
+      text-transform: uppercase;
+    }
+    .page-header__right {
+      font-family: var(--fh);
+      font-size: 9px; font-weight: 600;
+      color: var(--muted); letter-spacing: 0.8px;
+    }
+
+    /* two-column grid */
+    .profile-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 68mm 1fr;
+      overflow: hidden;
+    }
+
+    /* left — dark column */
+    .profile-left {
+      background: linear-gradient(175deg, var(--ink-mid) 0%, var(--ink) 100%);
+      padding: 10mm 7mm 8mm;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 7mm;
+      border-right: 1px solid var(--ink-line);
+    }
+
+    .coach-avatar {
+      width: 42mm; height: 42mm;
+      border-radius: 50%;
+      border: 2.5px solid var(--volt);
+      box-shadow: 0 0 0 5px var(--volt-dim), 0 0 24px rgba(201,242,29,.18);
+      overflow: hidden;
+      background: var(--ink-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .coach-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .coach-avatar-placeholder {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%;
+    }
+    .coach-avatar-placeholder svg { width: 26mm; height: 26mm; fill: rgba(255,255,255,.25); }
+
+    .coach-name-block { text-align: center; }
+    .coach-name-block h2 {
+      font-family: var(--fh);
+      font-size: 14px; font-weight: 800;
+      color: var(--white); margin-bottom: 4px;
+    }
+    .coach-name-block p {
+      font-size: 9.5px; color: var(--volt);
+      font-weight: 600; letter-spacing: 0.8px;
+    }
+    .coach-name-accent {
+      width: 28px; height: 2px;
+      background: var(--volt);
+      border-radius: 2px;
+      margin: 8px auto 0;
+    }
+
+    /* stats */
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 7px; width: 100%;
+    }
+    .stat-chip {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--r-sm);
+      padding: 10px 8px; text-align: center;
+    }
+    .stat-chip .n {
+      font-family: var(--fh);
+      font-size: 20px; font-weight: 900;
+      color: var(--volt); line-height: 1;
+      text-shadow: 0 0 16px rgba(201,242,29,.3);
+    }
+    .stat-chip .l {
+      font-size: 7.5px; color: var(--muted);
+      letter-spacing: 0.5px; margin-top: 3px;
+    }
+
+    /* contact items */
+    .contact-list { width: 100%; display: flex; flex-direction: column; gap: 9px; }
+    .contact-item { display: flex; align-items: center; gap: 9px; }
+    .contact-icon {
+      width: 28px; height: 28px;
+      border-radius: var(--r-sm);
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.09);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-icon svg { width: 13px; height: 13px; fill: var(--volt); }
+    .contact-detail .lbl {
+      font-size: 7.5px; font-weight: 700;
+      letter-spacing: 1px; color: var(--muted);
+      text-transform: uppercase;
+    }
+    .contact-detail .val {
+      font-size: 10px; color: var(--white); font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* right — white column */
+    .profile-right {
+      padding: 9mm 10mm 7mm;
+      display: flex; flex-direction: column; gap: 6mm;
+      overflow: hidden;
+    }
+
+    .section-eyebrow {
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: 2px; color: var(--volt);
+      text-transform: uppercase; margin-bottom: 5px;
+    }
+    .section-title {
+      font-family: var(--fh);
+      font-size: 15px; font-weight: 800;
+      color: var(--main); margin-bottom: 7px;
+    }
+    .section-body {
+      font-size: 10.5px; line-height: 1.65; color: var(--body);
+    }
+
+    .cert-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .cert-tag {
+      background: var(--off); border: 1px solid var(--border);
+      border-radius: 100px; padding: 4px 12px;
+      font-size: 8.5px; font-weight: 600; color: var(--body);
+    }
+    .cert-tag--accent {
+      background: var(--volt-dim);
+      border-color: rgba(201,242,29,.38); color: #5a7000;
+    }
+
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .bullet-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 10.5px; color: var(--body); line-height: 1.5;
+    }
+    .bullet-list li::before {
+      content: '';
+      flex-shrink: 0; margin-top: 6px;
+      width: 5px; height: 5px;
+      border-radius: 50%; background: var(--volt);
+    }
+
+    .profile-divider {
+      height: 1px; background: var(--border);
+    }
+
+    /* shared page footer */
+    .page-footer {
+      padding: 4mm 13mm;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .page-footer__left { font-size: 8px; color: var(--muted); letter-spacing: 0.4px; }
+    .page-footer__left strong { color: var(--main); }
+    .page-num { font-family: var(--fh); font-size: 8.5px; font-weight: 700; color: var(--muted); }
+    .page-num span { color: var(--volt); }
+
+    /* ════════════════════════════════════════════════════════════
+       SHARED CONTENT PAGE
+    ════════════════════════════════════════════════════════════ */
+    .content-page { display: flex; flex-direction: column; min-height: 297mm; }
+
+    .content-body {
+      flex: 1;
+      padding: 7mm 13mm 8mm;
+      display: flex; flex-direction: column; gap: 5mm;
+    }
+
+    /* section header */
+    .s-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 1px;
+    }
+    .s-header__accent {
+      display: flex; flex-direction: column; gap: 3px; align-items: center;
+    }
+    .s-header__bar {
+      width: 3px; height: 18px;
+      border-radius: 2px; background: var(--volt);
+    }
+    .s-header__bar2 {
+      width: 3px; height: 6px;
+      border-radius: 2px; background: var(--volt-mid);
+    }
+    .s-header__text h2 {
+      font-family: var(--fh);
+      font-size: 12.5px; font-weight: 800;
+      color: var(--main); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .s-header__text p {
+      font-size: 8.5px; color: var(--muted); letter-spacing: 0.8px; margin-top: 1px;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       DIET COMPONENTS
+    ════════════════════════════════════════════════════════════ */
+
+    /* coaching notes */
+    .notes-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 9px;
+    }
+    .note-card {
+      background: linear-gradient(145deg, var(--ink-soft) 0%, var(--ink-mid) 100%);
+      border-radius: var(--r-md);
+      border: 1px solid var(--ink-line);
+      padding: 14px 10px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 7px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .note-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: var(--volt-mid);
+    }
+    .note-card__icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--volt-dim);
+      border: 1px solid rgba(201,242,29,.25);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .note-card__icon svg { width: 17px; height: 17px; fill: var(--volt); }
+    .note-card__value {
+      font-family: var(--fh);
+      font-size: 24px; font-weight: 900;
+      color: var(--volt); line-height: 1;
+      text-shadow: 0 0 20px rgba(201,242,29,.25);
+    }
+    .note-card__label {
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: 1px; color: var(--ink-muted);
+      text-transform: uppercase;
+    }
+    .note-card__sub {
+      font-size: 8.5px; color: rgba(255,255,255,.3); line-height: 1.4;
+    }
+
+    /* meal card */
+    .meal-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      page-break-inside: avoid;
+      box-shadow: var(--sh-sm);
+    }
+    .meal-card__head {
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-left: 3px solid var(--volt);
+    }
+    .meal-card__head-left { display: flex; align-items: center; gap: 10px; }
+    .meal-number {
+      font-family: var(--fh);
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: 1.5px; color: var(--volt); text-transform: uppercase;
+    }
+    .meal-name {
+      font-family: var(--fh);
+      font-size: 13px; font-weight: 700; color: var(--white);
+    }
+
+    /* macro pills */
+    .meal-macros { display: flex; gap: 6px; }
+    .macro-pill {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--r-sm); padding: 5px 10px; min-width: 40px;
+    }
+    .macro-pill .mv {
+      font-family: var(--fh); font-size: 13px; font-weight: 800;
+      color: var(--white); line-height: 1;
+    }
+    .macro-pill .ml {
+      font-size: 7px; color: rgba(255,255,255,.4);
+      letter-spacing: 0.5px; margin-top: 2px;
+    }
+    .macro-pill--p { border-color: rgba(59,130,246,.35); }
+    .macro-pill--p .mv { color: #7fb3ff; }
+    .macro-pill--c { border-color: rgba(245,158,11,.35); }
+    .macro-pill--c .mv { color: #fcc55a; }
+    .macro-pill--f { border-color: rgba(239,68,68,.35); }
+    .macro-pill--f .mv { color: #ff8b8b; }
+    .macro-pill--k { background: var(--volt-dim); border-color: rgba(201,242,29,.3); }
+    .macro-pill--k .mv { color: var(--volt); font-size: 14px; }
+
+    /* ingredient table */
+    .ing-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .ing-table thead tr { background: var(--off); border-bottom: 1.5px solid var(--border); }
+    .ing-table thead th {
+      padding: 7px 10px; text-align: left;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 1px; color: var(--muted); text-transform: uppercase;
+    }
+    .ing-table thead th:not(:first-child) { text-align: center; }
+    .ing-table tbody tr { border-bottom: 1px solid var(--border); }
+    .ing-table tbody tr:last-child { border-bottom: none; }
+    .ing-table tbody tr:nth-child(even) { background: rgba(0,0,0,.018); }
+    .ing-table tbody td { padding: 7px 10px; color: var(--body); }
+    .ing-table tbody td:not(:first-child) { text-align: center; }
+    .ing-table .ing-name { font-weight: 600; color: var(--main); }
+    .ing-table .ing-weight { font-weight: 700; color: var(--main); }
+    .ing-table .num-p { color: var(--c-p); font-weight: 600; }
+    .ing-table .num-c { color: var(--c-c); font-weight: 600; }
+    .ing-table .num-f { color: var(--c-f); font-weight: 600; }
+    .ing-table .num-k { color: var(--main); font-weight: 700; }
+
+    /* total row */
+    .ing-table .total-row {
+      background: var(--off) !important;
+      border-top: 1.5px solid var(--border) !important;
+    }
+    .ing-table .total-row td { font-weight: 700; color: var(--main); padding: 7px 10px; }
+    .ing-table .total-row .total-label {
+      font-family: var(--fh); font-size: 9px;
+      font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    /* nutrition summary */
+    .nutrition-summary {
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      page-break-inside: avoid;
+      border: 1px solid var(--ink-line);
+    }
+    .nutrition-summary__header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 14px;
+    }
+    .nutrition-summary__title {
+      font-family: var(--fh);
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 2px; color: var(--muted); text-transform: uppercase;
+    }
+    .nutrition-summary__kcal {
+      font-family: var(--fh);
+      font-size: 11px; font-weight: 800; color: var(--volt);
+    }
+
+    .nutr-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .nutr-block {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .nutr-block__top {
+      display: flex; align-items: baseline; gap: 4px;
+    }
+    .nutr-block__value {
+      font-family: var(--fh); font-size: 28px; font-weight: 900;
+      color: var(--white); line-height: 1;
+    }
+    .nutr-block__unit {
+      font-size: 10px; color: var(--muted); font-weight: 500;
+    }
+    .nutr-block__label {
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .nutr-block__label--p { color: var(--c-p); }
+    .nutr-block__label--c { color: var(--c-c); }
+    .nutr-block__label--f { color: var(--c-f); }
+
+    /* macro bar */
+    .nutr-block__bar-bg {
+      height: 4px; background: rgba(255,255,255,.08);
+      border-radius: 2px; overflow: hidden;
+    }
+    .nutr-block__bar-fill {
+      height: 100%; border-radius: 2px;
+    }
+    .nutr-block__bar-fill--p { background: var(--c-p); }
+    .nutr-block__bar-fill--c { background: var(--c-c); }
+    .nutr-block__bar-fill--f { background: var(--c-f); }
+
+    .nutr-block__meta {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nutr-block__pct {
+      font-family: var(--fh); font-size: 11px; font-weight: 800;
+      color: rgba(255,255,255,.5);
+    }
+    .nutr-block__target {
+      font-size: 8px; color: rgba(255,255,255,.28); letter-spacing: 0.5px;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       WORKOUT COMPONENTS
+    ════════════════════════════════════════════════════════════ */
+
+    .workout-day { display: flex; flex-direction: column; gap: 9px; page-break-inside: avoid; }
+
+    .day-header {
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+      border-radius: var(--r-md);
+      padding: 11px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      page-break-after: avoid;
+      border-left: 3px solid var(--volt);
+      box-shadow: var(--sh-dk);
+    }
+    .day-header__left { display: flex; align-items: center; gap: 12px; }
+    .day-badge {
+      background: var(--volt);
+      color: var(--ink);
+      font-family: var(--fh); font-size: 8.5px; font-weight: 800;
+      letter-spacing: 1.5px; padding: 4px 10px;
+      border-radius: 100px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .day-title {
+      font-family: var(--fh); font-size: 13.5px; font-weight: 800;
+      color: var(--white); text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .day-subtitle {
+      font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px;
+    }
+    .day-chips { display: flex; gap: 6px; }
+    .day-chip {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--r-sm); padding: 4px 10px;
+      font-size: 9px; font-weight: 600; color: rgba(255,255,255,.65);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .day-chip svg { width: 10px; height: 10px; fill: var(--volt); }
+
+    /* exercise table */
+    .exercise-block { page-break-inside: avoid; }
+    .ex-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .ex-table thead tr {
+      background: var(--off);
+      border-bottom: 1.5px solid var(--border);
+    }
+    .ex-table thead th {
+      padding: 8px 10px; text-align: left;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 1px; color: var(--muted); text-transform: uppercase;
+    }
+    .ex-table thead th:not(:first-child):not(.th-num) { text-align: center; }
+    .th-num { width: 28px; text-align: center !important; }
+    .ex-table tbody tr { border-bottom: 1px solid var(--border); }
+    .ex-table tbody tr:last-child { border-bottom: none; }
+    .ex-table tbody tr:nth-child(even) { background: rgba(0,0,0,.02); }
+    .ex-table tbody td { padding: 8px 10px; color: var(--body); vertical-align: middle; }
+    .ex-table tbody td:not(:first-child):not(.td-num) { text-align: center; }
+
+    .td-num {
+      text-align: center !important;
+      font-family: var(--fh); font-size: 10px; font-weight: 800;
+      color: rgba(201,242,29,.35);
+    }
+    .ex-name { font-weight: 700; color: var(--main); font-size: 10.5px; }
+    .ex-pattern {
+      display: inline-block; margin-top: 2px;
+      font-size: 8.5px; color: var(--muted); font-style: italic;
+    }
+    .ex-note-inline {
+      font-size: 8.5px; color: #d97706; font-weight: 600;
+      margin-top: 2px; display: block;
+    }
+
+    .set-pill, .rep-pill {
+      display: inline-block;
+      font-family: var(--fh); font-size: 14px; font-weight: 900;
+      color: var(--main); line-height: 1;
+    }
+    .ex-rest {
+      font-size: 10px; color: var(--muted); font-weight: 500;
+    }
+
+    /* day notes callout */
+    .day-notes {
+      background: #fffceb;
+      border: 1px solid #f0dc7e;
+      border-left: 3px solid #e6c700;
+      border-radius: var(--r-md);
+      padding: 11px 14px;
+      page-break-inside: avoid;
+    }
+    .day-notes__head {
+      display: flex; align-items: center; gap: 7px; margin-bottom: 7px;
+    }
+    .day-notes__head svg { width: 13px; height: 13px; fill: #9a7400; }
+    .day-notes__head span {
+      font-family: var(--fh); font-size: 8.5px; font-weight: 800;
+      letter-spacing: 1.5px; color: #7a5c00; text-transform: uppercase;
+    }
+    .day-notes__body { font-size: 10px; color: #4e3c00; line-height: 1.6; }
+    .day-notes__body ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .day-notes__body ul li::before { content: '→  '; color: #c49b00; font-weight: 800; }
+
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 1 · COVER
+════════════════════════════════════════════════════════════ -->
+<div class="page cover">
+  <div class="cover__stripe"></div>
+
+  <div class="cover__hero">
+
+    <!-- coach portrait (right side) -->
+    <div class="cover__coach-photo">
+      <img src="{{coach_photo_url}}" alt="Dr. Mostafa Tolba" />
+      <!--
+      <div class="cover__coach-photo-placeholder">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        <span>Coach Photo</span>
+      </div>
+      -->
+    </div>
+
+    <!-- decorative background watermark -->
+    <div class="cover__watermark">MT</div>
+
+    <!-- plan type badge -->
+    <div class="cover__badge">
+      <div class="cover__badge-dot"></div>
+      <span class="cover__badge-text">{{plan_type}}</span>
+      <!-- "PERSONALIZED DIET PLAN" | "PERSONALIZED WORKOUT PLAN" -->
+    </div>
+
+    <!-- headline -->
+    <h1 class="cover__headline">
+      Every Workout<br/>
+      Is A <em>Step Forward</em><br/>
+      To Your Goal
+    </h1>
+
+    <p class="cover__sub">Elite Coaching Protocol · Designed Exclusively for You</p>
+
+    <div class="cover__divider">
+      <div class="cover__divider-line"></div>
+      <div class="cover__divider-dot"></div>
+      <div class="cover__divider-line2"></div>
+    </div>
+
+    <!-- 3-column client meta -->
+    <div class="cover__meta">
+      <div class="cover__meta-card">
+        <div class="cover__meta-label">Client Name</div>
+        <div class="cover__meta-value">{{client_name}}</div>
+      </div>
+      <div class="cover__meta-card">
+        <div class="cover__meta-label">Start Date</div>
+        <div class="cover__meta-value">{{plan_start_date}}</div>
+      </div>
+      <div class="cover__meta-card">
+        <div class="cover__meta-label">Duration</div>
+        <div class="cover__meta-value">{{plan_duration}}</div>
+      </div>
+    </div>
+
+  </div><!-- /hero -->
+
+  <div class="cover__footer-sep"></div>
+
+  <div class="cover__footer">
+    <div class="cover__brand">
+      <div class="cover__brand-name">Dr. Mostafa Tolba</div>
+      <div class="cover__brand-title">Strength &amp; Conditioning Coach</div>
+    </div>
+    <div class="cover__logo">
+      <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+    </div>
+  </div>
+
+  <div class="cover__bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 2 · COACH PROFILE
+════════════════════════════════════════════════════════════ -->
+<div class="page profile-page">
+  <div class="page-topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Coach Profile &amp; Introduction</span>
+    </div>
+    <span class="page-header__right">Dr. Mostafa Tolba · {{plan_type}}</span>
+  </div>
+
+  <div class="profile-body">
+
+    <!-- LEFT -->
+    <div class="profile-left">
+      <div class="coach-avatar">
+        <!-- <img src="{{coach_photo_url}}" alt="Coach Photo" /> -->
+        <div class="coach-avatar-placeholder">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        </div>
+      </div>
+
+      <div class="coach-name-block">
+        <h2>Dr. Mostafa Tolba</h2>
+        <p>Strength &amp; Conditioning</p>
+        <div class="coach-name-accent"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-chip"><div class="n">{{coach_years_exp}}+</div><div class="l">Years Exp.</div></div>
+        <div class="stat-chip"><div class="n">{{coach_clients}}+</div><div class="l">Clients</div></div>
+        <div class="stat-chip"><div class="n">{{coach_certs_count}}</div><div class="l">Certs</div></div>
+        <div class="stat-chip"><div class="n">{{coach_titles}}</div><div class="l">Titles</div></div>
+      </div>
+
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+          <div class="contact-detail"><div class="lbl">Email</div><div class="val">{{coach_email}}</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
+          <div class="contact-detail"><div class="lbl">Instagram</div><div class="val">{{coach_instagram}}</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+          <div class="contact-detail"><div class="lbl">WhatsApp</div><div class="val">{{coach_phone}}</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><svg viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg></div>
+          <div class="contact-detail"><div class="lbl">X / Twitter</div><div class="val">{{coach_twitter}}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="profile-right">
+      <div>
+        <div class="section-eyebrow">About Your Coach</div>
+        <div class="section-title">Meet Dr. Mostafa Tolba</div>
+        <p class="section-body">{{coach_bio}}</p>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Certifications</div>
+        <div class="cert-tags">
+          <span class="cert-tag cert-tag--accent">{{cert_1}}</span>
+          <span class="cert-tag">{{cert_2}}</span>
+          <span class="cert-tag">{{cert_3}}</span>
+          <span class="cert-tag">{{cert_4}}</span>
+          <span class="cert-tag">{{cert_5}}</span>
+          <span class="cert-tag">{{cert_6}}</span>
+        </div>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Experience Highlights</div>
+        <ul class="bullet-list">
+          <li>{{exp_1}}</li>
+          <li>{{exp_2}}</li>
+          <li>{{exp_3}}</li>
+          <li>{{exp_4}}</li>
+        </ul>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div>
+        <div class="section-eyebrow">Specializations</div>
+        <div class="cert-tags">
+          <span class="cert-tag">{{spec_1}}</span>
+          <span class="cert-tag">{{spec_2}}</span>
+          <span class="cert-tag">{{spec_3}}</span>
+          <span class="cert-tag">{{spec_4}}</span>
+          <span class="cert-tag">{{spec_5}}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="page-footer__left"><strong>{{client_name}}</strong> · {{plan_type}} · {{plan_start_date}}</div>
+    <div class="page-num">Page <span>02</span></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 3 · DIET — COACHING NOTES + MEALS 1 & 2
+════════════════════════════════════════════════════════════ -->
+<div class="page content-page diet-page" id="diet-page-1">
+  <div class="page-topbar"></div>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Diet Plan</span>
+    </div>
+    <span class="page-header__right">{{client_name}} · Week {{week_number}}</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- coaching notes -->
+    <div>
+      <div class="s-header">
+        <div class="s-header__accent"><div class="s-header__bar"></div><div class="s-header__bar2"></div></div>
+        <div class="s-header__text"><h2>Daily Coaching Notes</h2><p>Non-negotiable daily targets</p></div>
+      </div>
+      <div class="notes-grid">
+        <div class="note-card">
+          <div class="note-card__icon"><svg viewBox="0 0 24 24"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2C20 10.48 17.33 6.55 12 2z"/></svg></div>
+          <div class="note-card__value">{{daily_water}}</div>
+          <div class="note-card__label">Water</div>
+          <div class="note-card__sub">{{daily_water_note}}</div>
+        </div>
+        <div class="note-card">
+          <div class="note-card__icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <div class="note-card__value">{{daily_salt}}</div>
+          <div class="note-card__label">Salt</div>
+          <div class="note-card__sub">{{daily_salt_note}}</div>
+        </div>
+        <div class="note-card">
+          <div class="note-card__icon"><svg viewBox="0 0 24 24"><path d="M4.5 10.5v3c0 3.87 3.13 7 7 7s7-3.13 7-7v-3h-14zm7 8c-2.76 0-5-2.24-5-5v-1h10v1c0 2.76-2.24 5-5 5zM16 4H8C6.34 4 5 5.34 5 7v2h14V7c0-1.66-1.34-3-3-3z"/></svg></div>
+          <div class="note-card__value">{{daily_supplements}}</div>
+          <div class="note-card__label">Supplements</div>
+          <div class="note-card__sub">{{daily_supplements_note}}</div>
+        </div>
+        <div class="note-card">
+          <div class="note-card__icon"><svg viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-6.67-15.03-4-15.03-4v3h15.03v1z"/></svg></div>
+          <div class="note-card__value">{{daily_snacks}}</div>
+          <div class="note-card__label">Snacks</div>
+          <div class="note-card__sub">{{daily_snacks_note}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-header">
+      <div class="s-header__accent"><div class="s-header__bar"></div><div class="s-header__bar2"></div></div>
+      <div class="s-header__text"><h2>Meals Breakdown</h2><p>All weights in grams · uncooked unless stated</p></div>
+    </div>
+
+    <!-- MEAL 1 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 01</span>
+          <span class="meal-name">{{meal_1_name}}</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill macro-pill--p"><span class="mv">{{meal_1_protein}}</span><span class="ml">Protein</span></div>
+          <div class="macro-pill macro-pill--c"><span class="mv">{{meal_1_carbs}}</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill macro-pill--f"><span class="mv">{{meal_1_fat}}</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--k"><span class="mv">{{meal_1_kcal}}</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <table class="ing-table">
+        <thead><tr><th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th></tr></thead>
+        <tbody>
+          <tr><td class="ing-name">{{m1_ing1_name}}</td><td class="ing-weight">{{m1_ing1_weight}}</td><td class="num-p">{{m1_ing1_p}}</td><td class="num-c">{{m1_ing1_c}}</td><td class="num-f">{{m1_ing1_f}}</td><td class="num-k">{{m1_ing1_k}}</td></tr>
+          <tr><td class="ing-name">{{m1_ing2_name}}</td><td class="ing-weight">{{m1_ing2_weight}}</td><td class="num-p">{{m1_ing2_p}}</td><td class="num-c">{{m1_ing2_c}}</td><td class="num-f">{{m1_ing2_f}}</td><td class="num-k">{{m1_ing2_k}}</td></tr>
+          <tr><td class="ing-name">{{m1_ing3_name}}</td><td class="ing-weight">{{m1_ing3_weight}}</td><td class="num-p">{{m1_ing3_p}}</td><td class="num-c">{{m1_ing3_c}}</td><td class="num-f">{{m1_ing3_f}}</td><td class="num-k">{{m1_ing3_k}}</td></tr>
+          <tr><td class="ing-name">{{m1_ing4_name}}</td><td class="ing-weight">{{m1_ing4_weight}}</td><td class="num-p">{{m1_ing4_p}}</td><td class="num-c">{{m1_ing4_c}}</td><td class="num-f">{{m1_ing4_f}}</td><td class="num-k">{{m1_ing4_k}}</td></tr>
+          <tr class="total-row"><td class="total-label">Meal Total</td><td>—</td><td class="num-p">{{meal_1_protein}}</td><td class="num-c">{{meal_1_carbs}}</td><td class="num-f">{{meal_1_fat}}</td><td class="num-k">{{meal_1_kcal}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MEAL 2 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 02</span>
+          <span class="meal-name">{{meal_2_name}}</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill macro-pill--p"><span class="mv">{{meal_2_protein}}</span><span class="ml">Protein</span></div>
+          <div class="macro-pill macro-pill--c"><span class="mv">{{meal_2_carbs}}</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill macro-pill--f"><span class="mv">{{meal_2_fat}}</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--k"><span class="mv">{{meal_2_kcal}}</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <table class="ing-table">
+        <thead><tr><th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th></tr></thead>
+        <tbody>
+          <tr><td class="ing-name">{{m2_ing1_name}}</td><td class="ing-weight">{{m2_ing1_weight}}</td><td class="num-p">{{m2_ing1_p}}</td><td class="num-c">{{m2_ing1_c}}</td><td class="num-f">{{m2_ing1_f}}</td><td class="num-k">{{m2_ing1_k}}</td></tr>
+          <tr><td class="ing-name">{{m2_ing2_name}}</td><td class="ing-weight">{{m2_ing2_weight}}</td><td class="num-p">{{m2_ing2_p}}</td><td class="num-c">{{m2_ing2_c}}</td><td class="num-f">{{m2_ing2_f}}</td><td class="num-k">{{m2_ing2_k}}</td></tr>
+          <tr><td class="ing-name">{{m2_ing3_name}}</td><td class="ing-weight">{{m2_ing3_weight}}</td><td class="num-p">{{m2_ing3_p}}</td><td class="num-c">{{m2_ing3_c}}</td><td class="num-f">{{m2_ing3_f}}</td><td class="num-k">{{m2_ing3_k}}</td></tr>
+          <tr class="total-row"><td class="total-label">Meal Total</td><td>—</td><td class="num-p">{{meal_2_protein}}</td><td class="num-c">{{meal_2_carbs}}</td><td class="num-f">{{meal_2_fat}}</td><td class="num-k">{{meal_2_kcal}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer__left"><strong>{{client_name}}</strong> · Diet Plan · {{plan_start_date}}</div>
+    <div class="page-num">Page <span>03</span></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 4 · DIET — MEALS 3 & 4 + NUTRITION SUMMARY
+════════════════════════════════════════════════════════════ -->
+<div class="page content-page diet-page" id="diet-page-2">
+  <div class="page-topbar"></div>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Diet Plan</span>
+    </div>
+    <span class="page-header__right">{{client_name}} · Week {{week_number}}</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- MEAL 3 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 03</span>
+          <span class="meal-name">{{meal_3_name}}</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill macro-pill--p"><span class="mv">{{meal_3_protein}}</span><span class="ml">Protein</span></div>
+          <div class="macro-pill macro-pill--c"><span class="mv">{{meal_3_carbs}}</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill macro-pill--f"><span class="mv">{{meal_3_fat}}</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--k"><span class="mv">{{meal_3_kcal}}</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <table class="ing-table">
+        <thead><tr><th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th></tr></thead>
+        <tbody>
+          <tr><td class="ing-name">{{m3_ing1_name}}</td><td class="ing-weight">{{m3_ing1_weight}}</td><td class="num-p">{{m3_ing1_p}}</td><td class="num-c">{{m3_ing1_c}}</td><td class="num-f">{{m3_ing1_f}}</td><td class="num-k">{{m3_ing1_k}}</td></tr>
+          <tr><td class="ing-name">{{m3_ing2_name}}</td><td class="ing-weight">{{m3_ing2_weight}}</td><td class="num-p">{{m3_ing2_p}}</td><td class="num-c">{{m3_ing2_c}}</td><td class="num-f">{{m3_ing2_f}}</td><td class="num-k">{{m3_ing2_k}}</td></tr>
+          <tr><td class="ing-name">{{m3_ing3_name}}</td><td class="ing-weight">{{m3_ing3_weight}}</td><td class="num-p">{{m3_ing3_p}}</td><td class="num-c">{{m3_ing3_c}}</td><td class="num-f">{{m3_ing3_f}}</td><td class="num-k">{{m3_ing3_k}}</td></tr>
+          <tr><td class="ing-name">{{m3_ing4_name}}</td><td class="ing-weight">{{m3_ing4_weight}}</td><td class="num-p">{{m3_ing4_p}}</td><td class="num-c">{{m3_ing4_c}}</td><td class="num-f">{{m3_ing4_f}}</td><td class="num-k">{{m3_ing4_k}}</td></tr>
+          <tr class="total-row"><td class="total-label">Meal Total</td><td>—</td><td class="num-p">{{meal_3_protein}}</td><td class="num-c">{{meal_3_carbs}}</td><td class="num-f">{{meal_3_fat}}</td><td class="num-k">{{meal_3_kcal}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MEAL 4 -->
+    <div class="meal-card">
+      <div class="meal-card__head">
+        <div class="meal-card__head-left">
+          <span class="meal-number">Meal 04</span>
+          <span class="meal-name">{{meal_4_name}}</span>
+        </div>
+        <div class="meal-macros">
+          <div class="macro-pill macro-pill--p"><span class="mv">{{meal_4_protein}}</span><span class="ml">Protein</span></div>
+          <div class="macro-pill macro-pill--c"><span class="mv">{{meal_4_carbs}}</span><span class="ml">Carbs</span></div>
+          <div class="macro-pill macro-pill--f"><span class="mv">{{meal_4_fat}}</span><span class="ml">Fat</span></div>
+          <div class="macro-pill macro-pill--k"><span class="mv">{{meal_4_kcal}}</span><span class="ml">kcal</span></div>
+        </div>
+      </div>
+      <table class="ing-table">
+        <thead><tr><th>Ingredient</th><th>Weight (g)</th><th>P (g)</th><th>C (g)</th><th>F (g)</th><th>kcal</th></tr></thead>
+        <tbody>
+          <tr><td class="ing-name">{{m4_ing1_name}}</td><td class="ing-weight">{{m4_ing1_weight}}</td><td class="num-p">{{m4_ing1_p}}</td><td class="num-c">{{m4_ing1_c}}</td><td class="num-f">{{m4_ing1_f}}</td><td class="num-k">{{m4_ing1_k}}</td></tr>
+          <tr><td class="ing-name">{{m4_ing2_name}}</td><td class="ing-weight">{{m4_ing2_weight}}</td><td class="num-p">{{m4_ing2_p}}</td><td class="num-c">{{m4_ing2_c}}</td><td class="num-f">{{m4_ing2_f}}</td><td class="num-k">{{m4_ing2_k}}</td></tr>
+          <tr><td class="ing-name">{{m4_ing3_name}}</td><td class="ing-weight">{{m4_ing3_weight}}</td><td class="num-p">{{m4_ing3_p}}</td><td class="num-c">{{m4_ing3_c}}</td><td class="num-f">{{m4_ing3_f}}</td><td class="num-k">{{m4_ing3_k}}</td></tr>
+          <tr class="total-row"><td class="total-label">Meal Total</td><td>—</td><td class="num-p">{{meal_4_protein}}</td><td class="num-c">{{meal_4_carbs}}</td><td class="num-f">{{meal_4_fat}}</td><td class="num-k">{{meal_4_kcal}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- NUTRITION SUMMARY -->
+    <div>
+      <div class="s-header">
+        <div class="s-header__accent"><div class="s-header__bar"></div><div class="s-header__bar2"></div></div>
+        <div class="s-header__text"><h2>Daily Nutrition Summary</h2><p>Combined totals across all meals</p></div>
+      </div>
+
+      <div class="nutrition-summary">
+        <div class="nutrition-summary__header">
+          <div class="nutrition-summary__title">Total Daily Macros</div>
+          <div class="nutrition-summary__kcal">{{total_kcal}} kcal · Daily Total</div>
+        </div>
+
+        <div class="nutr-grid">
+          <!-- Protein -->
+          <div class="nutr-block">
+            <div class="nutr-block__top">
+              <div class="nutr-block__value">{{total_protein}}</div>
+              <div class="nutr-block__unit">g</div>
+            </div>
+            <div class="nutr-block__label nutr-block__label--p">Protein</div>
+            <div class="nutr-block__bar-bg">
+              <!-- width% = protein_kcal / total_kcal × 100  e.g. style="width:35%" -->
+              <div class="nutr-block__bar-fill nutr-block__bar-fill--p" style="width:{{protein_kcal_pct}}%"></div>
+            </div>
+            <div class="nutr-block__meta">
+              <div class="nutr-block__pct">{{protein_kcal_pct}}%</div>
+              <div class="nutr-block__target">of calories</div>
+            </div>
+          </div>
+
+          <!-- Carbs -->
+          <div class="nutr-block">
+            <div class="nutr-block__top">
+              <div class="nutr-block__value">{{total_carbs}}</div>
+              <div class="nutr-block__unit">g</div>
+            </div>
+            <div class="nutr-block__label nutr-block__label--c">Carbohydrates</div>
+            <div class="nutr-block__bar-bg">
+              <div class="nutr-block__bar-fill nutr-block__bar-fill--c" style="width:{{carbs_kcal_pct}}%"></div>
+            </div>
+            <div class="nutr-block__meta">
+              <div class="nutr-block__pct">{{carbs_kcal_pct}}%</div>
+              <div class="nutr-block__target">of calories</div>
+            </div>
+          </div>
+
+          <!-- Fat -->
+          <div class="nutr-block">
+            <div class="nutr-block__top">
+              <div class="nutr-block__value">{{total_fat}}</div>
+              <div class="nutr-block__unit">g</div>
+            </div>
+            <div class="nutr-block__label nutr-block__label--f">Fat</div>
+            <div class="nutr-block__bar-bg">
+              <div class="nutr-block__bar-fill nutr-block__bar-fill--f" style="width:{{fat_kcal_pct}}%"></div>
+            </div>
+            <div class="nutr-block__meta">
+              <div class="nutr-block__pct">{{fat_kcal_pct}}%</div>
+              <div class="nutr-block__target">of calories</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer__left"><strong>{{client_name}}</strong> · Diet Plan · {{plan_start_date}}</div>
+    <div class="page-num">Page <span>04</span></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 5 · WORKOUT — DAYS 1 & 2
+════════════════════════════════════════════════════════════ -->
+<div class="page content-page workout-page" id="workout-page-1">
+  <div class="page-topbar"></div>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Workout Plan</span>
+    </div>
+    <span class="page-header__right">{{client_name}} · Week {{week_number}}</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- DAY 1 -->
+    <div class="workout-day">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 01</span>
+          <div>
+            <div class="day-title">{{day_1_name}}</div>
+            <div class="day-subtitle">{{day_1_focus}}</div>
+          </div>
+        </div>
+        <div class="day-chips">
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>{{day_1_duration}}</div>
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>{{day_1_intensity}}</div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead><tr><th class="th-num">#</th><th style="width:44%">Movement &amp; Pattern</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">01</td><td><div class="ex-name">{{d1_ex1_name}}</div><span class="ex-pattern">{{d1_ex1_pattern}}</span></td><td><span class="set-pill">{{d1_ex1_sets}}</span></td><td><span class="rep-pill">{{d1_ex1_reps}}</span></td><td><span class="ex-rest">{{d1_ex1_rest}}</span></td></tr>
+            <tr><td class="td-num">02</td><td><div class="ex-name">{{d1_ex2_name}}</div><span class="ex-pattern">{{d1_ex2_pattern}}</span><span class="ex-note-inline">{{d1_ex2_note}}</span></td><td><span class="set-pill">{{d1_ex2_sets}}</span></td><td><span class="rep-pill">{{d1_ex2_reps}}</span></td><td><span class="ex-rest">{{d1_ex2_rest}}</span></td></tr>
+            <tr><td class="td-num">03</td><td><div class="ex-name">{{d1_ex3_name}}</div><span class="ex-pattern">{{d1_ex3_pattern}}</span></td><td><span class="set-pill">{{d1_ex3_sets}}</span></td><td><span class="rep-pill">{{d1_ex3_reps}}</span></td><td><span class="ex-rest">{{d1_ex3_rest}}</span></td></tr>
+            <tr><td class="td-num">04</td><td><div class="ex-name">{{d1_ex4_name}}</div><span class="ex-pattern">{{d1_ex4_pattern}}</span></td><td><span class="set-pill">{{d1_ex4_sets}}</span></td><td><span class="rep-pill">{{d1_ex4_reps}}</span></td><td><span class="ex-rest">{{d1_ex4_rest}}</span></td></tr>
+            <tr><td class="td-num">05</td><td><div class="ex-name">{{d1_ex5_name}}</div><span class="ex-pattern">{{d1_ex5_pattern}}</span></td><td><span class="set-pill">{{d1_ex5_sets}}</span></td><td><span class="rep-pill">{{d1_ex5_reps}}</span></td><td><span class="ex-rest">{{d1_ex5_rest}}</span></td></tr>
+            <tr><td class="td-num">06</td><td><div class="ex-name">{{d1_ex6_name}}</div><span class="ex-pattern">{{d1_ex6_pattern}}</span></td><td><span class="set-pill">{{d1_ex6_sets}}</span></td><td><span class="rep-pill">{{d1_ex6_reps}}</span></td><td><span class="ex-rest">{{d1_ex6_rest}}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 01</span>
+        </div>
+        <div class="day-notes__body"><ul><li>{{d1_note_1}}</li><li>{{d1_note_2}}</li><li>{{d1_note_3}}</li></ul></div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="workout-day" style="margin-top:3mm">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 02</span>
+          <div>
+            <div class="day-title">{{day_2_name}}</div>
+            <div class="day-subtitle">{{day_2_focus}}</div>
+          </div>
+        </div>
+        <div class="day-chips">
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>{{day_2_duration}}</div>
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>{{day_2_intensity}}</div>
+        </div>
+      </div>
+
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead><tr><th class="th-num">#</th><th style="width:44%">Movement &amp; Pattern</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">01</td><td><div class="ex-name">{{d2_ex1_name}}</div><span class="ex-pattern">{{d2_ex1_pattern}}</span></td><td><span class="set-pill">{{d2_ex1_sets}}</span></td><td><span class="rep-pill">{{d2_ex1_reps}}</span></td><td><span class="ex-rest">{{d2_ex1_rest}}</span></td></tr>
+            <tr><td class="td-num">02</td><td><div class="ex-name">{{d2_ex2_name}}</div><span class="ex-pattern">{{d2_ex2_pattern}}</span></td><td><span class="set-pill">{{d2_ex2_sets}}</span></td><td><span class="rep-pill">{{d2_ex2_reps}}</span></td><td><span class="ex-rest">{{d2_ex2_rest}}</span></td></tr>
+            <tr><td class="td-num">03</td><td><div class="ex-name">{{d2_ex3_name}}</div><span class="ex-pattern">{{d2_ex3_pattern}}</span></td><td><span class="set-pill">{{d2_ex3_sets}}</span></td><td><span class="rep-pill">{{d2_ex3_reps}}</span></td><td><span class="ex-rest">{{d2_ex3_rest}}</span></td></tr>
+            <tr><td class="td-num">04</td><td><div class="ex-name">{{d2_ex4_name}}</div><span class="ex-pattern">{{d2_ex4_pattern}}</span></td><td><span class="set-pill">{{d2_ex4_sets}}</span></td><td><span class="rep-pill">{{d2_ex4_reps}}</span></td><td><span class="ex-rest">{{d2_ex4_rest}}</span></td></tr>
+            <tr><td class="td-num">05</td><td><div class="ex-name">{{d2_ex5_name}}</div><span class="ex-pattern">{{d2_ex5_pattern}}</span></td><td><span class="set-pill">{{d2_ex5_sets}}</span></td><td><span class="rep-pill">{{d2_ex5_reps}}</span></td><td><span class="ex-rest">{{d2_ex5_rest}}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="day-notes">
+        <div class="day-notes__head">
+          <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+          <span>Coach Instructions — Day 02</span>
+        </div>
+        <div class="day-notes__body"><ul><li>{{d2_note_1}}</li><li>{{d2_note_2}}</li><li>{{d2_note_3}}</li></ul></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer__left"><strong>{{client_name}}</strong> · Workout Plan · {{plan_start_date}}</div>
+    <div class="page-num">Page <span>05</span></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 6 · WORKOUT — DAYS 3, 4 & 5
+════════════════════════════════════════════════════════════ -->
+<div class="page content-page workout-page" id="workout-page-2">
+  <div class="page-topbar"></div>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__dot"></div>
+      <span class="page-header__title">Personalized Workout Plan</span>
+    </div>
+    <span class="page-header__right">{{client_name}} · Week {{week_number}}</span>
+  </div>
+
+  <div class="content-body">
+
+    <!-- DAY 3 -->
+    <div class="workout-day">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 03</span>
+          <div><div class="day-title">{{day_3_name}}</div><div class="day-subtitle">{{day_3_focus}}</div></div>
+        </div>
+        <div class="day-chips">
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>{{day_3_duration}}</div>
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>{{day_3_intensity}}</div>
+        </div>
+      </div>
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead><tr><th class="th-num">#</th><th style="width:44%">Movement &amp; Pattern</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">01</td><td><div class="ex-name">{{d3_ex1_name}}</div><span class="ex-pattern">{{d3_ex1_pattern}}</span></td><td><span class="set-pill">{{d3_ex1_sets}}</span></td><td><span class="rep-pill">{{d3_ex1_reps}}</span></td><td><span class="ex-rest">{{d3_ex1_rest}}</span></td></tr>
+            <tr><td class="td-num">02</td><td><div class="ex-name">{{d3_ex2_name}}</div><span class="ex-pattern">{{d3_ex2_pattern}}</span></td><td><span class="set-pill">{{d3_ex2_sets}}</span></td><td><span class="rep-pill">{{d3_ex2_reps}}</span></td><td><span class="ex-rest">{{d3_ex2_rest}}</span></td></tr>
+            <tr><td class="td-num">03</td><td><div class="ex-name">{{d3_ex3_name}}</div><span class="ex-pattern">{{d3_ex3_pattern}}</span></td><td><span class="set-pill">{{d3_ex3_sets}}</span></td><td><span class="rep-pill">{{d3_ex3_reps}}</span></td><td><span class="ex-rest">{{d3_ex3_rest}}</span></td></tr>
+            <tr><td class="td-num">04</td><td><div class="ex-name">{{d3_ex4_name}}</div><span class="ex-pattern">{{d3_ex4_pattern}}</span></td><td><span class="set-pill">{{d3_ex4_sets}}</span></td><td><span class="rep-pill">{{d3_ex4_reps}}</span></td><td><span class="ex-rest">{{d3_ex4_rest}}</span></td></tr>
+            <tr><td class="td-num">05</td><td><div class="ex-name">{{d3_ex5_name}}</div><span class="ex-pattern">{{d3_ex5_pattern}}</span></td><td><span class="set-pill">{{d3_ex5_sets}}</span></td><td><span class="rep-pill">{{d3_ex5_reps}}</span></td><td><span class="ex-rest">{{d3_ex5_rest}}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="day-notes">
+        <div class="day-notes__head"><svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg><span>Coach Instructions — Day 03</span></div>
+        <div class="day-notes__body"><ul><li>{{d3_note_1}}</li><li>{{d3_note_2}}</li></ul></div>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="workout-day" style="margin-top:3mm">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 04</span>
+          <div><div class="day-title">{{day_4_name}}</div><div class="day-subtitle">{{day_4_focus}}</div></div>
+        </div>
+        <div class="day-chips">
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>{{day_4_duration}}</div>
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>{{day_4_intensity}}</div>
+        </div>
+      </div>
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead><tr><th class="th-num">#</th><th style="width:44%">Movement &amp; Pattern</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">01</td><td><div class="ex-name">{{d4_ex1_name}}</div><span class="ex-pattern">{{d4_ex1_pattern}}</span></td><td><span class="set-pill">{{d4_ex1_sets}}</span></td><td><span class="rep-pill">{{d4_ex1_reps}}</span></td><td><span class="ex-rest">{{d4_ex1_rest}}</span></td></tr>
+            <tr><td class="td-num">02</td><td><div class="ex-name">{{d4_ex2_name}}</div><span class="ex-pattern">{{d4_ex2_pattern}}</span></td><td><span class="set-pill">{{d4_ex2_sets}}</span></td><td><span class="rep-pill">{{d4_ex2_reps}}</span></td><td><span class="ex-rest">{{d4_ex2_rest}}</span></td></tr>
+            <tr><td class="td-num">03</td><td><div class="ex-name">{{d4_ex3_name}}</div><span class="ex-pattern">{{d4_ex3_pattern}}</span></td><td><span class="set-pill">{{d4_ex3_sets}}</span></td><td><span class="rep-pill">{{d4_ex3_reps}}</span></td><td><span class="ex-rest">{{d4_ex3_rest}}</span></td></tr>
+            <tr><td class="td-num">04</td><td><div class="ex-name">{{d4_ex4_name}}</div><span class="ex-pattern">{{d4_ex4_pattern}}</span></td><td><span class="set-pill">{{d4_ex4_sets}}</span></td><td><span class="rep-pill">{{d4_ex4_reps}}</span></td><td><span class="ex-rest">{{d4_ex4_rest}}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="day-notes">
+        <div class="day-notes__head"><svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg><span>Coach Instructions — Day 04</span></div>
+        <div class="day-notes__body"><ul><li>{{d4_note_1}}</li><li>{{d4_note_2}}</li></ul></div>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="workout-day" style="margin-top:3mm">
+      <div class="day-header">
+        <div class="day-header__left">
+          <span class="day-badge">Day 05</span>
+          <div><div class="day-title">{{day_5_name}}</div><div class="day-subtitle">{{day_5_focus}}</div></div>
+        </div>
+        <div class="day-chips">
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>{{day_5_duration}}</div>
+          <div class="day-chip"><svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>{{day_5_intensity}}</div>
+        </div>
+      </div>
+      <div class="exercise-block">
+        <table class="ex-table">
+          <thead><tr><th class="th-num">#</th><th style="width:44%">Movement &amp; Pattern</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+          <tbody>
+            <tr><td class="td-num">01</td><td><div class="ex-name">{{d5_ex1_name}}</div><span class="ex-pattern">{{d5_ex1_pattern}}</span></td><td><span class="set-pill">{{d5_ex1_sets}}</span></td><td><span class="rep-pill">{{d5_ex1_reps}}</span></td><td><span class="ex-rest">{{d5_ex1_rest}}</span></td></tr>
+            <tr><td class="td-num">02</td><td><div class="ex-name">{{d5_ex2_name}}</div><span class="ex-pattern">{{d5_ex2_pattern}}</span></td><td><span class="set-pill">{{d5_ex2_sets}}</span></td><td><span class="rep-pill">{{d5_ex2_reps}}</span></td><td><span class="ex-rest">{{d5_ex2_rest}}</span></td></tr>
+            <tr><td class="td-num">03</td><td><div class="ex-name">{{d5_ex3_name}}</div><span class="ex-pattern">{{d5_ex3_pattern}}</span></td><td><span class="set-pill">{{d5_ex3_sets}}</span></td><td><span class="rep-pill">{{d5_ex3_reps}}</span></td><td><span class="ex-rest">{{d5_ex3_rest}}</span></td></tr>
+            <tr><td class="td-num">04</td><td><div class="ex-name">{{d5_ex4_name}}</div><span class="ex-pattern">{{d5_ex4_pattern}}</span></td><td><span class="set-pill">{{d5_ex4_sets}}</span></td><td><span class="rep-pill">{{d5_ex4_reps}}</span></td><td><span class="ex-rest">{{d5_ex4_rest}}</span></td></tr>
+            <tr><td class="td-num">05</td><td><div class="ex-name">{{d5_ex5_name}}</div><span class="ex-pattern">{{d5_ex5_pattern}}</span></td><td><span class="set-pill">{{d5_ex5_sets}}</span></td><td><span class="rep-pill">{{d5_ex5_reps}}</span></td><td><span class="ex-rest">{{d5_ex5_rest}}</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="day-notes">
+        <div class="day-notes__head"><svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg><span>Coach Instructions — Day 05</span></div>
+        <div class="day-notes__body"><ul><li>{{d5_note_1}}</li><li>{{d5_note_2}}</li><li>{{d5_note_3}}</li></ul></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer__left"><strong>{{client_name}}</strong> · Workout Plan · {{plan_start_date}}</div>
+    <div class="page-num">Page <span>06</span></div>
+  </div>
+</div>
+
+</body>
+</html>

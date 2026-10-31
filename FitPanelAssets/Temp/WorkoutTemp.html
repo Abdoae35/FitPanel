@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Elite Performance - Workout Day Template</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&family=Inter:wght@400;500;700;900&display=swap');
+
+    :root {
+      --coach-primary: #E2FB28;
+      --coach-dark: #050505;
+      --coach-surface: #121212;
+      --coach-accent: #222222;
+      --coach-text: #FFFFFF;
+      --coach-text-muted: #888888;
+    }
+
+    /* Print & A4 Page Dimensions styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--coach-dark);
+      color: var(--coach-text);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 0;
+      margin: 0;
+    }
+
+    .a4-page {
+      width: 210mm;
+      height: 297mm;
+      background-color: var(--coach-dark);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24mm 20mm;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    /* Diagonal accent strip in the background */
+    .diagonal-overlay {
+      position: absolute;
+      top: -30%;
+      left: -20%;
+      width: 150%;
+      height: 150%;
+      background: linear-gradient(135deg, rgba(226, 251, 40, 0.04) 0%, transparent 45%);
+      transform: rotate(-12deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Header component design */
+    .header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-b: 2px solid var(--coach-accent);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .header-logo-section h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 28px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      line-height: 0.95;
+    }
+
+    .header-logo-section p {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--coach-text-muted);
+      margin-top: 4px;
+    }
+
+    /* Skewed Tech Badge */
+    .skew-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      background-color: var(--coach-primary);
+      color: #000000;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 4px 10px;
+      text-transform: uppercase;
+      transform: skewX(-10deg);
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+
+    /* Workout Grid and Tables styling */
+    .content-wrapper {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-container {
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-family: 'Barlow Condensed', sans-serif;
+      background-color: var(--coach-surface);
+      color: var(--coach-primary);
+      text-transform: uppercase;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--coach-accent);
+    }
+
+    td {
+      font-size: 12px;
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #E2E8F0;
+    }
+
+    td.exercise-name {
+      font-weight: 700;
+      color: var(--coach-text);
+      border-left: 3px solid var(--coach-primary);
+      text-transform: uppercase;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Cardio block layout styling */
+    .cardio-section {
+      margin-top: auto;
+      background: var(--coach-surface);
+      border: 1px solid var(--coach-accent);
+      padding: 20px;
+      position: relative;
+    }
+
+    .cardio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-b: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .cardio-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--coach-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .cardio-badge {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--coach-text-muted);
+      letter-spacing: 1px;
+    }
+
+    .cardio-grid {
+      display: grid;
+      grid-template-cols: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .cardio-metric {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .cardio-metric-label {
+      font-size: 8px;
+      color: var(--coach-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .cardio-metric-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--coach-text);
+    }
+
+    /* Footer styling */
+    .footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-t: 1px solid var(--coach-accent);
+      padding-top: 16px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--coach-text-muted);
+      font-weight: 500;
+    }
+
+    .primary-glow {
+      text-shadow: 0 0 15px rgba(226, 251, 40, 0.35);
+    }
+
+    /* Print Layout settings */
+    @media print {
+      body {
+        background-color: #000000;
+      }
+      .a4-page {
+        margin: 0;
+        padding: 20mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="a4-page">
+    <div class="diagonal-overlay"></div>
+
+    <div class="content-wrapper">
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header-logo-section">
+          <h2>DAY <span class="text-primary primary-glow" style="color: var(--coach-primary);">01</span> <span class="primary-glow">PUSH DAY</span></h2>
+          <p>Hypertrophy Strength System</p>
+        </div>
+        <div>
+          <span class="skew-badge">AMPLIFIED PHASING</span>
+        </div>
+      </header>
+
+      <!-- EXERCISES DECK -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50%;">MOVEMENT & PATTERN</th>
+              <th style="width: 15%; text-align: center;">SETS</th>
+              <th style="width: 20%; text-align: center;">REPS</th>
+              <th style="width: 15%; text-align: center;">REST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="exercise-name">Barbell Bench Press</td>
+              <td style="text-align: center; font-weight: 700;">4</td>
+              <td style="text-align: center;">8-10 reps</td>
+              <td style="text-align: center; color: var(--coach-primary);">90s</td>
+            </tr>
+            <tr>
+              <td class="exercise-name">Incline Dumbbell Flyes</td>
+              <td style="text-align: center; font-weight: 700;">3</td>
+              <td style="text-align: center;">12-15 reps</td>
+              <td style="text-align: center; color: var(--coach-primary);">60s</td>
+            </tr>
+            <tr>
+              <td class="exercise-name">Military Dumbbell Press</td>
+              <td style="text-align: center; font-weight: 700;">4</td>
+              <td style="text-align: center;">10 reps</td>
+              <td style="text-align: center; color: var(--coach-primary);">90s</td>
+            </tr>
+            <tr>
+              <td class="exercise-name">Incline Lateral Cable Raises</td>
+              <td style="text-align: center; font-weight: 700;">4</td>
+              <td style="text-align: center;">15-20 reps</td>
+              <td style="text-align: center; color: var(--coach-primary);">45s</td>
+            </tr>
+            <tr>
+              <td class="exercise-name">Overhead Tricep Extensions</td>
+              <td style="text-align: center; font-weight: 700;">3</td>
+              <td style="text-align: center;">12 reps</td>
+              <td style="text-align: center; color: var(--coach-primary);">60s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- OPTIONAL CARDIO DECK -->
+      <div class="cardio-section" style="margin-top: 40px;">
+        <div class="cardio-header">
+          <div class="cardio-title">🏃 CARDIO SPECIFICATION PROTOCOL</div>
+          <div class="cardio-badge">LOW INTENSITY (LISS)</div>
+        </div>
+        <div class="cardio-grid">
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">TYPE / METHOD</div>
+            <div class="cardio-metric-val">Incline Treadmill Walk</div>
+          </div>
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">DURATION TIME</div>
+            <div class="cardio-metric-val" style="color: var(--coach-primary);">25 Minutes</div>
+          </div>
+          <div class="cardio-metric">
+            <div class="cardio-metric-label">TARGET CONSTRAINTS</div>
+            <div class="cardio-metric-val">120 - 130 HR BPM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENT FOOTER -->
+    <footer class="footer">
+      <div>@VIKTORKANE_PRO</div>
+      <div>COACHING@VIKTORKANE.COM</div>
+      <div>+1 (555) 789-9432</div>
+    </footer>
+  </div>
+
+</body>
+</html>

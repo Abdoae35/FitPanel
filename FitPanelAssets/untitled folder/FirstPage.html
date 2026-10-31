@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlam Fitness – A4 Poster</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #3a3a3a;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   A4 POSTER  210mm × 297mm
+═══════════════════════════════════════ */
+.poster {
+  width: 794px;        /* 210mm at 96dpi */
+  height: 1123px;      /* 297mm at 96dpi */
+  background: #111111;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* ── Concrete / cracked texture overlay ── */
+.poster::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      17deg,
+      transparent,
+      transparent 120px,
+      rgba(255,255,255,0.012) 120px,
+      rgba(255,255,255,0.012) 121px
+    ),
+    repeating-linear-gradient(
+      -43deg,
+      transparent,
+      transparent 90px,
+      rgba(255,255,255,0.008) 90px,
+      rgba(255,255,255,0.008) 91px
+    ),
+    repeating-linear-gradient(
+      80deg,
+      transparent,
+      transparent 160px,
+      rgba(255,255,255,0.006) 160px,
+      rgba(255,255,255,0.006) 161px
+    );
+}
+
+/* ── Subtle noise grain ── */
+.poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ══════════════════════════════
+   ALL CONTENT sits at z-index 2+
+══════════════════════════════ */
+
+/* ── TOP HEADER ── */
+.header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  padding: 28px 32px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* LOGO */
+.logo { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+
+.logo-icon {
+  width: 48px; height: 48px;
+  background: #e31c1c;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+}
+
+.logo-icon svg { width: 30px; height: 30px; }
+
+.logo-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  color: #ffffff;
+  letter-spacing: 4px;
+  line-height: 1;
+}
+
+.logo-fitness {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #e31c1c;
+  letter-spacing: 7px;
+  margin-top: 3px;
+}
+
+/* X cross pattern – top right */
+.x-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 14px);
+  grid-template-rows: repeat(4, 14px);
+  gap: 2px;
+}
+
+.x-grid span {
+  color: #e31c1c;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+/* ══════════════════════════════
+   PHOTO PANELS
+══════════════════════════════ */
+.photos {
+  position: absolute;
+  top: 115px;
+  left: 0; right: 0;
+  height: 570px;
+  z-index: 5;
+}
+
+/* Left panel – woman – diagonal right edge */
+.photo-left {
+  position: absolute;
+  top: 0; left: 0;
+  width: 490px;
+  height: 100%;
+  clip-path: polygon(0 0, 78% 0, 95% 100%, 0 100%);
+  overflow: hidden;
+}
+
+.photo-left img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 31%;
+  filter: grayscale(100%) contrast(1.15) brightness(0.9);
+  display: block;
+}
+
+/* Right panel – man – diagonal left edge, overlaps left */
+.photo-right {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 490px;
+  height: calc(100% - 38px);
+  clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
+  overflow: hidden;
+}
+
+.photo-right img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 100%;
+  filter: grayscale(100%) contrast(1.15) brightness(0.88);
+  display: block;
+}
+
+/* Dark gradient at bottom of photos for text legibility */
+.photos-fade {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to bottom, transparent 0%, #111111 100%);
+  z-index: 6;
+}
+
+/* ── Red diagonal accent stripes – bottom left of photo area ── */
+.accents-left {
+  position: absolute;
+  bottom: 62px;
+  left: 24px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.acc-row { display: flex; gap: 6px; }
+
+.acc-bar {
+  width: 30px; height: 4px;
+  background: #e31c1c;
+  transform: skewX(-22deg);
+}
+
+.acc-bar.hollow {
+  background: transparent;
+  border: 2px solid #e31c1c;
+}
+.chevrons {
+  position: absolute;
+  right: 28px;
+  bottom: 55px;
+  z-index: 8;
+  display: flex;
+  flex-direction: row;  /* changed from column to row */
+  align-items: center;
+  gap: 0;
+}
+/* ── Double chevron arrows – right side ── */
+.chevrons {
+  position: absolute;
+  right: 28px;
+  bottom: 55px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.chev-solid {
+  width: 0; height: 0;
+  border-left: 26px solid transparent;
+  border-right: 26px solid transparent;
+}
+
+/* We use SVG chevrons for more accuracy */
+.chevrons svg { display: block; }
+
+/* ══════════════════════════════
+   BOTTOM TEXT SECTION
+══════════════════════════════ */
+.bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 10;
+  padding: 0 0 38px 0;
+}
+
+/* Red vertical bar + content */
+.bottom-inner {
+  display: flex;
+  align-items: stretch;
+  padding-left: 32px;
+}
+
+.red-vbar {
+  width: 5px;
+  background: #e31c1c;
+  margin-right: 20px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.text-block { flex: 1; }
+
+.headline-line1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  font-size: 108px;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+  line-height: 0.88;
+  display: block;
+}
+
+.headline-line2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  font-size: 108px;
+  color: #e31c1c;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+  line-height: 0.88;
+  display: block;
+}
+
+.body-copy {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #ffffff;
+  line-height: 1.6;
+  margin-top: 18px;
+  max-width: 400px;
+  opacity: 0.9;
+}
+
+/* Bottom-right accent stripes */
+.bottom-accents {
+  position: absolute;
+  bottom: 36px;
+  right: 28px;
+  display: flex;
+  gap: 7px;
+  z-index: 11;
+}
+
+.ba {
+  width: 22px; height: 4px;
+  transform: skewX(-22deg);
+}
+.ba.solid { background: #e31c1c; }
+.ba.hollow { background: transparent; border: 2px solid #e31c1c; }
+
+/* ══════════════════════════════
+   PRINT
+══════════════════════════════ */
+@media print {
+  body { background: none; padding: 0; }
+  .poster { width: 210mm; height: 297mm; }
+  @page { size: A4 portrait; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">
+        <!-- flexing person SVG -->
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- torso -->
+          <ellipse cx="30" cy="42" rx="12" ry="13" fill="white"/>
+          <!-- head -->
+          <circle cx="30" cy="20" r="9" fill="white"/>
+          <!-- left arm up -->
+          <path d="M18 38 C6 30 8 18 16 16 C20 15 22 20 18 25 C22 28 20 34 20 38Z" fill="white"/>
+          <!-- left bicep -->
+          <ellipse cx="11" cy="20" rx="5" ry="7" fill="white" transform="rotate(-20 11 20)"/>
+          <!-- right arm up -->
+          <path d="M42 38 C54 30 52 18 44 16 C40 15 38 20 42 25 C38 28 40 34 40 38Z" fill="white"/>
+          <!-- right bicep -->
+          <ellipse cx="49" cy="20" rx="5" ry="7" fill="white" transform="rotate(20 49 20)"/>
+        </svg>
+      </div>
+      <div class="logo-name">Atlam</div>
+      <div class="logo-fitness">FITNESS</div>
+    </div>
+
+    <!-- × grid top-right -->
+    <div class="x-grid">
+      <span>×</span><span>×</span><span>×</span><span>×</span>
+      <span>×</span><span>×</span><span>×</span><span>×</span>
+      <span>×</span><span>×</span><span>×</span><span>×</span>
+      <span>×</span><span>×</span><span>×</span><span>×</span>
+    </div>
+
+  </div><!-- /header -->
+
+  <!-- PHOTO PANELS -->
+  <div class="photos">
+
+    <!-- Left: woman -->
+    <div class="photo-left">
+      <img
+        src="/img6.jpeg"
+        alt="Woman training in gym"
+      />
+    </div>
+
+    <!-- Right: man -->
+    <div class="photo-right">
+      <img
+        src="/img2.jpeg"
+        alt="Man training in gym"
+      />
+    </div>
+
+    <!-- Gradient fade at bottom -->
+    <div class="photos-fade"></div>
+
+    <!-- Left accent stripes -->
+    <div class="accents-left">
+      <div class="acc-row">
+        <div class="acc-bar"></div>
+        <div class="acc-bar"></div>
+      </div>
+      <div class="acc-row">
+        <div class="acc-bar hollow"></div>
+        <div class="acc-bar hollow"></div>
+      </div>
+    </div>
+
+    <!-- Chevron arrows right -->
+    <div class="chevrons">
+      <!-- Solid filled chevron -->
+      <svg width="62" height="40" viewBox="0 0 62 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,0 31,22 62,0 62,14 31,36 0,14" fill="#e31c1c"/>
+      </svg>
+      <!-- Outline chevron 1 -->
+      <svg width="62" height="28" viewBox="0 0 62 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top:-2px">
+        <polyline points="3,3 31,22 59,3" stroke="#e31c1c" stroke-width="3" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <!-- Outline chevron 2 (smaller, dimmer) -->
+      <svg width="56" height="24" viewBox="0 0 56 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top:0px; opacity:0.55">
+        <polyline points="3,3 28,18 53,3" stroke="#e31c1c" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+
+  </div><!-- /photos -->
+
+  <!-- BOTTOM TEXT -->
+  <div class="bottom">
+    <div class="bottom-inner">
+      <div class="red-vbar"></div>
+      <div class="text-block">
+        <span class="headline-line1">GET FIT</span>
+        <span class="headline-line2">BE STRONG</span>
+        <p class="body-copy">
+          Achieve fitness and strength with regular<br>
+          exercise, balanced nutrition, and consistency.<br>
+          Feel confident, energized, and live your<br>
+          healthiest life.
+        </p>
+      </div>
+    </div>
+
+    <!-- bottom-right mini stripes -->
+    <div class="bottom-accents">
+      <div class="ba solid"></div>
+      <div class="ba solid"></div>
+      <div class="ba hollow"></div>
+    </div>
+  </div>
+
+</div><!-- /poster -->
+
+</body>
+</html>
